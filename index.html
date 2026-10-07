@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Warehouse Monitoring System</title>
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Audio elements generated via Web Audio API, but container exists -->
+  
+  <!-- ========================================== -->
+  <!-- SCREEN 1: SETUP SCREEN                     -->
+  <!-- ========================================== -->
+  <section id="setup-screen" class="screen-view active">
+    <div class="setup-card">
+      <div class="setup-header">
+        <div class="brand-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect width="24" height="24" rx="6" fill="#F57C00"/>
+            <path d="M7 12L12 7L17 12L12 17L7 12Z" fill="white"/>
+            <circle cx="12" cy="12" r="2.5" fill="#F57C00"/>
+          </svg>
+          <span class="company-name">IoT Cold Storage</span>
+        </div>
+        <h2>Smart Warehouse Monitor</h2>
+        <p class="setup-subtitle">Initial configuration & live simulation setup</p>
+      </div>
+
+      <form id="setup-form" onsubmit="handleStartWarehouse(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="input-temp">Starting Temperature (°C)</label>
+            <div class="input-wrap">
+              <input type="number" id="input-temp" step="0.5" value="6" required>
+              <span class="unit-tag">°C</span>
+            </div>
+            <span class="field-hint">Ideal cold storage start (e.g. 4 - 8°C)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="input-humidity">Starting Humidity (%)</label>
+            <div class="input-wrap">
+              <input type="number" id="input-humidity" min="10" max="100" value="85" required>
+              <span class="unit-tag">%</span>
+            </div>
+            <span class="field-hint">Normal fresh produce level (e.g. 80 - 90%)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="input-cooling-limit">Cooling turns ON above (°C)</label>
+            <div class="input-wrap">
+              <input type="number" id="input-cooling-limit" step="0.5" value="10" required>
+              <span class="unit-tag">°C</span>
+            </div>
+            <span class="field-hint">Must be higher than starting temperature</span>
+          </div>
+
+          <div class="form-group">
+            <label for="input-owner-name">Owner / Manager Name</label>
+            <div class="input-wrap">
+              <input type="text" id="input-owner-name" value="Mr. Sharma" required>
+            </div>
+            <span class="field-hint">Used in WhatsApp alert greetings</span>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="input-owner-phone">Owner WhatsApp Number</label>
+            <div class="input-wrap">
+              <input type="text" id="input-owner-phone" value="+91 98XXX XXXXX" required>
+            </div>
+            <span class="field-hint">Recipient for simulated instant mobile alerts</span>
+          </div>
+        </div>
+
+        <div id="setup-validation-msg" class="validation-banner hidden"></div>
+
+        <button type="submit" class="btn-primary start-btn">
+          <span>Start Warehouse</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 2: MAIN SIMULATION                  -->
+  <!-- ========================================== -->
+  <section id="sim-screen" class="screen-view">
+    
+    <!-- Top Navigation Bar -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <div class="top-brand">
+          <div class="brand-square">WH</div>
+          <div class="top-title-group">
+            <h1>Warehouse Monitoring System</h1>
+            <span class="top-sub">Smart Facility &bull; Live Simulation</span>
+          </div>
+        </div>
+        
+        <div class="live-pill">
+          <span class="pulsing-dot"></span>
+          <span>LIVE</span>
+        </div>
+
+        <div class="clock-display" id="sim-clock">10:00:00 AM</div>
+      </div>
+
+      <div class="top-bar-right">
+        <!-- Speed toggle -->
+        <div class="speed-control-group" title="Simulation Speed">
+          <button type="button" class="speed-btn active" id="speed-1x" onclick="setSpeed(1)">1x</button>
+          <button type="button" class="speed-btn" id="speed-5x" onclick="setSpeed(5)">5x</button>
+        </div>
+
+        <!-- Mute Toggle -->
+        <button type="button" class="icon-toggle-btn" id="mute-toggle-btn" onclick="toggleMute()" title="Mute/Unmute sound">
+          <svg id="sound-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="sound-icon-off" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <button type="button" class="nav-btn btn-outline" onclick="startGuidedDemo()" id="guided-demo-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Guided Demo
+        </button>
+
+        <button type="button" class="nav-btn btn-ghost" onclick="openHowItWorksModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          How it works
+        </button>
+
+        <button type="button" class="nav-btn btn-ghost danger" onclick="resetToSetup()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          Reset
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Area -->
+    <div class="simulation-body">
+      
+      <!-- LEFT SECTION (~72% of width: Warehouse Floor + Controls & Dashboard) -->
+      <div class="left-section">
+        
+        <!-- TOP: Warehouse Floor SVG Canvas -->
+        <div class="floor-panel" id="floor-panel">
+          <div class="floor-panel-header">
+            <div class="floor-title-group">
+              <span class="panel-tag">LIVE FACILITY VIEW</span>
+              <h3>Top-Down Warehouse Floor Plan</h3>
+            </div>
+            
+            <!-- Floor Mode Instruction Banner -->
+            <div id="floor-mode-banner" class="floor-mode-banner hidden">
+              <span id="floor-mode-text">Click anywhere on the floor to spill liquid</span>
+              <button type="button" class="btn-xs" onclick="cancelInteractiveMode()">Cancel (Esc)</button>
+            </div>
+
+            <!-- Wall Sensor Badge inside floor header / overlay -->
+            <div class="wall-sensor-badge" id="wall-sensor-badge">
+              <div class="ws-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F57C00" stroke-width="2">
+                  <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                </svg>
+              </div>
+              <div class="ws-info">
+                <span class="ws-label">WALL SENSOR WS-01</span>
+                <span class="ws-vals" id="wall-sensor-readings">6.0°C &bull; 85% RH</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floor SVG Area -->
+          <div class="floor-svg-container" id="floor-svg-container">
+            <svg id="warehouse-svg" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <!-- Floor subtle grid pattern -->
+                <pattern id="floor-tiles" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <rect width="40" height="40" fill="#F4F6F9" />
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E5E9F0" stroke-width="1" />
+                </pattern>
+
+                <!-- Soft shadow for racks -->
+                <filter id="rack-shadow" x="-5%" y="-5%" width="110%" height="115%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.06"/>
+                </filter>
+
+                <!-- Camera viewing cone radial gradients -->
+                <radialGradient id="cam1-cone" cx="0%" cy="0%" r="100%">
+                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
+                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="cam2-cone" cx="100%" cy="0%" r="100%">
+                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
+                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="cam3-cone" cx="0%" cy="100%" r="100%">
+                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
+                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="cam4-cone" cx="100%" cy="100%" r="100%">
+                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
+                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                </radialGradient>
+
+                <!-- Cooling airflow particle markers & gradient -->
+                <linearGradient id="cool-air-left" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="cool-air-top" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="cool-air-right" x1="100%" y1="0%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Warehouse Floor Base -->
+              <rect x="15" y="15" width="970" height="490" rx="14" fill="url(#floor-tiles)" stroke="#CBD5E1" stroke-width="2"/>
+              <!-- Wall perimeter outline -->
+              <rect x="25" y="25" width="950" height="470" rx="8" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="8 4" opacity="0.6"/>
+
+              <!-- WALKWAYS & AISLE LABELS -->
+              <text x="500" y="44" text-anchor="middle" fill="#94A3B8" font-size="11" font-weight="600" letter-spacing="2">MAIN LOGISTICS CORRIDOR</text>
+              <text x="500" y="265" text-anchor="middle" fill="#94A3B8" font-size="11" font-weight="600" letter-spacing="2">CENTRAL INSPECTION AISLE</text>
+              <text x="500" y="488" text-anchor="middle" fill="#94A3B8" font-size="11" font-weight="600" letter-spacing="2">DISPATCH & LOADING BAYS</text>
+
+              <!-- 4 CAMERAS & VISION CONES -->
+              <!-- CAM-1 Top-Left -->
+              <g id="cam-1-group">
+                <path id="cam-1-cone-path" class="cam-cone" d="M 30 30 L 260 30 A 240 240 0 0 1 30 260 Z" fill="url(#cam1-cone)" />
+                <circle cx="35" cy="35" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
+                <!-- Camera lens -->
+                <circle cx="35" cy="35" r="6" fill="#0EA5E9"/>
+                <path d="M 30 24 L 40 24 L 42 28 L 46 28 L 46 38 L 24 38 L 24 28 L 28 28 Z" fill="#FFFFFF" transform="scale(0.55) translate(18, 18)"/>
+                <rect x="20" y="56" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
+                <text x="44" y="68" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-1</text>
+                <!-- Flash label & flash ring -->
+                <g id="cam-1-snap-badge" class="cam-snap-badge hidden">
+                  <rect x="18" y="76" width="70" height="18" rx="4" fill="#0284C7"/>
+                  <text x="53" y="89" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                </g>
+              </g>
+
+              <!-- CAM-2 Top-Right -->
+              <g id="cam-2-group">
+                <path id="cam-2-cone-path" class="cam-cone" d="M 970 30 L 740 30 A 240 240 0 0 0 970 260 Z" fill="url(#cam2-cone)" />
+                <circle cx="965" cy="35" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
+                <circle cx="965" cy="35" r="6" fill="#0EA5E9"/>
+                <rect x="932" y="56" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
+                <text x="956" y="68" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-2</text>
+                <g id="cam-2-snap-badge" class="cam-snap-badge hidden">
+                  <rect x="912" y="76" width="70" height="18" rx="4" fill="#0284C7"/>
+                  <text x="947" y="89" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                </g>
+              </g>
+
+              <!-- CAM-3 Bottom-Left -->
+              <g id="cam-3-group">
+                <path id="cam-3-cone-path" class="cam-cone" d="M 30 490 L 260 490 A 240 240 0 0 0 30 260 Z" fill="url(#cam3-cone)" />
+                <circle cx="35" cy="485" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
+                <circle cx="35" cy="485" r="6" fill="#0EA5E9"/>
+                <rect x="20" y="448" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
+                <text x="44" y="460" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-3</text>
+                <g id="cam-3-snap-badge" class="cam-snap-badge hidden">
+                  <rect x="18" y="426" width="70" height="18" rx="4" fill="#0284C7"/>
+                  <text x="53" y="439" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                </g>
+              </g>
+
+              <!-- CAM-4 Bottom-Right -->
+              <g id="cam-4-group">
+                <path id="cam-4-cone-path" class="cam-cone" d="M 970 490 L 740 490 A 240 240 0 0 1 970 260 Z" fill="url(#cam4-cone)" />
+                <circle cx="965" cy="485" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
+                <circle cx="965" cy="485" r="6" fill="#0EA5E9"/>
+                <rect x="932" y="448" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
+                <text x="956" y="460" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-4</text>
+                <g id="cam-4-snap-badge" class="cam-snap-badge hidden">
+                  <rect x="912" y="426" width="70" height="18" rx="4" fill="#0284C7"/>
+                  <text x="947" y="439" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                </g>
+              </g>
+
+              <!-- 3 COOLING UNITS -->
+              <!-- Cooler 1: West Wall (Left) -->
+              <g id="cooler-unit-1" class="cooler-group" transform="translate(18, 215)">
+                <!-- Cold air wave graphics -->
+                <path id="cool-air-flow-1" class="cool-air-wave hidden" d="M 28 0 C 70 -30, 110 -20, 160 0 C 110 30, 70 25, 28 15 Z" fill="url(#cool-air-left)"/>
+                <rect x="0" y="-30" width="22" height="60" rx="5" fill="#334155" stroke="#64748B" stroke-width="1.5" class="cooler-body"/>
+                <circle cx="11" cy="0" r="8" fill="#1E293B"/>
+                <!-- Fan Blades -->
+                <g class="fan-blades" id="fan-blades-1" transform="translate(11, 0)">
+                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+                <rect x="26" y="-12" width="68" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" class="cooler-label-bg"/>
+                <text x="60" y="3" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-1">Cooling OFF</text>
+              </g>
+
+              <!-- Cooler 2: North Wall (Top Center) -->
+              <g id="cooler-unit-2" class="cooler-group" transform="translate(460, 18)">
+                <path id="cool-air-flow-2" class="cool-air-wave hidden" d="M 0 28 C -35 70, -25 110, 0 160 C 25 110, 35 70, 15 28 Z" fill="url(#cool-air-top)"/>
+                <rect x="-30" y="0" width="60" height="22" rx="5" fill="#334155" stroke="#64748B" stroke-width="1.5" class="cooler-body"/>
+                <circle cx="0" cy="11" r="8" fill="#1E293B"/>
+                <g class="fan-blades" id="fan-blades-2" transform="translate(0, 11)">
+                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+                <rect x="-34" y="26" width="68" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" class="cooler-label-bg"/>
+                <text x="0" y="41" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-2">Cooling OFF</text>
+              </g>
+
+              <!-- Cooler 3: East Wall (Right) -->
+              <g id="cooler-unit-3" class="cooler-group" transform="translate(982, 215)">
+                <path id="cool-air-flow-3" class="cool-air-wave hidden" d="M -28 0 C -70 -30, -110 -20, -160 0 C -110 30, -70 25, -28 15 Z" fill="url(#cool-air-right)"/>
+                <rect x="-22" y="-30" width="22" height="60" rx="5" fill="#334155" stroke="#64748B" stroke-width="1.5" class="cooler-body"/>
+                <circle cx="-11" cy="0" r="8" fill="#1E293B"/>
+                <g class="fan-blades" id="fan-blades-3" transform="translate(-11, 0)">
+                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+                <rect x="-94" y="-12" width="68" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" class="cooler-label-bg"/>
+                <text x="-60" y="3" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-3">Cooling OFF</text>
+              </g>
+
+              <!-- SPILLS LAYER (Generated dynamically or positioned here) -->
+              <g id="spills-layer"></g>
+
+              <!-- 4 RACKS WITH 6 CARTONS EACH (24 CARTONS TOTAL) -->
+              <!-- Rack A: Top-Left (x: 140, y: 70) -->
+              <g id="rack-A-group" class="rack-group" filter="url(#rack-shadow)">
+                <rect x="140" y="70" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="140" y="70" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
+                <text x="155" y="87" font-size="12" font-weight="700" fill="#334155">RACK A &bull; Fresh Leafy & Root Crops</text>
+                <!-- Cartons in Rack A: 2 rows of 3 -->
+                <g id="rack-A-cartons"></g>
+              </g>
+
+              <!-- Rack B: Top-Right (x: 550, y: 70) -->
+              <g id="rack-B-group" class="rack-group" filter="url(#rack-shadow)">
+                <rect x="550" y="70" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="550" y="70" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
+                <text x="565" y="87" font-size="12" font-weight="700" fill="#334155">RACK B &bull; Salad & Greens Reserve</text>
+                <g id="rack-B-cartons"></g>
+              </g>
+
+              <!-- Rack C: Bottom-Left (x: 140, y: 295) -->
+              <g id="rack-C-group" class="rack-group" filter="url(#rack-shadow)">
+                <rect x="140" y="295" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="140" y="295" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
+                <text x="155" y="312" font-size="12" font-weight="700" fill="#334155">RACK C &bull; Onion & Potato Bulk Store</text>
+                <g id="rack-C-cartons"></g>
+              </g>
+
+              <!-- Rack D: Bottom-Right (x: 550, y: 295) -->
+              <g id="rack-D-group" class="rack-group" filter="url(#rack-shadow)">
+                <rect x="550" y="295" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                <rect x="550" y="295" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
+                <text x="565" y="312" font-size="12" font-weight="700" fill="#334155">RACK D &bull; Nightshade & Root Stock</text>
+                <g id="rack-D-cartons"></g>
+              </g>
+
+              <!-- CAMERA FLASH OVERLAY (Blinks on snapshot) -->
+              <rect id="camera-flash-overlay" x="15" y="15" width="970" height="490" rx="14" fill="#FFFFFF" opacity="0" pointer-events="none"/>
+            </svg>
+
+            <!-- Floating Carton Hover Tooltip -->
+            <div id="carton-tooltip" class="carton-tooltip hidden">
+              <div class="tt-header">
+                <span class="tt-id" id="tt-id">A-01</span>
+                <span class="tt-status-badge" id="tt-badge">Fresh</span>
+              </div>
+              <div class="tt-item" id="tt-veg">Tomatoes</div>
+              <div class="tt-instruction">Click for actions</div>
+            </div>
+
+            <!-- Floating Carton Action Popover -->
+            <div id="carton-popover" class="carton-popover hidden">
+              <div class="popover-arrow"></div>
+              <div class="pop-header">
+                <div>
+                  <h4 id="pop-title">Carton B-04</h4>
+                  <span class="pop-sub" id="pop-veg">Spinach</span>
+                </div>
+                <button type="button" class="pop-close" onclick="closeCartonPopover()">×</button>
+              </div>
+              <div class="pop-status-row">
+                <span class="status-dot-sm" id="pop-dot"></span>
+                <span id="pop-status-text">Status: Fresh</span>
+              </div>
+              <div class="pop-actions">
+                <button type="button" id="pop-action-btn" class="btn-popover">Spoil this vegetable</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTROLS & DASHBOARD ROW -->
+        <div class="controls-dashboard-row">
+          
+          <!-- CONTROLS PANEL -->
+          <div class="panel-card controls-card">
+            <div class="card-head">
+              <h4>Interactive Controls</h4>
+              <span class="help-label">Adjust warehouse environment</span>
+            </div>
+
+            <div class="controls-content">
+              <!-- Outside Heat Slider -->
+              <div class="control-box">
+                <div class="control-label-row">
+                  <label for="heat-slider">Outside Heat Level</label>
+                  <span class="badge-tag" id="heat-weather-tag">Normal day (0°C diff)</span>
+                </div>
+                <div class="slider-container">
+                  <span class="slider-side-label">Cooler</span>
+                  <input type="range" id="heat-slider" min="-5" max="20" value="0" step="1" oninput="handleHeatSlider(this.value)">
+                  <span class="slider-side-label">Hotter</span>
+                </div>
+              </div>
+
+              <!-- Cooling Limit & Actions -->
+              <div class="controls-row-2">
+                <div class="limit-adjust-box">
+                  <span class="limit-caption">Cooling limit</span>
+                  <div class="limit-controls">
+                    <button type="button" class="btn-step" onclick="adjustCoolingLimit(-0.5)" title="Decrease limit">−</button>
+                    <span class="limit-val" id="cooling-limit-display">10.0°C</span>
+                    <button type="button" class="btn-step" onclick="adjustCoolingLimit(0.5)" title="Increase limit">+</button>
+                  </div>
+                </div>
+
+                <div class="action-btn-group">
+                  <!-- Spoil a vegetable manual button -->
+                  <button type="button" class="btn-action btn-spoil-veg" id="spoil-veg-tool-btn" onclick="togglePickCartonMode()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                    <span>Spoil a vegetable</span>
+                  </button>
+
+                  <!-- Spill Liquid Button -->
+                  <button type="button" class="btn-action btn-spill" id="spill-liquid-btn" onclick="startSpillMode()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    </svg>
+                    <span>Spill Liquid</span>
+                  </button>
+
+                  <!-- Clean up Spill Button (appears only when spill active) -->
+                  <button type="button" class="btn-action btn-cleanup hidden" id="cleanup-spill-btn" onclick="cleanUpSpill()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Clean up spill</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DASHBOARD METRICS CARDS -->
+          <div class="metrics-grid">
+            
+            <!-- Temperature Card -->
+            <div class="metric-card" id="card-temp">
+              <div class="metric-head">
+                <span class="m-title">Temperature</span>
+                <span class="m-chip chip-normal" id="temp-status-chip">Normal</span>
+              </div>
+              <div class="metric-val-row">
+                <span class="m-val" id="val-temp">6.0</span>
+                <span class="m-unit">°C</span>
+              </div>
+              <!-- Small live line chart canvas -->
+              <div class="chart-box">
+                <canvas id="temp-chart-canvas" width="220" height="42"></canvas>
+              </div>
+              <div class="m-footer">
+                <span id="temp-sub-note">Cooling triggers at 10.0°C</span>
+              </div>
+            </div>
+
+            <!-- Humidity Card -->
+            <div class="metric-card" id="card-humidity">
+              <div class="metric-head">
+                <span class="m-title">Relative Humidity</span>
+                <span class="m-chip chip-info" id="humidity-status-chip">Optimal</span>
+              </div>
+              <div class="metric-val-row">
+                <span class="m-val" id="val-humidity">85</span>
+                <span class="m-unit">%</span>
+              </div>
+              <div class="chart-box">
+                <canvas id="humidity-chart-canvas" width="220" height="42"></canvas>
+              </div>
+              <div class="m-footer">
+                <span>Display only &bull; Preserves freshness</span>
+              </div>
+            </div>
+
+            <!-- Cartons Card -->
+            <div class="metric-card" id="card-cartons">
+              <div class="metric-head">
+                <span class="m-title">Vegetable Cartons</span>
+                <span class="m-chip chip-gray">24 Total</span>
+              </div>
+              <div class="cartons-stat-row">
+                <div class="stat-pill pill-fresh">
+                  <span class="dot green"></span>
+                  <span class="stat-num" id="count-fresh">24</span>
+                  <span class="stat-lbl">Fresh</span>
+                </div>
+                <div class="stat-pill pill-spoiled">
+                  <span class="dot red"></span>
+                  <span class="stat-num" id="count-spoiled">0</span>
+                  <span class="stat-lbl">Spoiled</span>
+                </div>
+              </div>
+              <div class="m-footer-help">
+                <span>Click any carton to simulate spoilage</span>
+              </div>
+            </div>
+
+            <!-- Cooling Status Card -->
+            <div class="metric-card" id="card-cooling">
+              <div class="metric-head">
+                <span class="m-title">Cooling System</span>
+                <span class="m-chip chip-cooling-off" id="cooling-state-chip">OFF</span>
+              </div>
+              <div class="metric-val-row">
+                <span class="m-val-sm" id="cooling-units-title">3 Units Standby</span>
+              </div>
+              <div class="cooling-timer-box">
+                <span class="timer-lbl">Running Time:</span>
+                <span class="timer-val" id="cooling-timer-val">00:00</span>
+              </div>
+              <div class="m-footer">
+                <span id="cooling-hysteresis-note">Turns off at limit −2°C</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- EVENT LOG (BOTTOM STRIP) -->
+        <div class="panel-card event-log-card">
+          <div class="card-head log-head">
+            <div class="log-title-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <h4>System Activity & Alert Log</h4>
+            </div>
+            <span class="log-count" id="log-count-tag">1 event recorded</span>
+          </div>
+          <div class="event-log-list" id="event-log-list">
+            <!-- Events injected dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SECTION (~28% of width: Realistic Smartphone Mockup) -->
+      <div class="right-section">
+        <div class="phone-outer-wrapper">
+          <div class="phone-frame" id="phone-frame">
+            <!-- Speaker notch & sensors -->
+            <div class="phone-notch">
+              <div class="camera-lens"></div>
+              <div class="earpiece-speaker"></div>
+            </div>
+
+            <!-- Phone Screen Glass -->
+            <div class="phone-screen">
+              
+              <!-- Mobile Status Bar (Always Visible) -->
+              <div class="phone-status-bar">
+                <span class="status-time" id="phone-status-time">10:00</span>
+                <div class="status-icons">
+                  <!-- Signal bars SVG -->
+                  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+                    <rect x="0" y="7" width="2" height="3" rx="0.5"/>
+                    <rect x="4" y="5" width="2" height="5" rx="0.5"/>
+                    <rect x="8" y="2.5" width="2" height="7.5" rx="0.5"/>
+                    <rect x="12" y="0" width="2" height="10" rx="0.5"/>
+                  </svg>
+                  <!-- Wifi SVG -->
+                  <svg width="13" height="10" viewBox="0 0 14 10" fill="currentColor">
+                    <path d="M7 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 4.05a7 7 0 0 1 9.9 0l-1.4 1.4a5 5 0 0 0-7.1 0l-1.4-1.4zM0 2a9.9 9.9 0 0 1 14 0l-1.4 1.4A7.9 7.9 0 0 0 1.4 3.4L0 2z"/>
+                  </svg>
+                  <!-- Battery SVG -->
+                  <svg width="18" height="9" viewBox="0 0 22 11" fill="currentColor">
+                    <rect x="0" y="0" width="19" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="2" y="2" width="13" height="7" rx="1"/>
+                    <path d="M20 3.5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- VIEW A: LOCK SCREEN -->
+              <div class="phone-view lock-screen active" id="phone-lock-view">
+                <div class="lock-date" id="lock-date">Wednesday, October 7</div>
+                <div class="lock-clock" id="lock-clock">10:00</div>
+
+                <!-- Notifications Stack Container on Lock Screen -->
+                <div class="lock-notifications-container" id="lock-notifications-container">
+                  <!-- Sliding notification cards appear here -->
+                </div>
+
+                <div class="lock-footer">
+                  <button type="button" class="open-chat-btn" onclick="openPhoneChatView()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    <span>Open WhatsApp Chat</span>
+                  </button>
+                  <span class="swipe-hint">Tap any alert to view chat</span>
+                </div>
+              </div>
+
+              <!-- VIEW B: WHATSAPP CHAT SCREEN -->
+              <div class="phone-view chat-screen" id="phone-chat-view">
+                <!-- WhatsApp Green Top Header -->
+                <div class="wa-chat-header">
+                  <button type="button" class="wa-back-btn" onclick="closePhoneChatView()" title="Back to lock screen">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <div class="wa-avatar">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <rect width="24" height="24" rx="12" fill="#25D366"/>
+                      <path d="M12 6v6l4 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div class="wa-contact-info">
+                    <span class="wa-contact-name">Warehouse Monitor</span>
+                    <span class="wa-contact-sub" id="wa-online-status">online</span>
+                  </div>
+                </div>
+
+                <!-- WhatsApp Beige Chat Message Area -->
+                <div class="wa-messages-container" id="wa-messages-container">
+                  <div class="wa-date-chip">TODAY</div>
+                  
+                  <div class="wa-bubble wa-system-msg">
+                    <span>Messages are end-to-end encrypted with IoT Facility Gateway.</span>
+                  </div>
+
+                  <!-- Messages populated dynamically -->
+                </div>
+
+                <!-- Typing indicator banner -->
+                <div id="wa-typing-indicator" class="wa-typing-indicator hidden">
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                  <span class="typing-text">Warehouse Monitor is typing...</span>
+                </div>
+
+                <!-- WhatsApp Fake Input Footer -->
+                <div class="wa-input-footer">
+                  <div class="wa-input-fake">
+                    <span>Type a message</span>
+                  </div>
+                  <div class="wa-mic-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                      <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- GUIDED DEMO CAPTION BAR (At the bottom of screen) -->
+    <div id="guided-demo-bar" class="guided-demo-bar hidden">
+      <div class="demo-badge">
+        <span class="demo-pulse"></span>
+        <span>GUIDED DEMO &bull; STEP <span id="demo-step-num">1</span> OF 7</span>
+      </div>
+      <div class="demo-caption-text" id="demo-caption-text">
+        Everything is normal. Temperature and humidity are being monitored live.
+      </div>
+      <div class="demo-controls-actions">
+        <button type="button" class="btn-skip-demo" onclick="skipGuidedDemoStep()">Skip step →</button>
+        <button type="button" class="btn-stop-demo" onclick="stopGuidedDemo()">Stop Demo</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========================================== -->
+  <!-- MODAL: HOW IT WORKS                        -->
+  <!-- ========================================== -->
+  <div id="how-modal" class="modal-backdrop hidden" onclick="handleModalBackdropClick(event)">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <div class="brand-square sm">WH</div>
+          <h3>How the Smart Warehouse Monitor Works</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="closeHowItWorksModal()">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <p class="modal-intro">
+          This system continuously safeguards fresh produce by pairing automated wall sensors with smart cameras, real-time cooling triggers, and immediate WhatsApp mobile notifications.
+        </p>
+
+        <!-- Clean SVG Architecture Diagram -->
+        <div class="arch-diagram-wrapper">
+          <svg viewBox="0 0 740 180" class="arch-svg">
+            <!-- Box 1: Sensors & Cameras -->
+            <g transform="translate(15, 30)">
+              <rect width="180" height="110" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+              <rect width="180" height="24" rx="10 10 0 0" fill="#E2E8F0"/>
+              <text x="90" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">1. SENSORS & CAMERAS</text>
+              <text x="90" y="46" text-anchor="middle" font-size="11" fill="#475569">🌡️ Temperature sensor</text>
+              <text x="90" y="66" text-anchor="middle" font-size="11" fill="#475569">💧 Humidity sensor</text>
+              <text x="90" y="86" text-anchor="middle" font-size="11" fill="#475569">🏷️ Gas dots on cartons</text>
+              <text x="90" y="106" text-anchor="middle" font-size="11" fill="#475569">📸 CCTV vision cameras</text>
+            </g>
+
+            <!-- Arrow 1 -> 2 -->
+            <path d="M 205 85 L 245 85" stroke="#F57C00" stroke-width="2.5" marker-end="url(#arrow-head)" stroke-dasharray="4 2"/>
+
+            <!-- Box 2: Smart Controller -->
+            <g transform="translate(255, 30)">
+              <rect width="130" height="110" rx="10" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.5"/>
+              <rect width="130" height="24" rx="10 10 0 0" fill="#FFEDD5"/>
+              <text x="65" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#C2410C">2. CONTROLLER</text>
+              <text x="65" y="52" text-anchor="middle" font-size="11" fill="#9A3412">Local IoT Unit</text>
+              <text x="65" y="74" text-anchor="middle" font-size="10.5" fill="#9A3412">Instant decision</text>
+              <text x="65" y="94" text-anchor="middle" font-size="10.5" fill="#9A3412">Hysteresis logic</text>
+            </g>
+
+            <!-- Arrow 2 -> 3 -->
+            <path d="M 395 85 L 435 85" stroke="#F57C00" stroke-width="2.5" stroke-dasharray="4 2"/>
+
+            <!-- Box 3: Cloud Gateway -->
+            <g transform="translate(445, 30)">
+              <rect width="120" height="110" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+              <rect width="120" height="24" rx="10 10 0 0" fill="#E2E8F0"/>
+              <text x="60" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">3. CLOUD</text>
+              <text x="60" y="55" text-anchor="middle" font-size="11" fill="#475569">Central IoT</text>
+              <text x="60" y="75" text-anchor="middle" font-size="11" fill="#475569">Secure Gateway</text>
+              <text x="60" y="95" text-anchor="middle" font-size="10.5" fill="#475569">Data logging</text>
+            </g>
+
+            <!-- Arrow 3 -> 4 -->
+            <path d="M 575 85 L 610 85" stroke="#F57C00" stroke-width="2.5" stroke-dasharray="4 2"/>
+
+            <!-- Box 4: Actions & Alerts -->
+            <g transform="translate(620, 20)">
+              <!-- Sub item 1: Coolers -->
+              <rect width="105" height="40" rx="6" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5"/>
+              <text x="52" y="24" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1D4ED8">❄️ Wall Coolers</text>
+              
+              <!-- Sub item 2: WhatsApp -->
+              <rect y="48" width="105" height="40" rx="6" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.5"/>
+              <text x="52" y="72" text-anchor="middle" font-size="10.5" font-weight="600" fill="#15803D">📱 WhatsApp</text>
+
+              <!-- Sub item 3: Dashboard -->
+              <rect y="96" width="105" height="40" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="52" y="120" text-anchor="middle" font-size="10.5" font-weight="600" fill="#334155">📊 Live Screen</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="how-bullets">
+          <div class="how-bullet-item">
+            <div class="hb-num">1</div>
+            <div class="hb-text">
+              <strong>Smart automated cooling:</strong> If the warehouse rises above your cooling limit, the 3 wall coolers turn on automatically and stay active until temperature is 2°C below your limit (this prevents wasteful rapid switching).
+            </div>
+          </div>
+
+          <div class="how-bullet-item">
+            <div class="hb-num">2</div>
+            <div class="hb-text">
+              <strong>Vegetable protection:</strong> Sensitive gas sensors on each carton detect spoiled produce right away so you can remove it before other cartons are affected.
+            </div>
+          </div>
+
+          <div class="how-bullet-item">
+            <div class="hb-num">3</div>
+            <div class="hb-text">
+              <strong>Instant photo proof for spills:</strong> When liquid is spilled on the floor, the nearest corner camera snaps a photo with highlighted boundaries and sends it to WhatsApp so staff can clean it immediately.
+            </div>
+          </div>
+
+          <div class="how-bullet-item">
+            <div class="hb-num">4</div>
+            <div class="hb-text">
+              <strong>Never miss an emergency:</strong> Critical alerts are delivered straight to the owner's WhatsApp and saved in the permanent dashboard event log.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" onclick="closeHowItWorksModal()">Got it, continue simulation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: IMAGE ENLARGE (FOR SPILL PHOTO)     -->
+  <!-- ========================================== -->
+  <div id="image-modal" class="modal-backdrop hidden" onclick="handleModalBackdropClick(event)">
+    <div class="modal-dialog img-modal-dialog">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span class="cctv-badge">CCTV SNAPSHOT</span>
+          <h3 id="img-modal-title">CAM-3 &bull; Liquid Spill Detection</h3>
+        </div>
+        <button type="button" class="btn-close-modal" onclick="closeImageModal()">×</button>
+      </div>
+      <div class="modal-body img-modal-body">
+        <img id="enlarged-snapshot-img" src="" alt="Enlarged CCTV Snapshot">
+        <div class="img-meta-footer" id="img-modal-footer">Captured live by warehouse vision camera</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Off-screen Canvas for generating camera snapshots -->
+  <canvas id="snapshot-canvas" width="480" height="320" style="display:none;"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>

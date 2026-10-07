@@ -80,12 +80,23 @@
 
         <div id="setup-validation-msg" class="validation-banner hidden"></div>
 
-        <button type="submit" class="btn-primary start-btn">
-          <span>Start Warehouse</span>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-          </svg>
-        </button>
+        <div class="setup-btn-row">
+          <button type="submit" class="btn-primary start-btn">
+            <span>Start Warehouse</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <a href="dashboard.html" class="btn-dashboard-link" title="Open the full client warehouse dashboard view">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+              <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+              <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+              <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+            </svg>
+            <span>Go to Dashboard</span>
+          </a>
+        </div>
       </form>
     </div>
   </section>
@@ -133,6 +144,16 @@
             <line x1="17" y1="9" x2="23" y2="15"></line>
           </svg>
         </button>
+
+        <a href="dashboard.html" class="nav-btn btn-dashboard-nav" title="Open full client dashboard view">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+            <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+            <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+          </svg>
+          Go to Dashboard
+        </a>
 
         <button type="button" class="nav-btn btn-outline" onclick="startGuidedDemo()" id="guided-demo-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

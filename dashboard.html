@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warehouse Dashboard</title>
+  <!-- Google Fonts: Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="dash-header">
+    <div class="dash-header-left">
+      <div class="brand-badge-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect width="24" height="24" rx="6" fill="#F57C00"/>
+          <path d="M7 12L12 7L17 12L12 17L7 12Z" fill="white"/>
+          <circle cx="12" cy="12" r="2" fill="#F57C00"/>
+        </svg>
+        <span class="brand-name">IoT Cold Storage</span>
+      </div>
+      <div class="header-divider"></div>
+      <div class="warehouse-title-group">
+        <h1 class="dash-title">Warehouse Dashboard</h1>
+        <span class="facility-pill">Main Cold Storage &bull; Facility 01</span>
+      </div>
+    </div>
+
+    <div class="dash-header-right">
+      <div class="live-status-pill">
+        <span class="pulse-dot"></span>
+        <span class="live-text">Live</span>
+      </div>
+      <div class="header-meta-group">
+        <span class="live-clock" id="dash-clock">11:20:00 AM</span>
+        <span class="last-updated-tag" id="last-updated-text">Last updated: just now</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dash-content-container">
+
+    <!-- ROW 1: LIVE READINGS & SYSTEM HEALTH (4 Cards Grid) -->
+    <section class="readings-grid">
+      
+      <!-- 1. TEMPERATURE CARD -->
+      <div class="stat-card temp-card">
+        <div class="card-top-row">
+          <div class="card-title-group">
+            <span class="card-eyebrow">TEMPERATURE</span>
+            <span class="status-chip chip-normal" id="temp-status-chip">Normal</span>
+          </div>
+          <!-- Cooling Chip inside Temp Card -->
+          <div class="cooling-inline-chip chip-off" id="temp-cooling-chip">
+            <svg class="fan-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
+              <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
+              <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
+              <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
+            </svg>
+            <span id="temp-cooling-chip-text">Cooling: OFF</span>
+          </div>
+        </div>
+
+        <div class="big-metric-display">
+          <span class="metric-number" id="temp-big-val">7.4</span>
+          <span class="metric-unit">°C</span>
+        </div>
+
+        <!-- Gauge Bar vs 10°C Cooling Limit -->
+        <div class="temp-gauge-wrapper">
+          <div class="gauge-labels">
+            <span>5°C Min</span>
+            <span class="limit-marker-text">Limit: 10.0°C</span>
+            <span>12°C Max</span>
+          </div>
+          <div class="gauge-track">
+            <div class="gauge-fill" id="temp-gauge-fill" style="width: 34%;"></div>
+            <div class="gauge-limit-pin" title="Cooling Limit: 10.0°C"></div>
+          </div>
+        </div>
+
+        <!-- 30-Reading SVG Sparkline Chart -->
+        <div class="chart-container">
+          <svg id="temp-chart-svg" viewBox="0 0 280 48" preserveAspectRatio="none">
+            <!-- Rendered in dashboard.js -->
+          </svg>
+        </div>
+        <div class="card-footer-note">
+          <span>Target range: 4.0 – 8.0 °C</span>
+          <span class="hysteresis-hint">Cooling stops below 8.0 °C</span>
+        </div>
+      </div>
+
+      <!-- 2. HUMIDITY CARD -->
+      <div class="stat-card hum-card">
+        <div class="card-top-row">
+          <div class="card-title-group">
+            <span class="card-eyebrow">RELATIVE HUMIDITY</span>
+            <span class="status-chip chip-normal" id="hum-status-chip">Good for storage</span>
+          </div>
+        </div>
+
+        <div class="big-metric-display">
+          <span class="metric-number" id="hum-big-val">84</span>
+          <span class="metric-unit">%</span>
+        </div>
+
+        <!-- Humidity Range Bar -->
+        <div class="temp-gauge-wrapper">
+          <div class="gauge-labels">
+            <span>70% Low</span>
+            <span class="limit-marker-text">Ideal: 80–92%</span>
+            <span>100% High</span>
+          </div>
+          <div class="gauge-track hum-track">
+            <div class="gauge-fill hum-fill" id="hum-gauge-fill" style="width: 46%;"></div>
+          </div>
+        </div>
+
+        <!-- 30-Reading SVG Sparkline Chart -->
+        <div class="chart-container">
+          <svg id="hum-chart-svg" viewBox="0 0 280 48" preserveAspectRatio="none">
+            <!-- Rendered in dashboard.js -->
+          </svg>
+        </div>
+        <div class="card-footer-note">
+          <span>Optimal produce preservation moisture</span>
+          <span>No phone alerts</span>
+        </div>
+      </div>
+
+      <!-- 3. COOLING UNITS CARD (Addition requested by user) -->
+      <div class="stat-card cooling-card">
+        <div class="card-top-row">
+          <div class="card-title-group">
+            <span class="card-eyebrow">COOLING UNITS</span>
+            <span class="cooling-summary-line" id="cooling-units-summary">All units off</span>
+          </div>
+          <span class="auto-mode-badge">Auto (Thermostat)</span>
+        </div>
+
+        <div class="cooling-units-list">
+          <!-- Unit 1 -->
+          <div class="unit-tile" id="unit-tile-1">
+            <div class="unit-tile-header">
+              <div class="unit-name-box">
+                <div class="unit-fan-icon" id="fan-icon-1">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                    <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
+                    <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
+                    <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
+                    <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="unit-title">Cooling Unit 1</h4>
+                  <span class="unit-location">North wall</span>
+                </div>
+              </div>
+              <span class="unit-pill pill-grey" id="unit-pill-1">Off</span>
+            </div>
+            <div class="unit-tile-body">
+              <span class="unit-time-text" id="unit-time-1">Last ran at 10:58 AM</span>
+              <span class="unit-health green">● Working normally</span>
+            </div>
+          </div>
+
+          <!-- Unit 2 -->
+          <div class="unit-tile" id="unit-tile-2">
+            <div class="unit-tile-header">
+              <div class="unit-name-box">
+                <div class="unit-fan-icon" id="fan-icon-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                    <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
+                    <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
+                    <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
+                    <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="unit-title">Cooling Unit 2</h4>
+                  <span class="unit-location">East wall</span>
+                </div>
+              </div>
+              <span class="unit-pill pill-grey" id="unit-pill-2">Off</span>
+            </div>
+            <div class="unit-tile-body">
+              <span class="unit-time-text" id="unit-time-2">Last ran at 10:58 AM</span>
+              <span class="unit-health green">● Working normally</span>
+            </div>
+          </div>
+
+          <!-- Unit 3 -->
+          <div class="unit-tile" id="unit-tile-3">
+            <div class="unit-tile-header">
+              <div class="unit-name-box">
+                <div class="unit-fan-icon" id="fan-icon-3">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                    <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
+                    <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
+                    <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
+                    <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="unit-title">Cooling Unit 3</h4>
+                  <span class="unit-location">West wall</span>
+                </div>
+              </div>
+              <span class="unit-pill pill-grey" id="unit-pill-3">Off</span>
+            </div>
+            <div class="unit-tile-body">
+              <span class="unit-time-text" id="unit-time-3">Last ran at 10:58 AM</span>
+              <span class="unit-health green">● Working normally</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. WAREHOUSE HEALTH SUMMARY CARD -->
+      <div class="stat-card health-summary-card">
+        <div class="card-top-row">
+          <div class="card-title-group">
+            <span class="card-eyebrow">WAREHOUSE HEALTH</span>
+            <span class="health-overview-sub">Real-time inventory & floor status</span>
+          </div>
+        </div>
+
+        <div class="health-counts-grid">
+          <div class="health-count-box box-fresh">
+            <div class="hc-number" id="hc-fresh-count">20</div>
+            <div class="hc-label-row">
+              <span class="hc-dot dot-green"></span>
+              <span class="hc-label">Fresh Cartons</span>
+            </div>
+          </div>
+
+          <div class="health-count-box box-spoiled">
+            <div class="hc-number" id="hc-spoiled-count">4</div>
+            <div class="hc-label-row">
+              <span class="hc-dot dot-red"></span>
+              <span class="hc-label">Spoiled Cartons</span>
+            </div>
+          </div>
+
+          <div class="health-count-box box-spill">
+            <div class="hc-number" id="hc-spills-count">2</div>
+            <div class="hc-label-row">
+              <span class="hc-dot dot-red"></span>
+              <span class="hc-label">Active Spills</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fourth item: Cooling status bar -->
+        <div class="summary-extra-bar">
+          <div class="cooling-summary-chip">
+            <span class="mini-fan-icon">❄️</span>
+            <span id="summary-cooling-status">Cooling: Off</span>
+          </div>
+          <div class="all-units-ok-chip">
+            <span class="service-dot green"></span>
+            <span>All 3 units operational</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ROW 2: CARTON STATUS GRID + ACTIVITY FEED (Side by side on desktop) -->
+    <section class="cartons-activity-row">
+      
+      <!-- CARTON STATUS GRID (Left / Main) -->
+      <div class="main-card cartons-card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="section-title">Carton Status (24)</h2>
+            <p class="section-subtitle">Real-time gas & quality sensors across all storage racks</p>
+          </div>
+
+          <!-- Filter Chips -->
+          <div class="filter-chips-group">
+            <button type="button" class="filter-btn active" id="filter-all" onclick="filterCartons('all')">
+              All <span class="chip-count">24</span>
+            </button>
+            <button type="button" class="filter-btn" id="filter-fresh" onclick="filterCartons('fresh')">
+              Fresh <span class="chip-count">20</span>
+            </button>
+            <button type="button" class="filter-btn" id="filter-spoiled" onclick="filterCartons('spoiled')">
+              Spoiled <span class="chip-count danger">4</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Carton Grid Wrapper (with sticky left rack labels) -->
+        <div class="carton-grid-scroll-wrap">
+          <div class="carton-grid-matrix" id="carton-grid-matrix">
+            <!-- Dynamically populated 4 rows x 6 columns -->
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT ACTIVITY FEED (Right Column) -->
+      <div class="main-card activity-card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="section-title">Recent Activity</h2>
+            <p class="section-subtitle">Live events & historical logs</p>
+          </div>
+          <span class="activity-live-badge">Auto-recording</span>
+        </div>
+
+        <div class="activity-feed-list" id="activity-feed-list">
+          <!-- Populated in dashboard.js -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ROW 3: LIQUID SPILL DETECTION (Full Width) -->
+    <section class="main-card spill-detection-card">
+      <div class="card-header-flex">
+        <div>
+          <h2 class="section-title">Spill Detection</h2>
+          <p class="section-subtitle">6 key facility areas continuously monitored by vision AI cameras</p>
+        </div>
+        <div class="spill-summary-pill-group">
+          <span class="pill-spill-count">
+            <span class="pulse-dot-red"></span>
+            2 Active Spills Detected
+          </span>
+          <span class="pill-clean-count">4 Areas Clear</span>
+        </div>
+      </div>
+
+      <div class="spill-body-layout">
+        
+        <!-- A) Warehouse Area Map (Left Half) -->
+        <div class="spill-map-pane">
+          <div class="pane-title-row">
+            <span class="pane-tag">WAREHOUSE TOP-DOWN FLOOR MAP</span>
+            <span class="map-interactive-hint">Click an area to inspect details</span>
+          </div>
+          
+          <div class="svg-map-wrapper">
+            <svg id="warehouse-spill-map-svg" viewBox="0 0 680 400" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <pattern id="floor-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <rect width="20" height="20" fill="#F8FAFC"/>
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#EDF2F7" stroke-width="1"/>
+                </pattern>
+                <filter id="area-shadow" x="-4%" y="-4%" width="108%" height="110%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.06"/>
+                </filter>
+              </defs>
+
+              <!-- Floor Base -->
+              <rect x="10" y="10" width="660" height="380" rx="14" fill="url(#floor-grid)" stroke="#CBD5E1" stroke-width="2"/>
+              <rect x="20" y="20" width="640" height="360" rx="10" fill="none" stroke="#94A3B8" stroke-dasharray="6 4" stroke-width="1.5" opacity="0.6"/>
+
+              <!-- Central Passage Label -->
+              <text x="340" y="205" text-anchor="middle" font-size="10.5" font-weight="700" fill="#94A3B8" letter-spacing="1.5">MAIN CENTRAL AISLE</text>
+
+              <!-- 6 DEFINED MONITORING AREAS -->
+
+              <!-- 1. Rack A Aisle (CAM-1) [Top-Left] -->
+              <g id="map-area-rack-a" class="map-zone zone-clear" onclick="selectSpillArea('rack-a')">
+                <rect x="35" y="35" width="280" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <text x="50" y="62" class="zone-name">Rack A Aisle</text>
+                <text x="50" y="78" class="zone-cam">Camera: CAM-1</text>
+                <!-- Status icon + text -->
+                <g class="zone-status-badge badge-green" transform="translate(50, 95)">
+                  <rect width="88" height="24" rx="12"/>
+                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
+                </g>
+                <!-- Camera Icon -->
+                <circle cx="290" cy="55" r="13" class="cam-circle"/>
+                <path d="M 285 52 L 295 52 L 297 55 L 300 55 L 300 62 L 280 62 L 280 55 L 283 55 Z" fill="#475569" transform="scale(0.7) translate(122, 23)"/>
+              </g>
+
+              <!-- 2. Rack B Aisle (CAM-2) [Top-Right] -->
+              <g id="map-area-rack-b" class="map-zone zone-clear" onclick="selectSpillArea('rack-b')">
+                <rect x="365" y="35" width="280" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <text x="380" y="62" class="zone-name">Rack B Aisle</text>
+                <text x="380" y="78" class="zone-cam">Camera: CAM-2</text>
+                <g class="zone-status-badge badge-green" transform="translate(380, 95)">
+                  <rect width="88" height="24" rx="12"/>
+                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
+                </g>
+                <circle cx="620" cy="55" r="13" class="cam-circle"/>
+                <path d="M 285 52 L 295 52 L 297 55 L 300 55 L 300 62 L 280 62 L 280 55 L 283 55 Z" fill="#475569" transform="scale(0.7) translate(593, 23)"/>
+              </g>
+
+              <!-- 3. Rack C Aisle (CAM-3) [Middle-Left: SPILL DETECTED] -->
+              <g id="map-area-rack-c" class="map-zone zone-spill selected" onclick="selectSpillArea('rack-c')">
+                <rect x="35" y="225" width="180" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <text x="50" y="252" class="zone-name">Rack C Aisle</text>
+                <text x="50" y="268" class="zone-cam">Camera: CAM-3</text>
+                <g class="zone-status-badge badge-red" transform="translate(50, 285)">
+                  <rect width="112" height="24" rx="12"/>
+                  <text x="56" y="16" text-anchor="middle">💧 Spill detected</text>
+                </g>
+                <circle cx="190" cy="245" r="13" class="cam-circle red"/>
+                <!-- Pulsing puddle graphic in area -->
+                <ellipse cx="125" cy="336" rx="28" ry="12" class="map-puddle-dot"/>
+              </g>
+
+              <!-- 4. Rack D Aisle (CAM-4) [Middle-Center] -->
+              <g id="map-area-rack-d" class="map-zone zone-clear" onclick="selectSpillArea('rack-d')">
+                <rect x="235" y="225" width="180" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <text x="250" y="252" class="zone-name">Rack D Aisle</text>
+                <text x="250" y="268" class="zone-cam">Camera: CAM-4</text>
+                <g class="zone-status-badge badge-green" transform="translate(250, 285)">
+                  <rect width="88" height="24" rx="12"/>
+                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
+                </g>
+                <circle cx="390" cy="245" r="13" class="cam-circle"/>
+              </g>
+
+              <!-- 5. Loading Dock (CAM-5) [Bottom-Right: SPILL DETECTED] -->
+              <g id="map-area-loading-dock" class="map-zone zone-spill" onclick="selectSpillArea('loading-dock')">
+                <rect x="435" y="225" width="210" height="85" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <text x="450" y="250" class="zone-name">Loading Dock</text>
+                <text x="450" y="266" class="zone-cam">Camera: CAM-5</text>
+                <g class="zone-status-badge badge-red" transform="translate(450, 276)">
+                  <rect width="112" height="22" rx="11"/>
+                  <text x="56" y="15" text-anchor="middle">💧 Spill detected</text>
+                </g>
+                <circle cx="620" cy="245" r="13" class="cam-circle red"/>
+                <ellipse cx="585" cy="285" rx="18" ry="8" class="map-puddle-dot"/>
+              </g>
+
+              <!-- 6. Entrance (CAM-6) [Bottom Right Corridor] -->
+              <g id="map-area-entrance" class="map-zone zone-clear" onclick="selectSpillArea('entrance')">
+                <rect x="435" y="320" width="210" height="50" rx="6" class="zone-rect" filter="url(#area-shadow)"/>
+                <text x="450" y="340" class="zone-name">Entrance</text>
+                <text x="450" y="355" class="zone-cam">Camera: CAM-6</text>
+                <g class="zone-status-badge badge-green" transform="translate(535, 332)">
+                  <rect width="88" height="22" rx="11"/>
+                  <text x="44" y="15" text-anchor="middle">✓ No spill</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- B) Area Status List & Spill Photos (Right Half) -->
+        <div class="spill-details-pane">
+          
+          <!-- Active Spills Highlight Container -->
+          <div class="pane-title-row">
+            <span class="pane-tag">ACTIVE SPILL ALERTS</span>
+            <span class="alert-status-badge">Waiting for clean-up</span>
+          </div>
+
+          <div class="active-spill-cards-grid">
+            
+            <!-- Spill Alert Card 1: Rack C Aisle -->
+            <div class="spill-alert-card" id="spill-card-rack-c">
+              <div class="spill-img-wrapper" onclick="openPhotoModal('rack-c')">
+                <img id="spill-img-rack-c" src="" alt="CCTV Snapshot Rack C Aisle" class="spill-snapshot-img">
+                <div class="cctv-overlay-tag">
+                  <span class="cctv-rec-dot"></span>
+                  <span>CAM-3 &bull; SNAPSHOT</span>
+                </div>
+                <div class="click-to-enlarge-hint">Click to enlarge ⤢</div>
+              </div>
+              <div class="spill-info-body">
+                <div class="spill-title-row">
+                  <h4 class="spill-zone-title">Rack C Aisle</h4>
+                  <span class="spill-pill-badge danger">Spill detected</span>
+                </div>
+                <div class="spill-meta-line">
+                  <span class="spill-cam-id">Camera: CAM-3</span>
+                  <span class="spill-time">Detected at 11:15 AM</span>
+                </div>
+                <div class="spill-action-row">
+                  <span class="clean-state-waiting">Status: Waiting for clean-up</span>
+                  <button type="button" class="btn-clean-action" onclick="acknowledgeClean('rack-c')">Mark Cleaned</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Spill Alert Card 2: Loading Dock -->
+            <div class="spill-alert-card" id="spill-card-loading-dock">
+              <div class="spill-img-wrapper" onclick="openPhotoModal('loading-dock')">
+                <img id="spill-img-loading-dock" src="" alt="CCTV Snapshot Loading Dock" class="spill-snapshot-img">
+                <div class="cctv-overlay-tag">
+                  <span class="cctv-rec-dot"></span>
+                  <span>CAM-5 &bull; SNAPSHOT</span>
+                </div>
+                <div class="click-to-enlarge-hint">Click to enlarge ⤢</div>
+              </div>
+              <div class="spill-info-body">
+                <div class="spill-title-row">
+                  <h4 class="spill-zone-title">Loading Dock</h4>
+                  <span class="spill-pill-badge danger">Spill detected</span>
+                </div>
+                <div class="spill-meta-line">
+                  <span class="spill-cam-id">Camera: CAM-5</span>
+                  <span class="spill-time">Detected at 11:02 AM</span>
+                </div>
+                <div class="spill-action-row">
+                  <span class="clean-state-waiting">Status: Waiting for clean-up</span>
+                  <button type="button" class="btn-clean-action" onclick="acknowledgeClean('loading-dock')">Mark Cleaned</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- All 6 Monitored Areas Compact Status Table -->
+          <div class="pane-title-row mt-12">
+            <span class="pane-tag">ALL 6 FACILITY ZONES STATUS</span>
+          </div>
+
+          <div class="areas-status-table-box">
+            <table class="areas-table">
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Camera</th>
+                  <th>Status</th>
+                  <th>Last Checked</th>
+                </tr>
+              </thead>
+              <tbody id="areas-table-body">
+                <!-- Injected in dashboard.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Spill History Section -->
+          <div class="pane-title-row mt-12">
+            <span class="pane-tag">SPILL HISTORY & RESOLUTIONS</span>
+          </div>
+
+          <div class="spill-history-list" id="spill-history-list">
+            <!-- 2 Past resolved spills -->
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- SIDE PANEL: CARTON DETAIL DRAWER -->
+  <aside class="carton-drawer" id="carton-drawer">
+    <div class="drawer-header">
+      <div class="drawer-header-left">
+        <span class="drawer-id-badge" id="drawer-carton-id">A-01</span>
+        <h3 id="drawer-carton-veg">Tomatoes</h3>
+      </div>
+      <button type="button" class="drawer-close-btn" onclick="closeCartonDrawer()">×</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="drawer-stat-card">
+        <span class="drawer-label">FRESHNESS STATUS</span>
+        <div class="drawer-status-pill" id="drawer-status-pill">
+          <span class="drawer-dot"></span>
+          <span id="drawer-status-text">Fresh</span>
+        </div>
+      </div>
+
+      <div class="drawer-info-grid">
+        <div class="drawer-info-item">
+          <span class="drawer-info-lbl">Storage Rack</span>
+          <span class="drawer-info-val" id="drawer-rack-val">Rack A</span>
+        </div>
+        <div class="drawer-info-item">
+          <span class="drawer-info-lbl">Produce Category</span>
+          <span class="drawer-info-val" id="drawer-category-val">Vine Crop</span>
+        </div>
+        <div class="drawer-info-item">
+          <span class="drawer-info-lbl">Gas Sensor Reading</span>
+          <span class="drawer-info-val" id="drawer-gas-val">Normal (&lt; 0.02 ppm)</span>
+        </div>
+        <div class="drawer-info-item">
+          <span class="drawer-info-lbl">Last Checked</span>
+          <span class="drawer-info-val" id="drawer-checked-val">Just now</span>
+        </div>
+      </div>
+
+      <!-- Action / Recommendation block for spoiled cartons -->
+      <div class="drawer-action-box" id="drawer-action-box">
+        <div class="drawer-warning-icon">⚠️</div>
+        <div>
+          <h4 class="drawer-warn-title">Recommended Action</h4>
+          <p class="drawer-warn-desc" id="drawer-action-desc">Remove and replace this carton immediately to prevent ethylene gas from affecting adjacent cartons.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MODAL: CCTV FULL PHOTO ZOOM -->
+  <div class="modal-backdrop hidden" id="photo-modal" onclick="handleModalBackdropClick(event)">
+    <div class="modal-dialog-box">
+      <div class="modal-header-row">
+        <div class="modal-title-left">
+          <span class="modal-cam-chip" id="modal-cam-badge">CAM-3 &bull; SECURITY SNAPSHOT</span>
+          <h3 id="modal-area-title">Liquid Spill &bull; Rack C Aisle</h3>
+        </div>
+        <button type="button" class="btn-modal-close" onclick="closePhotoModal()">×</button>
+      </div>
+      <div class="modal-body-content">
+        <img id="modal-enlarged-img" src="" alt="Enlarged CCTV Snapshot">
+        <div class="modal-footer-caption" id="modal-caption-text">
+          Security vision system flagged liquid accumulation with 98% confidence.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Canvas for Programmatic CCTV Image Generation -->
+  <canvas id="cctv-gen-canvas" width="480" height="320" style="display:none;"></canvas>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

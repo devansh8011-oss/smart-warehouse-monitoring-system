@@ -1872,14 +1872,33 @@ function initSimBroadcastListener() {
     if (typeof BroadcastChannel !== "undefined") {
       simSyncChannel = new BroadcastChannel("warehouse_simulation_sync");
       simSyncChannel.onmessage = (event) => {
-        if (event.data && event.data.type === "REQUEST_STATE") {
+        if (!event.data) return;
+        if (event.data.type === "REQUEST_STATE") {
           broadcastSimulationState();
+        } else if (event.data.type === "DASH_REPLACE_CARTON" && event.data.cartonId) {
+          if (STATE.cartons[event.data.cartonId] && STATE.cartons[event.data.cartonId].state === "spoiled") {
+            replaceCartonFresh(event.data.cartonId);
+          }
         }
       };
     }
   } catch (e) {
     console.warn("BroadcastChannel not supported", e);
   }
+
+  // Cross-tab storage event listener for DASH_REPLACE_CARTON and REQUEST_STATE
+  window.addEventListener("storage", (e) => {
+    if (e.key === "warehouse_dash_action" && e.newValue) {
+      try {
+        const payload = JSON.parse(e.newValue);
+        if (payload && payload.type === "DASH_REPLACE_CARTON" && payload.cartonId) {
+          if (STATE.cartons[payload.cartonId] && STATE.cartons[payload.cartonId].state === "spoiled") {
+            replaceCartonFresh(payload.cartonId);
+          }
+        }
+      } catch (err) {}
+    }
+  });
 
   // Generate baseline cartons if setup screen is currently idle so dashboard has data immediately
   if (Object.keys(STATE.cartons).length === 0) {

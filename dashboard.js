@@ -185,6 +185,22 @@ function initSimulationSyncBridge() {
 
   // Periodic heartbeat checker and request state ping
   setInterval(checkSimLinkHealth, 2000);
+
+  // Active polling fallback for localStorage (every 250ms) to ensure instant sync
+  // even if BroadcastChannel or storage events are suppressed in incognito windows
+  let lastSeenSyncTimestamp = 0;
+  setInterval(() => {
+    try {
+      const raw = localStorage.getItem("warehouse_sim_state");
+      if (raw) {
+        const payload = JSON.parse(raw);
+        if (payload && payload.timestamp && payload.timestamp > lastSeenSyncTimestamp) {
+          lastSeenSyncTimestamp = payload.timestamp;
+          applySimulationSyncData(payload);
+        }
+      }
+    } catch (err) {}
+  }, 250);
 }
 
 function requestSimulationState() {
@@ -213,6 +229,7 @@ function checkSimLinkHealth() {
 }
 
 function applySimulationSyncData(data) {
+  if (!data) return;
   STATE.lastSimSyncTime = Date.now();
   STATE.isLiveLinked = true;
 
@@ -251,14 +268,12 @@ function applySimulationSyncData(data) {
 
   // 3. Update Cartons States Dynamically
   if (data.cartons) {
-    let cartonStateChanged = false;
     Object.keys(data.cartons).forEach(cid => {
       const simC = data.cartons[cid];
       const dashC = STATE.cartons[cid];
       if (dashC) {
         const newStatus = simC.state === "spoiled" ? "spoiled" : "fresh";
         if (dashC.status !== newStatus) {
-          cartonStateChanged = true;
           dashC.status = newStatus;
           if (newStatus === "spoiled") {
             dashC.spoiledInfo = {
@@ -270,48 +285,49 @@ function applySimulationSyncData(data) {
             dashC.spoiledInfo = null;
             addActivity("cleaned", `Carton ${cid} (${dashC.vegetable}) replaced with fresh stock in simulation.`);
           }
-          updateSingleCartonTile(cid);
         }
+        updateSingleCartonTile(cid);
       }
     });
-
-    if (cartonStateChanged) {
-      updateHealthSummary();
-    }
   }
 
-  // 4. Update Spills Dynamically from Simulation
+  // 4. Update Spills Dynamically from Simulation across all 6 areas
   if (data.activeSpill) {
     const rackId = (data.activeSpill.nearestRack || "C").toLowerCase();
-    const areaId = `rack-${rackId}`;
-    const area = SAMPLE_DATA.areas.find(a => a.id === areaId);
-    if (area && !area.hasSpill) {
-      area.hasSpill = true;
-      area.detectedTime = data.activeSpill.timestamp || formatClockTime(new Date());
-      if (data.activeSpill.snapshotUrl) {
-        STATE.spillImages[areaId] = data.activeSpill.snapshotUrl;
-      }
-      addActivity("spill", `Liquid spill detected in simulation near Rack ${data.activeSpill.nearestRack}.`, areaId);
-      renderAreasTable();
-      updateSpillSvgArea(areaId, true);
-      updateSpillAlertCard(areaId, true);
-      updateHealthSummary();
-    }
-  } else {
-    // If no active spill in simulation, clear simulation-triggered spills if any
-    ["rack-a", "rack-b", "rack-d"].forEach(aid => {
-      const area = SAMPLE_DATA.areas.find(a => a.id === aid);
-      if (area && area.hasSpill) {
+    const activeAreaId = `rack-${rackId}`;
+    
+    SAMPLE_DATA.areas.forEach(area => {
+      if (area.id === activeAreaId) {
+        if (!area.hasSpill) {
+          area.hasSpill = true;
+          area.detectedTime = data.activeSpill.timestamp || formatClockTime(new Date());
+          if (data.activeSpill.snapshotUrl) {
+            STATE.spillImages[activeAreaId] = data.activeSpill.snapshotUrl;
+          }
+          addActivity("spill", `Liquid spill detected near Rack ${data.activeSpill.nearestRack || "C"}.`, activeAreaId);
+        }
+        updateSpillSvgArea(area.id, true);
+        updateSpillAlertCard(area.id, true);
+      } else if (area.hasSpill) {
         area.hasSpill = false;
-        renderAreasTable();
-        updateSpillSvgArea(aid, false);
-        updateSpillAlertCard(aid, false);
-        updateHealthSummary();
+        updateSpillSvgArea(area.id, false);
+        updateSpillAlertCard(area.id, false);
       }
     });
+    renderAreasTable();
+  } else {
+    // If no active spill in simulation, clear all area spill alerts
+    SAMPLE_DATA.areas.forEach(area => {
+      if (area.hasSpill) {
+        area.hasSpill = false;
+        updateSpillSvgArea(area.id, false);
+        updateSpillAlertCard(area.id, false);
+      }
+    });
+    renderAreasTable();
   }
 
-  // 5. Render Metric Visuals & UI
+  // 5. Render Metric Visuals, Donut & UI
   renderMetrics();
   renderSparklines();
   renderCoolingCard();
@@ -698,6 +714,15 @@ function updateHealthSummary() {
   const donutPctEl = document.querySelector(".donut-pct");
   if (donutPctEl) donutPctEl.textContent = `${freshPct}%`;
 
+  const freshArc = document.getElementById("hc-donut-fresh-arc");
+  const spoiledArc = document.getElementById("hc-donut-spoiled-arc");
+  const circumference = 301.59;
+  if (freshArc && spoiledArc) {
+    const freshOffset = circumference * (1 - freshPct / 100);
+    freshArc.setAttribute("stroke-dashoffset", freshOffset.toFixed(2));
+    spoiledArc.setAttribute("stroke-dashoffset", "0");
+  }
+
   // Update progress bars
   const freshMeter = document.querySelector(".bi-meter-fill.green");
   const spoiledMeter = document.querySelector(".bi-meter-fill.red");
@@ -924,6 +949,33 @@ function openCartonDrawer(cartonId) {
   }
 
   document.getElementById("carton-drawer").classList.add("open");
+}
+
+function replaceCartonFromDashboard() {
+  const cartonId = document.getElementById("drawer-carton-id").textContent.trim();
+  const c = STATE.cartons[cartonId];
+  if (!c) return;
+
+  c.status = "fresh";
+  c.spoiledInfo = null;
+  updateSingleCartonTile(cartonId);
+  updateHealthSummary();
+  addActivity("cleaned", `Carton ${cartonId} (${c.vegetable}) replaced with fresh stock.`);
+  closeCartonDrawer();
+
+  // Notify simulation tab via BroadcastChannel & localStorage
+  const payload = {
+    type: "DASH_REPLACE_CARTON",
+    cartonId: cartonId,
+    timestamp: Date.now()
+  };
+
+  if (dashSyncChannel) {
+    try { dashSyncChannel.postMessage(payload); } catch (e) {}
+  }
+  try {
+    localStorage.setItem("warehouse_dash_action", JSON.stringify(payload));
+  } catch (e) {}
 }
 
 function closeCartonDrawer() {

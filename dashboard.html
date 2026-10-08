@@ -304,17 +304,17 @@
           <div class="donut-container">
             <svg class="health-donut-svg" viewBox="0 0 120 120">
               <circle cx="60" cy="60" r="48" fill="none" stroke="#F1F5F9" stroke-width="12"/>
-              <!-- Red Arc for Spoiled (4 / 24 = 16.7%) -->
-              <circle cx="60" cy="60" r="48" fill="none" stroke="#F87171" stroke-width="12"
+              <!-- Red Arc for Spoiled -->
+              <circle id="hc-donut-spoiled-arc" cx="60" cy="60" r="48" fill="none" stroke="#F87171" stroke-width="12"
                       stroke-dasharray="301.59" stroke-dashoffset="0" stroke-linecap="round"
                       transform="rotate(-90 60 60)"/>
-              <!-- Green Arc for Fresh (20 / 24 = 83.3%) -->
-              <circle cx="60" cy="60" r="48" fill="none" stroke="#22C55E" stroke-width="12"
-                      stroke-dasharray="301.59" stroke-dashoffset="50.26" stroke-linecap="round"
+              <!-- Green Arc for Fresh -->
+              <circle id="hc-donut-fresh-arc" cx="60" cy="60" r="48" fill="none" stroke="#22C55E" stroke-width="12"
+                      stroke-dasharray="301.59" stroke-dashoffset="0" stroke-linecap="round"
                       transform="rotate(-90 60 60)"/>
             </svg>
             <div class="donut-center-label">
-              <span class="donut-pct">83%</span>
+              <span class="donut-pct">100%</span>
               <span class="donut-text">Fresh</span>
             </div>
           </div>
@@ -324,27 +324,27 @@
               <div class="bi-header">
                 <span class="bi-dot green"></span>
                 <span class="bi-name">Fresh Cartons</span>
-                <span class="bi-val green" id="hc-fresh-count">20</span>
+                <span class="bi-val green" id="hc-fresh-count">24</span>
               </div>
-              <div class="bi-meter"><div class="bi-meter-fill green" style="width: 83.3%;"></div></div>
+              <div class="bi-meter"><div class="bi-meter-fill green" style="width: 100%;"></div></div>
             </div>
 
             <div class="breakdown-item">
               <div class="bi-header">
                 <span class="bi-dot red"></span>
                 <span class="bi-name">Spoiled Cartons</span>
-                <span class="bi-val red" id="hc-spoiled-count">4</span>
+                <span class="bi-val red" id="hc-spoiled-count">0</span>
               </div>
-              <div class="bi-meter"><div class="bi-meter-fill red" style="width: 16.7%;"></div></div>
+              <div class="bi-meter"><div class="bi-meter-fill red" style="width: 0%;"></div></div>
             </div>
 
             <div class="breakdown-item">
               <div class="bi-header">
                 <span class="bi-dot red"></span>
                 <span class="bi-name">Active Spills</span>
-                <span class="bi-val red" id="hc-spills-count">2</span>
+                <span class="bi-val red" id="hc-spills-count">0</span>
               </div>
-              <div class="bi-meter"><div class="bi-meter-fill red" style="width: 33.3%;"></div></div>
+              <div class="bi-meter"><div class="bi-meter-fill red" style="width: 0%;"></div></div>
             </div>
           </div>
         </div>
@@ -741,9 +741,12 @@
       <!-- Action / Recommendation block for spoiled cartons -->
       <div class="drawer-action-box" id="drawer-action-box">
         <div class="drawer-warning-icon">⚠️</div>
-        <div>
+        <div style="flex:1;">
           <h4 class="drawer-warn-title">Recommended Action</h4>
           <p class="drawer-warn-desc" id="drawer-action-desc">Remove and replace this carton immediately to prevent ethylene gas from affecting adjacent cartons.</p>
+          <button type="button" class="btn-clean-action" id="drawer-replace-btn" onclick="replaceCartonFromDashboard()" style="margin-top:10px;">
+            Replace with Fresh Stock ✓
+          </button>
         </div>
       </div>
     </div>

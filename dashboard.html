@@ -56,7 +56,7 @@
     <!-- ROW 1: LIVE READINGS & SYSTEM HEALTH (4 Cards Grid) -->
     <section class="readings-grid">
       
-      <!-- 1. TEMPERATURE CARD -->
+      <!-- 1. TEMPERATURE CARD (Visual Dial + Sparkline) -->
       <div class="stat-card temp-card">
         <div class="card-top-row">
           <div class="card-title-group">
@@ -75,9 +75,40 @@
           </div>
         </div>
 
-        <div class="big-metric-display">
-          <span class="metric-number" id="temp-big-val">7.4</span>
-          <span class="metric-unit">°C</span>
+        <!-- Big Metric with Visual Radial Arc Dial -->
+        <div class="metric-dial-layout">
+          <div class="big-metric-display">
+            <span class="metric-number" id="temp-big-val">7.4</span>
+            <span class="metric-unit">°C</span>
+          </div>
+
+          <!-- SVG Semi-Circle Radial Gauge -->
+          <div class="dial-svg-container" title="Operating Zone: 4.0 - 13.0°C">
+            <svg class="temp-dial-svg" viewBox="0 0 160 90">
+              <!-- Background Arc Tracks (Radius 64, Center 80,80) -->
+              <!-- Safe Zone: 4-9°C (green) -->
+              <path d="M 16 80 A 64 64 0 0 1 80 16" fill="none" stroke="#BBF7D0" stroke-width="10" stroke-linecap="round"/>
+              <!-- Near Limit Zone: 9-10°C (amber) -->
+              <path d="M 80 16 A 64 64 0 0 1 118 29" fill="none" stroke="#FDE68A" stroke-width="10"/>
+              <!-- High Zone: 10-13°C (red) -->
+              <path d="M 118 29 A 64 64 0 0 1 144 80" fill="none" stroke="#FECDD3" stroke-width="10" stroke-linecap="round"/>
+              
+              <!-- Dashed 10°C threshold indicator notch -->
+              <line x1="118" y1="29" x2="127" y2="23" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"/>
+              
+              <!-- Gauge Rotating Needle with center pivot -->
+              <g id="temp-needle-group" transform="rotate(-22 80 80)" style="transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+                <line x1="80" y1="80" x2="80" y2="24" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="80" cy="80" r="6" fill="#0F172A"/>
+                <circle cx="80" cy="80" r="2.5" fill="#FFFFFF"/>
+              </g>
+              <!-- Min / Max scale labels -->
+              <text x="18" y="87" font-size="8" font-weight="700" fill="#94A3B8">4°</text>
+              <text x="75" y="11" font-size="8" font-weight="700" fill="#15803D">9°</text>
+              <text x="112" y="19" font-size="8.5" font-weight="800" fill="#DC2626">10°</text>
+              <text x="136" y="87" font-size="8" font-weight="700" fill="#94A3B8">13°</text>
+            </svg>
+          </div>
         </div>
 
         <!-- Gauge Bar vs 10°C Cooling Limit -->
@@ -105,13 +136,14 @@
         </div>
       </div>
 
-      <!-- 2. HUMIDITY CARD -->
+      <!-- 2. HUMIDITY CARD (Multi-Band Spectrum Bar + Sparkline) -->
       <div class="stat-card hum-card">
         <div class="card-top-row">
           <div class="card-title-group">
             <span class="card-eyebrow">RELATIVE HUMIDITY</span>
             <span class="status-chip chip-normal" id="hum-status-chip">Good for storage</span>
           </div>
+          <span class="sensor-pill-micro">Ultrasonic Sensor</span>
         </div>
 
         <div class="big-metric-display">
@@ -119,15 +151,23 @@
           <span class="metric-unit">%</span>
         </div>
 
-        <!-- Humidity Range Bar -->
-        <div class="temp-gauge-wrapper">
+        <!-- Visual Multi-Band Spectrum Gauge -->
+        <div class="hum-spectrum-container">
           <div class="gauge-labels">
-            <span>70% Low</span>
-            <span class="limit-marker-text">Ideal: 80–92%</span>
-            <span>100% High</span>
+            <span>&lt;80% Dry</span>
+            <span class="ideal-spectrum-tag">Ideal: 80% – 92%</span>
+            <span>&gt;92% Damp</span>
           </div>
-          <div class="gauge-track hum-track">
-            <div class="gauge-fill hum-fill" id="hum-gauge-fill" style="width: 46%;"></div>
+          <div class="hum-spectrum-track">
+            <div class="spectrum-band band-dry" title="Dry zone (<80%)"></div>
+            <div class="spectrum-band band-optimal" title="Optimal preservation (80-92%)">
+              <span class="band-tag-center">OPT TARGET</span>
+            </div>
+            <div class="spectrum-band band-damp" title="High moisture (>92%)"></div>
+            <!-- Live Indicator Pin -->
+            <div class="hum-indicator-pin" id="hum-gauge-pin" style="left: 46%;">
+              <div class="pin-head"></div>
+            </div>
           </div>
         </div>
 
@@ -139,11 +179,11 @@
         </div>
         <div class="card-footer-note">
           <span>Optimal produce preservation moisture</span>
-          <span>No phone alerts</span>
+          <span class="humidity-range-badge">80–92% RH</span>
         </div>
       </div>
 
-      <!-- 3. COOLING UNITS CARD (Addition requested by user) -->
+      <!-- 3. COOLING UNITS CARD (Visual Evaporator Cooler Load Status) -->
       <div class="stat-card cooling-card">
         <div class="card-top-row">
           <div class="card-title-group">
@@ -169,14 +209,18 @@
                 </div>
                 <div>
                   <h4 class="unit-title">Cooling Unit 1</h4>
-                  <span class="unit-location">North wall</span>
+                  <span class="unit-location">North wall &bull; E-01</span>
                 </div>
               </div>
               <span class="unit-pill pill-grey" id="unit-pill-1">Off</span>
             </div>
+            <!-- Visual Load Meter -->
+            <div class="unit-load-bar">
+              <div class="unit-load-fill" id="unit-load-1" style="width: 0%;"></div>
+            </div>
             <div class="unit-tile-body">
               <span class="unit-time-text" id="unit-time-1">Last ran at 10:58 AM</span>
-              <span class="unit-health green">● Working normally</span>
+              <span class="unit-health green">● Ready</span>
             </div>
           </div>
 
@@ -195,14 +239,17 @@
                 </div>
                 <div>
                   <h4 class="unit-title">Cooling Unit 2</h4>
-                  <span class="unit-location">East wall</span>
+                  <span class="unit-location">East wall &bull; E-02</span>
                 </div>
               </div>
               <span class="unit-pill pill-grey" id="unit-pill-2">Off</span>
             </div>
+            <div class="unit-load-bar">
+              <div class="unit-load-fill" id="unit-load-2" style="width: 0%;"></div>
+            </div>
             <div class="unit-tile-body">
               <span class="unit-time-text" id="unit-time-2">Last ran at 10:58 AM</span>
-              <span class="unit-health green">● Working normally</span>
+              <span class="unit-health green">● Ready</span>
             </div>
           </div>
 
@@ -221,50 +268,78 @@
                 </div>
                 <div>
                   <h4 class="unit-title">Cooling Unit 3</h4>
-                  <span class="unit-location">West wall</span>
+                  <span class="unit-location">West wall &bull; E-03</span>
                 </div>
               </div>
               <span class="unit-pill pill-grey" id="unit-pill-3">Off</span>
             </div>
+            <div class="unit-load-bar">
+              <div class="unit-load-fill" id="unit-load-3" style="width: 0%;"></div>
+            </div>
             <div class="unit-tile-body">
               <span class="unit-time-text" id="unit-time-3">Last ran at 10:58 AM</span>
-              <span class="unit-health green">● Working normally</span>
+              <span class="unit-health green">● Ready</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 4. WAREHOUSE HEALTH SUMMARY CARD -->
+      <!-- 4. WAREHOUSE HEALTH SUMMARY CARD (Circular Donut Ring + Breakdown) -->
       <div class="stat-card health-summary-card">
         <div class="card-top-row">
           <div class="card-title-group">
             <span class="card-eyebrow">WAREHOUSE HEALTH</span>
-            <span class="health-overview-sub">Real-time inventory & floor status</span>
+            <span class="health-overview-sub">Inventory & floor safety score</span>
           </div>
+          <span class="health-grade-badge">Grade A-</span>
         </div>
 
-        <div class="health-counts-grid">
-          <div class="health-count-box box-fresh">
-            <div class="hc-number" id="hc-fresh-count">20</div>
-            <div class="hc-label-row">
-              <span class="hc-dot dot-green"></span>
-              <span class="hc-label">Fresh Cartons</span>
+        <!-- Health Visual Layout: Donut Ring + Quick Stats -->
+        <div class="health-visual-flex">
+          <div class="donut-container">
+            <svg class="health-donut-svg" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#F1F5F9" stroke-width="12"/>
+              <!-- Red Arc for Spoiled (4 / 24 = 16.7%) -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#F87171" stroke-width="12"
+                      stroke-dasharray="301.59" stroke-dashoffset="0" stroke-linecap="round"
+                      transform="rotate(-90 60 60)"/>
+              <!-- Green Arc for Fresh (20 / 24 = 83.3%) -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#22C55E" stroke-width="12"
+                      stroke-dasharray="301.59" stroke-dashoffset="50.26" stroke-linecap="round"
+                      transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="donut-center-label">
+              <span class="donut-pct">83%</span>
+              <span class="donut-text">Fresh</span>
             </div>
           </div>
 
-          <div class="health-count-box box-spoiled">
-            <div class="hc-number" id="hc-spoiled-count">4</div>
-            <div class="hc-label-row">
-              <span class="hc-dot dot-red"></span>
-              <span class="hc-label">Spoiled Cartons</span>
+          <div class="health-breakdown-list">
+            <div class="breakdown-item">
+              <div class="bi-header">
+                <span class="bi-dot green"></span>
+                <span class="bi-name">Fresh Cartons</span>
+                <span class="bi-val green" id="hc-fresh-count">20</span>
+              </div>
+              <div class="bi-meter"><div class="bi-meter-fill green" style="width: 83.3%;"></div></div>
             </div>
-          </div>
 
-          <div class="health-count-box box-spill">
-            <div class="hc-number" id="hc-spills-count">2</div>
-            <div class="hc-label-row">
-              <span class="hc-dot dot-red"></span>
-              <span class="hc-label">Active Spills</span>
+            <div class="breakdown-item">
+              <div class="bi-header">
+                <span class="bi-dot red"></span>
+                <span class="bi-name">Spoiled Cartons</span>
+                <span class="bi-val red" id="hc-spoiled-count">4</span>
+              </div>
+              <div class="bi-meter"><div class="bi-meter-fill red" style="width: 16.7%;"></div></div>
+            </div>
+
+            <div class="breakdown-item">
+              <div class="bi-header">
+                <span class="bi-dot red"></span>
+                <span class="bi-name">Active Spills</span>
+                <span class="bi-val red" id="hc-spills-count">2</span>
+              </div>
+              <div class="bi-meter"><div class="bi-meter-fill red" style="width: 33.3%;"></div></div>
             </div>
           </div>
         </div>
@@ -283,6 +358,48 @@
 
       </div>
 
+    </section>
+
+    <!-- VISUAL PRODUCE STORAGE GUIDE (Intuitive Minimalist Reference Strip) -->
+    <section class="produce-reference-strip">
+      <div class="produce-strip-header">
+        <span class="strip-title">Produce Cold-Chain Benchmarks</span>
+        <span class="strip-desc">Target environmental thresholds for stored commodities</span>
+      </div>
+      <div class="produce-cards-row">
+        <div class="produce-benchmark-card">
+          <div class="pbc-icon">🍅</div>
+          <div class="pbc-info">
+            <div class="pbc-name">Rack A &bull; Tomatoes</div>
+            <div class="pbc-spec">Target: <strong>4.0 – 8.0 °C</strong> &bull; 85% RH</div>
+            <span class="pbc-badge">Chill-Sensitive</span>
+          </div>
+        </div>
+        <div class="produce-benchmark-card">
+          <div class="pbc-icon">🥔</div>
+          <div class="pbc-info">
+            <div class="pbc-name">Rack B &bull; Potatoes & Onions</div>
+            <div class="pbc-spec">Target: <strong>7.0 – 10.0 °C</strong> &bull; 75–80% RH</div>
+            <span class="pbc-badge">Dry Root Storage</span>
+          </div>
+        </div>
+        <div class="produce-benchmark-card">
+          <div class="pbc-icon">🥬</div>
+          <div class="pbc-info">
+            <div class="pbc-name">Rack C &bull; Spinach & Cabbage</div>
+            <div class="pbc-spec">Target: <strong>2.0 – 6.0 °C</strong> &bull; 90–95% RH</div>
+            <span class="pbc-badge">High Moisture</span>
+          </div>
+        </div>
+        <div class="produce-benchmark-card">
+          <div class="pbc-icon">🥕</div>
+          <div class="pbc-info">
+            <div class="pbc-name">Rack D &bull; Carrots</div>
+            <div class="pbc-spec">Target: <strong>3.0 – 7.0 °C</strong> &bull; 90% RH</div>
+            <span class="pbc-badge">Crispness Retained</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ROW 2: CARTON STATUS GRID + ACTIVITY FEED (Side by side on desktop) -->
@@ -384,6 +501,8 @@
               <!-- 1. Rack A Aisle (CAM-1) [Top-Left] -->
               <g id="map-area-rack-a" class="map-zone zone-clear" onclick="selectSpillArea('rack-a')">
                 <rect x="35" y="35" width="280" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <!-- Camera Vision Cone (Light Green / Clear) -->
+                <polygon points="290,55 120,70 140,165" fill="#22C55E" opacity="0.08"/>
                 <text x="50" y="62" class="zone-name">Rack A Aisle</text>
                 <text x="50" y="78" class="zone-cam">Camera: CAM-1</text>
                 <!-- Status icon + text -->
@@ -399,6 +518,8 @@
               <!-- 2. Rack B Aisle (CAM-2) [Top-Right] -->
               <g id="map-area-rack-b" class="map-zone zone-clear" onclick="selectSpillArea('rack-b')">
                 <rect x="365" y="35" width="280" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <!-- Vision Cone -->
+                <polygon points="620,55 450,70 470,165" fill="#22C55E" opacity="0.08"/>
                 <text x="380" y="62" class="zone-name">Rack B Aisle</text>
                 <text x="380" y="78" class="zone-cam">Camera: CAM-2</text>
                 <g class="zone-status-badge badge-green" transform="translate(380, 95)">
@@ -412,6 +533,8 @@
               <!-- 3. Rack C Aisle (CAM-3) [Middle-Left: SPILL DETECTED] -->
               <g id="map-area-rack-c" class="map-zone zone-spill selected" onclick="selectSpillArea('rack-c')">
                 <rect x="35" y="225" width="180" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <!-- Vision Cone (Red / Hazard Detected) -->
+                <polygon points="190,245 45,280 145,360" fill="#EF4444" opacity="0.14"/>
                 <text x="50" y="252" class="zone-name">Rack C Aisle</text>
                 <text x="50" y="268" class="zone-cam">Camera: CAM-3</text>
                 <g class="zone-status-badge badge-red" transform="translate(50, 285)">
@@ -421,11 +544,14 @@
                 <circle cx="190" cy="245" r="13" class="cam-circle red"/>
                 <!-- Pulsing puddle graphic in area -->
                 <ellipse cx="125" cy="336" rx="28" ry="12" class="map-puddle-dot"/>
+                <ellipse cx="125" cy="336" rx="16" ry="7" fill="#DC2626" opacity="0.8"/>
               </g>
 
               <!-- 4. Rack D Aisle (CAM-4) [Middle-Center] -->
               <g id="map-area-rack-d" class="map-zone zone-clear" onclick="selectSpillArea('rack-d')">
                 <rect x="235" y="225" width="180" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <!-- Vision Cone -->
+                <polygon points="390,245 250,280 340,360" fill="#22C55E" opacity="0.08"/>
                 <text x="250" y="252" class="zone-name">Rack D Aisle</text>
                 <text x="250" y="268" class="zone-cam">Camera: CAM-4</text>
                 <g class="zone-status-badge badge-green" transform="translate(250, 285)">
@@ -438,6 +564,8 @@
               <!-- 5. Loading Dock (CAM-5) [Bottom-Right: SPILL DETECTED] -->
               <g id="map-area-loading-dock" class="map-zone zone-spill" onclick="selectSpillArea('loading-dock')">
                 <rect x="435" y="225" width="210" height="85" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                <!-- Vision Cone -->
+                <polygon points="620,245 445,245 570,305" fill="#EF4444" opacity="0.14"/>
                 <text x="450" y="250" class="zone-name">Loading Dock</text>
                 <text x="450" y="266" class="zone-cam">Camera: CAM-5</text>
                 <g class="zone-status-badge badge-red" transform="translate(450, 276)">
@@ -446,11 +574,14 @@
                 </g>
                 <circle cx="620" cy="245" r="13" class="cam-circle red"/>
                 <ellipse cx="585" cy="285" rx="18" ry="8" class="map-puddle-dot"/>
+                <ellipse cx="585" cy="285" rx="10" ry="4.5" fill="#DC2626" opacity="0.8"/>
               </g>
 
               <!-- 6. Entrance (CAM-6) [Bottom Right Corridor] -->
               <g id="map-area-entrance" class="map-zone zone-clear" onclick="selectSpillArea('entrance')">
                 <rect x="435" y="320" width="210" height="50" rx="6" class="zone-rect" filter="url(#area-shadow)"/>
+                <!-- Vision Cone -->
+                <polygon points="630,345 500,325 500,365" fill="#22C55E" opacity="0.08"/>
                 <text x="450" y="340" class="zone-name">Entrance</text>
                 <text x="450" y="355" class="zone-cam">Camera: CAM-6</text>
                 <g class="zone-status-badge badge-green" transform="translate(535, 332)">

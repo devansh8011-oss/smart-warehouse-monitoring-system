@@ -304,7 +304,16 @@ function renderMetrics() {
   // Temperature Gauge Fill
   // Range 5.0 to 12.0 °C
   const gaugePct = Math.max(0, Math.min(100, ((STATE.temp - 5.0) / (12.0 - 5.0)) * 100));
-  document.getElementById("temp-gauge-fill").style.width = `${gaugePct}%`;
+  const tempGaugeFill = document.getElementById("temp-gauge-fill");
+  if (tempGaugeFill) tempGaugeFill.style.width = `${gaugePct}%`;
+
+  // Animate SVG Radial Semi-Circle Needle:
+  // Operating dial spans 4.0°C (-90deg) to 13.0°C (+90deg)
+  const tempAngle = Math.max(-90, Math.min(90, -90 + ((STATE.temp - 4.0) / (13.0 - 4.0)) * 180));
+  const needleGroup = document.getElementById("temp-needle-group");
+  if (needleGroup) {
+    needleGroup.setAttribute("transform", `rotate(${tempAngle.toFixed(1)} 80 80)`);
+  }
 
   // 2. Humidity Card Status
   const humChip = document.getElementById("hum-status-chip");
@@ -321,7 +330,14 @@ function renderMetrics() {
 
   // Humidity Gauge Fill (70 to 100%)
   const humPct = Math.max(0, Math.min(100, ((STATE.humidity - 70) / (100 - 70)) * 100));
-  document.getElementById("hum-gauge-fill").style.width = `${humPct}%`;
+  const humGaugeFill = document.getElementById("hum-gauge-fill");
+  if (humGaugeFill) humGaugeFill.style.width = `${humPct}%`;
+
+  // Humidity Multi-Band Pin: 70% to 100% maps to 0% to 100% width
+  const humPin = document.getElementById("hum-gauge-pin");
+  if (humPin) {
+    humPin.style.left = `${Math.max(2, Math.min(98, humPct))}%`;
+  }
 }
 
 /**
@@ -343,21 +359,28 @@ function renderCoolingCard() {
     const tile = document.getElementById(`unit-tile-${i}`);
     const pill = document.getElementById(`unit-pill-${i}`);
     const timeEl = document.getElementById(`unit-time-${i}`);
+    const loadFill = document.getElementById(`unit-load-${i}`);
     const unitMeta = SAMPLE_DATA.coolingUnits[i - 1];
 
     if (STATE.coolingOn) {
-      tile.classList.add("running");
-      pill.textContent = "Running";
-      pill.className = "unit-pill pill-blue";
+      if (tile) tile.classList.add("running");
+      if (pill) {
+        pill.textContent = "Running";
+        pill.className = "unit-pill pill-blue";
+      }
+      if (loadFill) loadFill.style.width = "100%";
 
       const mins = Math.floor(STATE.coolingRunningSeconds / 60);
       const secs = STATE.coolingRunningSeconds % 60;
-      timeEl.textContent = `Running for ${mins > 0 ? mins + ' min ' : ''}${secs}s`;
+      if (timeEl) timeEl.textContent = `Running for ${mins > 0 ? mins + ' min ' : ''}${secs}s`;
     } else {
-      tile.classList.remove("running");
-      pill.textContent = "Off";
-      pill.className = "unit-pill pill-grey";
-      timeEl.textContent = unitMeta.lastRanStr || "Last ran at 10:58 AM";
+      if (tile) tile.classList.remove("running");
+      if (pill) {
+        pill.textContent = "Off";
+        pill.className = "unit-pill pill-grey";
+      }
+      if (loadFill) loadFill.style.width = "0%";
+      if (timeEl) timeEl.textContent = unitMeta.lastRanStr || "Last ran at 10:58 AM";
     }
   }
 }
@@ -517,13 +540,22 @@ function initCartonGrid() {
           <span class="tile-status-pill ${isSpoiled ? "spoiled" : "fresh"}">${isSpoiled ? "Spoiled" : "Fresh"}</span>
         </div>
         <div class="tile-veg-name">${veg.icon} ${veg.name}</div>
+        
+        <!-- Micro Freshness Visual Bar -->
+        <div class="carton-micro-meter">
+          <div class="carton-micro-fill ${isSpoiled ? "spoiled" : "fresh"}" style="width: ${isSpoiled ? "18%" : "96%"};"></div>
+        </div>
+
         ${isSpoiled ? `
           <div class="tile-spoiled-time">
             <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
             <span>Since ${SAMPLE_DATA.spoiledCartons[cartonId].spoiledTime}</span>
           </div>
         ` : `
-          <div style="font-size:9.5px;color:#64748B;">Sensor OK</div>
+          <div class="tile-safe-time">
+            <span class="safe-dot-green"></span>
+            <span>Optimal • Gas Normal</span>
+          </div>
         `}
       `;
 

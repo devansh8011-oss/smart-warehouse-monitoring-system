@@ -413,6 +413,7 @@ function updateSpillAlertCard(areaId, hasSpill) {
   const card = document.getElementById(`spill-card-${areaId}`);
   if (card) {
     if (hasSpill) {
+      card.style.display = "flex";
       card.style.opacity = "1";
       card.style.pointerEvents = "auto";
       const img = document.getElementById(`spill-img-${areaId}`);
@@ -420,6 +421,7 @@ function updateSpillAlertCard(areaId, hasSpill) {
         img.src = STATE.spillImages[areaId];
       }
     } else {
+      card.style.display = "none";
       card.style.opacity = "0.5";
       card.style.pointerEvents = "none";
     }
@@ -456,6 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSimulationSyncBridge();
 
   // 8. Start Live Loop (2s updates) & Clock
+  updateLiveClock();
   setInterval(liveTick, CONFIG.UPDATE_INTERVAL_MS);
   setInterval(updateLiveClock, 1000);
   setInterval(updateCoolingTimer, 1000);
@@ -591,14 +594,6 @@ function renderMetrics() {
   const tempGaugeFill = document.getElementById("temp-gauge-fill");
   if (tempGaugeFill) tempGaugeFill.style.width = `${gaugePct}%`;
 
-  // Animate SVG Radial Semi-Circle Needle:
-  // Operating dial spans 4.0°C (-90deg) to 13.0°C (+90deg)
-  const tempAngle = Math.max(-90, Math.min(90, -90 + ((STATE.temp - 4.0) / (13.0 - 4.0)) * 180));
-  const needleGroup = document.getElementById("temp-needle-group");
-  if (needleGroup) {
-    needleGroup.setAttribute("transform", `rotate(${tempAngle.toFixed(1)} 80 80)`);
-  }
-
   // 2. Humidity Card Status
   const humChip = document.getElementById("hum-status-chip");
   if (STATE.humidity > 92) {
@@ -616,12 +611,6 @@ function renderMetrics() {
   const humPct = Math.max(0, Math.min(100, ((STATE.humidity - 70) / (100 - 70)) * 100));
   const humGaugeFill = document.getElementById("hum-gauge-fill");
   if (humGaugeFill) humGaugeFill.style.width = `${humPct}%`;
-
-  // Humidity Multi-Band Pin: 70% to 100% maps to 0% to 100% width
-  const humPin = document.getElementById("hum-gauge-pin");
-  if (humPin) {
-    humPin.style.left = `${Math.max(2, Math.min(98, humPct))}%`;
-  }
 }
 
 /**
@@ -664,7 +653,7 @@ function renderCoolingCard() {
         pill.className = "unit-pill pill-grey";
       }
       if (loadFill) loadFill.style.width = "0%";
-      if (timeEl) timeEl.textContent = unitMeta.lastRanStr || "Last ran at 10:58 AM";
+      if (timeEl) timeEl.textContent = (unitMeta && unitMeta.lastRanStr) ? unitMeta.lastRanStr : "Standby • Ready";
     }
   }
 }
@@ -710,25 +699,6 @@ function updateHealthSummary() {
   if (filterFreshCount) filterFreshCount.textContent = freshCount;
   if (filterSpoiledCount) filterSpoiledCount.textContent = spoiledCount;
 
-  // Update SVG donut ring & percentage label
-  const donutPctEl = document.querySelector(".donut-pct");
-  if (donutPctEl) donutPctEl.textContent = `${freshPct}%`;
-
-  const freshArc = document.getElementById("hc-donut-fresh-arc");
-  const spoiledArc = document.getElementById("hc-donut-spoiled-arc");
-  const circumference = 301.59;
-  if (freshArc && spoiledArc) {
-    const freshOffset = circumference * (1 - freshPct / 100);
-    freshArc.setAttribute("stroke-dashoffset", freshOffset.toFixed(2));
-    spoiledArc.setAttribute("stroke-dashoffset", "0");
-  }
-
-  // Update progress bars
-  const freshMeter = document.querySelector(".bi-meter-fill.green");
-  const spoiledMeter = document.querySelector(".bi-meter-fill.red");
-  if (freshMeter) freshMeter.style.width = `${(freshCount / totalCartons) * 100}%`;
-  if (spoiledMeter) spoiledMeter.style.width = `${(spoiledCount / totalCartons) * 100}%`;
-
   // Update Row 3 spill badges
   const spillPillTag = document.getElementById("pill-active-spills-tag");
   const spillCleanTag = document.getElementById("pill-clean-areas-tag");
@@ -740,12 +710,12 @@ function updateHealthSummary() {
     if (spillPillTag) spillPillTag.style.display = "inline-flex";
     if (spillText) spillText.textContent = `${activeSpills} Active Spill${activeSpills > 1 ? "s" : ""} Detected`;
     if (spillCleanTag) spillCleanTag.textContent = `${6 - activeSpills} Areas Clear`;
-    if (noSpillBanner) noSpillBanner.classList.add("hidden");
+    if (noSpillBanner) noSpillBanner.style.display = "none";
     if (spillPaneBadge) spillPaneBadge.textContent = "Waiting for clean-up";
   } else {
     if (spillPillTag) spillPillTag.style.display = "none";
     if (spillCleanTag) spillCleanTag.textContent = "6 Areas Clear";
-    if (noSpillBanner) noSpillBanner.classList.remove("hidden");
+    if (noSpillBanner) noSpillBanner.style.display = "block";
     if (spillPaneBadge) spillPaneBadge.textContent = "All Areas Clear";
   }
 }
@@ -880,7 +850,7 @@ function initCartonGrid() {
         ${isSpoiled ? `
           <div class="tile-spoiled-time">
             <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
-            <span>Since ${SAMPLE_DATA.spoiledCartons[cartonId].spoiledTime}</span>
+            <span>Since ${(SAMPLE_DATA.spoiledCartons[cartonId] && SAMPLE_DATA.spoiledCartons[cartonId].spoiledTime) ? SAMPLE_DATA.spoiledCartons[cartonId].spoiledTime : "Just now"}</span>
           </div>
         ` : `
           <div class="tile-safe-time">
@@ -939,13 +909,15 @@ function openCartonDrawer(cartonId) {
     statusPill.className = "drawer-status-pill spoiled";
     statusText.textContent = "Spoiled";
     gasVal.textContent = "High (0.18 ppm ethylene)";
-    actionBox.classList.remove("hidden");
-    actionDesc.textContent = `Recommended: Remove and replace this carton immediately. (${c.spoiledInfo.reason}, flagged at ${c.spoiledInfo.spoiledTime}).`;
+    if (actionBox) actionBox.classList.remove("hidden");
+    const spReason = (c.spoiledInfo && c.spoiledInfo.reason) ? c.spoiledInfo.reason : "Elevated gas detected";
+    const spTime = (c.spoiledInfo && c.spoiledInfo.spoiledTime) ? c.spoiledInfo.spoiledTime : "Just now";
+    if (actionDesc) actionDesc.textContent = `Recommended: Remove and replace this carton immediately. (${spReason}, flagged at ${spTime}).`;
   } else {
     statusPill.className = "drawer-status-pill fresh";
     statusText.textContent = "Fresh";
     gasVal.textContent = "Normal (< 0.02 ppm)";
-    actionBox.classList.add("hidden");
+    if (actionBox) actionBox.classList.add("hidden");
   }
 
   document.getElementById("carton-drawer").classList.add("open");
@@ -1042,12 +1014,16 @@ function generateAllSpillImages() {
     rackSide: "left"
   });
 
-  // Assign images to DOM
+  // Assign images to DOM if spill is active
   const imgRackC = document.getElementById("spill-img-rack-c");
-  if (imgRackC) imgRackC.src = STATE.spillImages["rack-c"];
+  if (imgRackC && SAMPLE_DATA.areas.find(a => a.id === "rack-c")?.hasSpill) {
+    imgRackC.src = STATE.spillImages["rack-c"];
+  }
 
   const imgDock = document.getElementById("spill-img-loading-dock");
-  if (imgDock) imgDock.src = STATE.spillImages["loading-dock"];
+  if (imgDock && SAMPLE_DATA.areas.find(a => a.id === "loading-dock")?.hasSpill) {
+    imgDock.src = STATE.spillImages["loading-dock"];
+  }
 }
 
 /**
@@ -1309,12 +1285,7 @@ function acknowledgeClean(areaId) {
   area.lastChecked = "Just now";
 
   // Hide alert card
-  const card = document.getElementById(`spill-card-${areaId}`);
-  if (card) {
-    card.style.opacity = "0.5";
-    card.style.pointerEvents = "none";
-    card.querySelector(".btn-clean-action").textContent = "Cleaned ✓";
-  }
+  updateSpillAlertCard(areaId, false);
 
   // Update SVG Map Area
   const mapZone = document.getElementById(`map-area-${areaId}`);

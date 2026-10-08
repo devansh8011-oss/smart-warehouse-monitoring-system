@@ -136,6 +136,7 @@ const STATE = {
 document.addEventListener("DOMContentLoaded", () => {
   initAudio();
   initEscKeyListener();
+  initSimBroadcastListener();
 });
 
 /**
@@ -1826,19 +1827,52 @@ function escapeHtml(str) {
    Broadcasts simulation telemetry, carton states, cooling, and spills in real time
    ============================================================================ */
 let simSyncChannel = null;
-try {
-  if (typeof BroadcastChannel !== "undefined") {
-    simSyncChannel = new BroadcastChannel("warehouse_simulation_sync");
+
+function initSimBroadcastListener() {
+  try {
+    if (typeof BroadcastChannel !== "undefined") {
+      simSyncChannel = new BroadcastChannel("warehouse_simulation_sync");
+      simSyncChannel.onmessage = (event) => {
+        if (event.data && event.data.type === "REQUEST_STATE") {
+          broadcastSimulationState();
+        }
+      };
+    }
+  } catch (e) {
+    console.warn("BroadcastChannel not supported", e);
   }
-} catch (e) {
-  console.warn("BroadcastChannel not supported", e);
+
+  // Generate baseline cartons if setup screen is currently idle so dashboard has data immediately
+  if (Object.keys(STATE.cartons).length === 0) {
+    initBaselineCartonMap();
+  }
+  broadcastSimulationState();
+}
+
+function initBaselineCartonMap() {
+  const racks = ["A", "B", "C", "D"];
+  let vegIndex = 0;
+  racks.forEach(rackId => {
+    for (let col = 1; col <= 6; col++) {
+      const cartonId = `${rackId}-0${col}`;
+      const veg = CONFIG.VEGETABLES[vegIndex % CONFIG.VEGETABLES.length];
+      vegIndex++;
+      STATE.cartons[cartonId] = {
+        id: cartonId,
+        rack: rackId,
+        vegetable: veg.name,
+        icon: veg.icon,
+        state: "fresh"
+      };
+    }
+  });
 }
 
 function broadcastSimulationState() {
   const syncPayload = {
     type: "SIM_STATE_UPDATE",
     timestamp: Date.now(),
-    simTime: getCurrentTimeString(),
+    simTime: typeof simMinutes !== "undefined" ? getCurrentTimeString() : "11:20 AM",
     temp: STATE.currentTemp,
     humidity: STATE.currentHumidity,
     coolingActive: STATE.coolingActive,

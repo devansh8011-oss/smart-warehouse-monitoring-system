@@ -181,19 +181,31 @@ function initSimulationSyncBridge() {
     }
   });
 
-  // Check initial state from localStorage if simulation was already running
+  // Send an immediate handshake request to simulation tab
+  requestSimulationState();
+
+  // Check initial state from localStorage if simulation was already active
   try {
     const cached = localStorage.getItem("warehouse_sim_state");
     if (cached) {
       const payload = JSON.parse(cached);
-      if (Date.now() - payload.timestamp < 10000) {
+      // Retain state if updated within last hour
+      if (Date.now() - payload.timestamp < 3600000) {
         applySimulationSyncData(payload);
       }
     }
   } catch (err) {}
 
-  // Periodic heartbeat checker for simulation connection status
+  // Periodic heartbeat checker and request state ping
   setInterval(checkSimLinkHealth, 2000);
+}
+
+function requestSimulationState() {
+  if (dashSyncChannel) {
+    try {
+      dashSyncChannel.postMessage({ type: "REQUEST_STATE", timestamp: Date.now() });
+    } catch (e) {}
+  }
 }
 
 function checkSimLinkHealth() {

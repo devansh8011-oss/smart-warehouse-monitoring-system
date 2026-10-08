@@ -207,6 +207,40 @@ function showValidation(msg) {
   banner.classList.remove("hidden");
 }
 
+/**
+ * Switches between Floor Simulation and Operations Dashboard in-memory
+ */
+function switchView(viewName) {
+  const simPane = document.getElementById("view-sim-container");
+  const dashPane = document.getElementById("view-dash-container");
+  const simBtn = document.getElementById("tab-btn-sim");
+  const dashBtn = document.getElementById("tab-btn-dash");
+
+  if (viewName === "dash") {
+    if (simPane) { simPane.classList.remove("active"); simPane.classList.add("hidden"); }
+    if (dashPane) { dashPane.classList.remove("hidden"); dashPane.classList.add("active"); }
+    if (simBtn) { simBtn.classList.remove("active"); simBtn.setAttribute("aria-selected", "false"); }
+    if (dashBtn) { dashBtn.classList.add("active"); dashBtn.setAttribute("aria-selected", "true"); }
+    
+    // Ensure dashboard is freshly rendered
+    renderOperationsDashboardView();
+  } else {
+    if (dashPane) { dashPane.classList.remove("active"); dashPane.classList.add("hidden"); }
+    if (simPane) { simPane.classList.remove("hidden"); simPane.classList.add("active"); }
+    if (dashBtn) { dashBtn.classList.remove("active"); dashBtn.setAttribute("aria-selected", "false"); }
+    if (simBtn) { simBtn.classList.add("active"); simBtn.setAttribute("aria-selected", "true"); }
+  }
+}
+
+/**
+ * Handles "Go to Dashboard" directly from setup screen
+ */
+function handleStartAndGoDashboard(event) {
+  if (event) event.preventDefault();
+  handleStartWarehouse(event);
+  switchView('dash');
+}
+
 /* ============================================================================
    WAREHOUSE & SVG BUILDER
    ============================================================================ */
@@ -227,6 +261,9 @@ function initWarehouseSimulation() {
 
   // Log initial system start event
   logEvent("info", "System initialized. Live monitoring started for fresh produce.", null, true);
+
+  // Initialize Operations Dashboard in-memory view
+  initOperationsDashboardView();
 
   // Start real-time simulation tick and simulated clock
   startSimulationLoop();
@@ -1275,18 +1312,20 @@ function adjustCoolingLimit(delta) {
 function renderDashboard() {
   // 1. Temperature Card
   const tempValEl = document.getElementById("val-temp");
-  const tempChip = document.getElementById("temp-status-chip");
-  tempValEl.textContent = STATE.currentTemp.toFixed(1);
+  const tempChip = document.getElementById("sim-temp-status-chip");
+  if (tempValEl) tempValEl.textContent = STATE.currentTemp.toFixed(1);
 
-  if (STATE.currentTemp > STATE.config.coolingLimit) {
-    tempChip.textContent = "Too warm";
-    tempChip.className = "m-chip chip-alert";
-  } else if (STATE.coolingActive) {
-    tempChip.textContent = "Cooling down";
-    tempChip.className = "m-chip chip-info";
-  } else {
-    tempChip.textContent = "Normal";
-    tempChip.className = "m-chip chip-normal";
+  if (tempChip) {
+    if (STATE.currentTemp > STATE.config.coolingLimit) {
+      tempChip.textContent = "Too warm";
+      tempChip.className = "m-chip chip-alert";
+    } else if (STATE.coolingActive) {
+      tempChip.textContent = "Cooling down";
+      tempChip.className = "m-chip chip-info";
+    } else {
+      tempChip.textContent = "Normal";
+      tempChip.className = "m-chip chip-normal";
+    }
   }
 
   // 2. Humidity Card
@@ -1914,4 +1953,692 @@ function broadcastSimulationState() {
       console.warn("Sync postMessage error", e);
     }
   }
+
+  // Always update integrated in-memory dashboard immediately with 0ms latency
+  renderOperationsDashboardView();
 }
+
+/* ============================================================================
+   INTEGRATED OPERATIONS DASHBOARD (IN-MEMORY UNIFIED ENGINE)
+   Binds directly to STATE with 0ms latency, zero network, zero desync.
+   ============================================================================ */
+
+const DASHBOARD_META = {
+  racks: [
+    { id: "A", name: "Rack A", hint: "Tomatoes", category: "Vine Produce" },
+    { id: "B", name: "Rack B", hint: "Potatoes & Onions", category: "Root Vegetables" },
+    { id: "C", name: "Rack C", hint: "Spinach & Cabbage", category: "Leafy Greens" },
+    { id: "D", name: "Rack D", hint: "Carrots", category: "Root Crops" }
+  ],
+  areas: [
+    { id: "rack-a", name: "Rack A Aisle", cam: "CAM-1", lastChecked: "Just now" },
+    { id: "rack-b", name: "Rack B Aisle", cam: "CAM-2", lastChecked: "Just now" },
+    { id: "rack-c", name: "Rack C Aisle", cam: "CAM-3", lastChecked: "Just now" },
+    { id: "rack-d", name: "Rack D Aisle", cam: "CAM-4", lastChecked: "Just now" },
+    { id: "loading-dock", name: "Loading Dock", cam: "CAM-5", lastChecked: "Just now" },
+    { id: "entrance", name: "Entrance", cam: "CAM-6", lastChecked: "Just now" }
+  ],
+  coolingUnits: [
+    { id: 1, name: "Cooling Unit 1", location: "North wall • E-01" },
+    { id: 2, name: "Cooling Unit 2", location: "East wall • E-02" },
+    { id: 3, name: "Cooling Unit 3", location: "West wall • E-03" }
+  ],
+  activeFilter: "all",
+  activeDrawerCartonId: null
+};
+
+/**
+ * Initializes the integrated Operations Dashboard view
+ */
+function initOperationsDashboardView() {
+  initIntegratedCartonGrid();
+  renderIntegratedAreasTable();
+  renderIntegratedSpillHistory();
+  renderOperationsDashboardView();
+}
+
+/**
+ * Populates the 24-carton matrix grid in the dashboard
+ */
+function initIntegratedCartonGrid() {
+  const container = document.getElementById("carton-grid-matrix");
+  if (!container) return;
+  container.innerHTML = "";
+
+  DASHBOARD_META.racks.forEach(rack => {
+    const rackRow = document.createElement("div");
+    rackRow.className = "rack-row";
+
+    // Left Rack Label Box (Sticky)
+    const labelBox = document.createElement("div");
+    labelBox.className = "rack-label-box";
+    labelBox.innerHTML = `
+      <span class="rack-tag">${rack.name}</span>
+      <span class="rack-veg-hint">${rack.hint}</span>
+    `;
+
+    // Row of 6 Carton Tiles
+    const tilesRow = document.createElement("div");
+    tilesRow.className = "rack-tiles-row";
+
+    for (let col = 1; col <= 6; col++) {
+      const cartonId = `${rack.id}-0${col}`;
+      const c = STATE.cartons[cartonId] || {
+        id: cartonId,
+        rack: rack.id,
+        vegetable: rack.hint.split(" ")[0],
+        icon: "📦",
+        state: "fresh"
+      };
+
+      const isSpoiled = (c.state === "spoiled");
+
+      const tile = document.createElement("div");
+      tile.className = `carton-tile ${isSpoiled ? "spoiled" : "fresh"}`;
+      tile.id = `dash-carton-tile-${cartonId}`;
+      tile.onclick = () => openIntegratedCartonDrawer(cartonId);
+
+      tile.innerHTML = `
+        <div class="tile-top-row">
+          <span class="tile-id">${cartonId}</span>
+          <span class="tile-status-pill ${isSpoiled ? "spoiled" : "fresh"}">${isSpoiled ? "Spoiled" : "Fresh"}</span>
+        </div>
+        <div class="tile-veg-name">${c.icon || "📦"} ${c.vegetable}</div>
+        
+        <div class="carton-micro-meter">
+          <div class="carton-micro-fill ${isSpoiled ? "spoiled" : "fresh"}" style="width: ${isSpoiled ? "18%" : "96%"};"></div>
+        </div>
+
+        <div class="tile-status-time-box">
+          ${isSpoiled ? `
+            <div class="tile-spoiled-time">
+              <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
+              <span>Gas alert flagged</span>
+            </div>
+          ` : `
+            <div class="tile-safe-time">
+              <span class="safe-dot-green"></span>
+              <span>Optimal • Gas Normal</span>
+            </div>
+          `}
+        </div>
+      `;
+
+      tilesRow.appendChild(tile);
+    }
+
+    rackRow.appendChild(labelBox);
+    rackRow.appendChild(tilesRow);
+    container.appendChild(rackRow);
+  });
+}
+
+/**
+ * Filter buttons handler for carton status grid
+ */
+function filterCartons(filter) {
+  DASHBOARD_META.activeFilter = filter;
+
+  const btnAll = document.getElementById("filter-all");
+  const btnFresh = document.getElementById("filter-fresh");
+  const btnSpoiled = document.getElementById("filter-spoiled");
+
+  if (btnAll) btnAll.classList.toggle("active", filter === "all");
+  if (btnFresh) btnFresh.classList.toggle("active", filter === "fresh");
+  if (btnSpoiled) btnSpoiled.classList.toggle("active", filter === "spoiled");
+
+  Object.values(STATE.cartons).forEach(c => {
+    const tile = document.getElementById(`dash-carton-tile-${c.id}`);
+    if (!tile) return;
+
+    if (filter === "all") {
+      tile.classList.remove("hidden-filter");
+    } else if (filter === "fresh") {
+      tile.classList.toggle("hidden-filter", c.state !== "fresh");
+    } else if (filter === "spoiled") {
+      tile.classList.toggle("hidden-filter", c.state !== "spoiled");
+    }
+  });
+}
+
+/**
+ * Opens carton inspection drawer
+ */
+function openIntegratedCartonDrawer(cartonId) {
+  const c = STATE.cartons[cartonId];
+  if (!c) return;
+
+  DASHBOARD_META.activeDrawerCartonId = cartonId;
+
+  const idBadge = document.getElementById("drawer-carton-id");
+  const vegTitle = document.getElementById("drawer-carton-veg");
+  const rackVal = document.getElementById("drawer-rack-val");
+  const catVal = document.getElementById("drawer-category-val");
+  const statusPill = document.getElementById("drawer-status-pill");
+  const statusText = document.getElementById("drawer-status-text");
+  const actionBox = document.getElementById("drawer-action-box");
+  const gasVal = document.getElementById("drawer-gas-val");
+  const checkedVal = document.getElementById("drawer-checked-val");
+
+  if (idBadge) idBadge.textContent = c.id;
+  if (vegTitle) vegTitle.textContent = `${c.icon || "📦"} ${c.vegetable}`;
+  if (rackVal) rackVal.textContent = `Rack ${c.rack}`;
+  
+  const rackMeta = DASHBOARD_META.racks.find(r => r.id === c.rack);
+  if (catVal) catVal.textContent = rackMeta ? rackMeta.category : "Fresh Produce";
+  if (checkedVal) checkedVal.textContent = "Just now";
+
+  const isSpoiled = (c.state === "spoiled");
+  if (isSpoiled) {
+    if (statusPill) statusPill.className = "drawer-status-pill spoiled";
+    if (statusText) statusText.textContent = "Spoiled";
+    if (gasVal) gasVal.textContent = "High (0.18 ppm ethylene)";
+    if (actionBox) actionBox.classList.remove("hidden");
+  } else {
+    if (statusPill) statusPill.className = "drawer-status-pill fresh";
+    if (statusText) statusText.textContent = "Fresh";
+    if (gasVal) gasVal.textContent = "Normal (< 0.02 ppm)";
+    if (actionBox) actionBox.classList.add("hidden");
+  }
+
+  const drawer = document.getElementById("carton-drawer");
+  if (drawer) drawer.classList.add("open");
+}
+
+function closeCartonDrawer() {
+  const drawer = document.getElementById("carton-drawer");
+  if (drawer) drawer.classList.remove("open");
+}
+
+function handleDrawerReplace() {
+  if (DASHBOARD_META.activeDrawerCartonId) {
+    replaceCartonFresh(DASHBOARD_META.activeDrawerCartonId);
+    openIntegratedCartonDrawer(DASHBOARD_META.activeDrawerCartonId);
+  }
+}
+
+// Global click closes carton drawer
+document.addEventListener("click", (e) => {
+  const drawer = document.getElementById("carton-drawer");
+  if (drawer && drawer.classList.contains("open") && !drawer.contains(e.target) && !e.target.closest(".carton-tile")) {
+    closeCartonDrawer();
+  }
+});
+
+/**
+ * Main render routine for the integrated Operations Dashboard view
+ */
+function renderOperationsDashboardView() {
+  // 1. Metric Big Values & Status Chips
+  const tempBig = document.getElementById("temp-big-val");
+  const tempChip = document.getElementById("temp-status-chip");
+  const tempCoolChip = document.getElementById("temp-cooling-chip");
+  const tempCoolText = document.getElementById("temp-cooling-chip-text");
+  const tempGaugeFill = document.getElementById("temp-gauge-fill");
+  const tempNeedle = document.getElementById("temp-needle-group");
+  const limitLabel = document.getElementById("dash-cooling-limit-label");
+  const hystLabel = document.getElementById("dash-hysteresis-hint");
+
+  if (tempBig) tempBig.textContent = STATE.currentTemp.toFixed(1);
+
+  if (limitLabel) limitLabel.textContent = `Limit: ${STATE.config.coolingLimit.toFixed(1)}°C`;
+  if (hystLabel) hystLabel.textContent = `Cooling stops below ${(STATE.config.coolingLimit - CONFIG.COOLING_HYSTERESIS_DELTA).toFixed(1)}°C`;
+
+  if (tempChip) {
+    if (STATE.currentTemp > STATE.config.coolingLimit) {
+      tempChip.textContent = "Too warm";
+      tempChip.className = "status-chip chip-red";
+    } else if (STATE.currentTemp >= (STATE.config.coolingLimit - 1.0)) {
+      tempChip.textContent = "Near limit";
+      tempChip.className = "status-chip chip-amber";
+    } else {
+      tempChip.textContent = "Normal";
+      tempChip.className = "status-chip chip-normal";
+    }
+  }
+
+  if (tempCoolChip && tempCoolText) {
+    if (STATE.coolingActive) {
+      tempCoolChip.className = "cooling-inline-chip chip-on";
+      tempCoolText.textContent = "Cooling: ON";
+    } else {
+      tempCoolChip.className = "cooling-inline-chip chip-off";
+      tempCoolText.textContent = "Cooling: OFF";
+    }
+  }
+
+  // Gauge fill (5.0 to 12.0 °C)
+  const gaugePct = Math.max(0, Math.min(100, ((STATE.currentTemp - 5.0) / (12.0 - 5.0)) * 100));
+  if (tempGaugeFill) tempGaugeFill.style.width = `${gaugePct}%`;
+
+  // Semi-circle Needle (-90deg to +90deg mapped between 4.0°C and 13.0°C)
+  const tempAngle = Math.max(-90, Math.min(90, -90 + ((STATE.currentTemp - 4.0) / (13.0 - 4.0)) * 180));
+  if (tempNeedle) {
+    tempNeedle.setAttribute("transform", `rotate(${tempAngle.toFixed(1)} 80 80)`);
+  }
+
+  // 2. Humidity Card
+  const humBig = document.getElementById("hum-big-val");
+  const humChip = document.getElementById("hum-status-chip");
+  const humPin = document.getElementById("hum-gauge-pin");
+
+  if (humBig) humBig.textContent = Math.round(STATE.currentHumidity);
+
+  if (humChip) {
+    if (STATE.currentHumidity > 92) {
+      humChip.textContent = "Slightly high";
+      humChip.className = "status-chip chip-amber";
+    } else if (STATE.currentHumidity < 80) {
+      humChip.textContent = "Slightly low";
+      humChip.className = "status-chip chip-amber";
+    } else {
+      humChip.textContent = "Good for storage";
+      humChip.className = "status-chip chip-normal";
+    }
+  }
+
+  const humPct = Math.max(0, Math.min(100, ((STATE.currentHumidity - 70) / (100 - 70)) * 100));
+  if (humPin) {
+    humPin.style.left = `${Math.max(2, Math.min(98, humPct))}%`;
+  }
+
+  // 3. Cooling Units Card
+  const coolingSummaryEl = document.getElementById("cooling-units-summary");
+  const summaryCoolStatusEl = document.getElementById("summary-cooling-status");
+
+  if (STATE.coolingActive) {
+    if (coolingSummaryEl) coolingSummaryEl.textContent = "3 of 3 running";
+    if (summaryCoolStatusEl) summaryCoolStatusEl.textContent = "Cooling: Running";
+  } else {
+    if (coolingSummaryEl) coolingSummaryEl.textContent = "All units off";
+    if (summaryCoolStatusEl) summaryCoolStatusEl.textContent = "Cooling: Off";
+  }
+
+  for (let i = 1; i <= 3; i++) {
+    const tile = document.getElementById(`unit-tile-${i}`);
+    const pill = document.getElementById(`unit-pill-${i}`);
+    const timeEl = document.getElementById(`unit-time-${i}`);
+    const loadFill = document.getElementById(`unit-load-${i}`);
+
+    if (STATE.coolingActive) {
+      if (tile) tile.classList.add("running");
+      if (pill) { pill.textContent = "Running"; pill.className = "unit-pill pill-blue"; }
+      if (loadFill) loadFill.style.width = "100%";
+      const mins = Math.floor(STATE.coolingSecondsActive / 60);
+      const secs = Math.floor(STATE.coolingSecondsActive % 60);
+      if (timeEl) timeEl.textContent = `Running for ${mins > 0 ? mins + ' min ' : ''}${secs}s`;
+    } else {
+      if (tile) tile.classList.remove("running");
+      if (pill) { pill.textContent = "Off"; pill.className = "unit-pill pill-grey"; }
+      if (loadFill) loadFill.style.width = "0%";
+      if (timeEl) timeEl.textContent = "Standby ready";
+    }
+  }
+
+  // 4. Warehouse Health Summary & Cartons Count
+  let freshCount = 0;
+  let spoiledCount = 0;
+  Object.values(STATE.cartons).forEach(c => {
+    if (c.state === "spoiled") spoiledCount++;
+    else freshCount++;
+  });
+
+  const totalCartons = Math.max(1, freshCount + spoiledCount);
+  const activeSpillsCount = STATE.activeSpill ? 1 : 0;
+  const freshPct = Math.round((freshCount / totalCartons) * 100);
+
+  const hcFresh = document.getElementById("hc-fresh-count");
+  const hcSpoiled = document.getElementById("hc-spoiled-count");
+  const hcSpills = document.getElementById("hc-spills-count");
+  const gradeBadge = document.getElementById("dash-health-grade-badge");
+
+  if (hcFresh) hcFresh.textContent = freshCount;
+  if (hcSpoiled) hcSpoiled.textContent = spoiledCount;
+  if (hcSpills) hcSpills.textContent = activeSpillsCount;
+
+  if (gradeBadge) {
+    if (spoiledCount === 0 && activeSpillsCount === 0) {
+      gradeBadge.textContent = "Grade A+";
+      gradeBadge.style.color = "#15803D";
+      gradeBadge.style.background = "#DCFCE7";
+    } else if (spoiledCount <= 2 && activeSpillsCount === 0) {
+      gradeBadge.textContent = "Grade A-";
+      gradeBadge.style.color = "#B45309";
+      gradeBadge.style.background = "#FEF3C7";
+    } else {
+      gradeBadge.textContent = "Action Needed";
+      gradeBadge.style.color = "#DC2626";
+      gradeBadge.style.background = "#FEE2E2";
+    }
+  }
+
+  // Donut label
+  const donutPctEl = document.querySelector("#view-dash-container .donut-pct");
+  if (donutPctEl) donutPctEl.textContent = `${freshPct}%`;
+
+  // Progress meters
+  const freshMeter = document.querySelector("#view-dash-container .bi-meter-fill.green");
+  const spoiledMeter = document.querySelector("#view-dash-container .bi-meter-fill.red");
+  if (freshMeter) freshMeter.style.width = `${(freshCount / totalCartons) * 100}%`;
+  if (spoiledMeter) spoiledMeter.style.width = `${(spoiledCount / totalCartons) * 100}%`;
+
+  // Filter chips count updates
+  const chipAllCount = document.querySelector("#filter-all .chip-count");
+  const chipFreshCount = document.querySelector("#filter-fresh .chip-count");
+  const chipSpoiledCount = document.querySelector("#filter-spoiled .chip-count");
+  if (chipAllCount) chipAllCount.textContent = totalCartons;
+  if (chipFreshCount) chipFreshCount.textContent = freshCount;
+  if (chipSpoiledCount) chipSpoiledCount.textContent = spoiledCount;
+
+  // 5. Update Carton Tiles DOM in Grid Matrix
+  Object.values(STATE.cartons).forEach(c => {
+    const tile = document.getElementById(`dash-carton-tile-${c.id}`);
+    if (!tile) return;
+
+    const isSpoiled = (c.state === "spoiled");
+    tile.className = `carton-tile ${isSpoiled ? "spoiled" : "fresh"}`;
+
+    const pill = tile.querySelector(".tile-status-pill");
+    if (pill) {
+      pill.className = `tile-status-pill ${isSpoiled ? "spoiled" : "fresh"}`;
+      pill.textContent = isSpoiled ? "Spoiled" : "Fresh";
+    }
+
+    const microFill = tile.querySelector(".carton-micro-fill");
+    if (microFill) {
+      microFill.className = `carton-micro-fill ${isSpoiled ? "spoiled" : "fresh"}`;
+      microFill.style.width = isSpoiled ? "18%" : "96%";
+    }
+
+    const timeBox = tile.querySelector(".tile-status-time-box");
+    if (timeBox) {
+      if (isSpoiled) {
+        timeBox.innerHTML = `
+          <div class="tile-spoiled-time">
+            <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
+            <span>Gas alert flagged</span>
+          </div>
+        `;
+      } else {
+        timeBox.innerHTML = `
+          <div class="tile-safe-time">
+            <span class="safe-dot-green"></span>
+            <span>Optimal • Gas Normal</span>
+          </div>
+        `;
+      }
+    }
+  });
+
+  if (DASHBOARD_META.activeFilter !== "all") {
+    filterCartons(DASHBOARD_META.activeFilter);
+  }
+
+  // 6. Render SVG Sparklines in Dashboard
+  renderDashboardSparklines();
+
+  // 7. Update Liquid Spill Detection
+  renderIntegratedSpillView();
+
+  // 8. Update Activity Feed
+  renderIntegratedActivityFeed();
+}
+
+/**
+ * Draws SVG sparklines for the Operations Dashboard view
+ */
+function renderDashboardSparklines() {
+  drawSvgSparkline("temp-chart-svg", STATE.tempHistory, CONFIG.COLORS.brandOrange, STATE.config.coolingLimit, true);
+  drawSvgSparkline("hum-chart-svg", STATE.humidityHistory, CONFIG.COLORS.blue, null, false);
+}
+
+function drawSvgSparkline(svgId, data, color, thresholdVal, showThreshold) {
+  const svg = document.getElementById(svgId);
+  if (!svg || !data || data.length < 2) return;
+
+  const width = 280;
+  const height = 48;
+  const padding = 6;
+
+  let min = Math.min(...data);
+  let max = Math.max(...data);
+
+  if (thresholdVal !== null) {
+    min = Math.min(min, thresholdVal - 1.5);
+    max = Math.max(max, thresholdVal + 1.5);
+  }
+
+  if (max - min < 2) {
+    max += 1;
+    min -= 1;
+  }
+
+  const range = max - min;
+  const getY = (val) => height - padding - ((val - min) / range) * (height - padding * 2);
+
+  let pathD = "";
+  const step = width / (data.length - 1);
+  data.forEach((val, i) => {
+    const x = i * step;
+    const y = getY(val);
+    if (i === 0) pathD += `M ${x} ${y}`;
+    else pathD += ` L ${x} ${y}`;
+  });
+
+  let innerSvg = "";
+
+  if (showThreshold && thresholdVal !== null) {
+    const threshY = getY(thresholdVal);
+    innerSvg += `<line x1="0" y1="${threshY}" x2="${width}" y2="${threshY}" stroke="#EF4444" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.8"/>`;
+  }
+
+  innerSvg += `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+  svg.innerHTML = innerSvg;
+}
+
+/**
+ * Renders Spill detection area status, active alert card, and floor map badges
+ */
+function renderIntegratedSpillView() {
+  const activeSpillsTag = document.getElementById("pill-active-spills-tag");
+  const cleanAreasTag = document.getElementById("pill-clean-areas-tag");
+  const noSpillBanner = document.getElementById("no-spills-banner");
+  const paneBadge = document.getElementById("spill-pane-status-badge");
+  const dynamicSpillCard = document.getElementById("spill-card-active-dynamic");
+
+  if (STATE.activeSpill) {
+    if (activeSpillsTag) {
+      activeSpillsTag.style.display = "inline-flex";
+      const txt = document.getElementById("pill-spills-text");
+      if (txt) txt.textContent = "1 Active Spill Detected";
+    }
+    if (cleanAreasTag) cleanAreasTag.textContent = "5 Areas Clear";
+    if (noSpillBanner) noSpillBanner.classList.add("hidden");
+    if (paneBadge) {
+      paneBadge.textContent = "Action Required";
+      paneBadge.className = "alert-status-badge";
+    }
+
+    if (dynamicSpillCard) {
+      dynamicSpillCard.classList.remove("hidden");
+      const img = document.getElementById("spill-img-active-dynamic");
+      const zoneTitle = document.getElementById("spill-dynamic-zone-title");
+      const camId = document.getElementById("spill-dynamic-cam-id");
+      const camBadge = document.getElementById("spill-dynamic-cam-badge");
+      const spillTime = document.getElementById("spill-dynamic-time");
+
+      if (img && STATE.activeSpill.snapshotUrl) img.src = STATE.activeSpill.snapshotUrl;
+      if (zoneTitle) zoneTitle.textContent = `Near Rack ${STATE.activeSpill.nearestRack || "C"} Aisle`;
+      if (camId) camId.textContent = `Camera: ${STATE.activeSpill.nearestCam || "CAM-3"}`;
+      if (camBadge) camBadge.textContent = `${STATE.activeSpill.nearestCam || "CAM-3"} • SNAPSHOT`;
+      if (spillTime) spillTime.textContent = `Detected at ${STATE.activeSpill.timestamp || "Just now"}`;
+    }
+
+    // Highlight nearest area in SVG map
+    const nearestRack = STATE.activeSpill.nearestRack ? STATE.activeSpill.nearestRack.toLowerCase() : "c";
+    const areaId = `rack-${nearestRack}`;
+    updateDashboardSvgArea(areaId, true);
+  } else {
+    if (activeSpillsTag) activeSpillsTag.style.display = "none";
+    if (cleanAreasTag) cleanAreasTag.textContent = "6 Areas Clear";
+    if (noSpillBanner) noSpillBanner.classList.remove("hidden");
+    if (paneBadge) {
+      paneBadge.textContent = "All Areas Clear";
+      paneBadge.className = "alert-status-badge";
+      paneBadge.style.color = "#15803D";
+      paneBadge.style.background = "#DCFCE7";
+    }
+    if (dynamicSpillCard) dynamicSpillCard.classList.add("hidden");
+
+    // Clear all SVG map spill states
+    ["rack-a", "rack-b", "rack-c", "rack-d", "loading-dock", "entrance"].forEach(aid => {
+      updateDashboardSvgArea(aid, false);
+    });
+  }
+
+  renderIntegratedAreasTable();
+}
+
+function updateDashboardSvgArea(areaId, hasSpill) {
+  const mapZone = document.getElementById(`map-area-${areaId}`);
+  if (!mapZone) return;
+
+  if (hasSpill) {
+    mapZone.className.baseVal = "map-zone zone-spill selected";
+    const badge = mapZone.querySelector(".zone-status-badge");
+    if (badge) {
+      badge.className.baseVal = "zone-status-badge badge-red";
+      const txt = badge.querySelector("text");
+      if (txt) txt.textContent = "💧 Spill detected";
+    }
+  } else {
+    mapZone.className.baseVal = "map-zone zone-clear";
+    const badge = mapZone.querySelector(".zone-status-badge");
+    if (badge) {
+      badge.className.baseVal = "zone-status-badge badge-green";
+      const txt = badge.querySelector("text");
+      if (txt) txt.textContent = "✓ No spill";
+    }
+  }
+}
+
+function renderIntegratedAreasTable() {
+  const tbody = document.getElementById("areas-table-body");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  const activeSpillArea = STATE.activeSpill ? `rack-${(STATE.activeSpill.nearestRack || "c").toLowerCase()}` : null;
+
+  DASHBOARD_META.areas.forEach(a => {
+    const isSpill = (a.id === activeSpillArea);
+    const tr = document.createElement("tr");
+    tr.style.cursor = "pointer";
+    tr.onclick = () => selectSpillArea(a.id);
+
+    tr.innerHTML = `
+      <td><strong>${a.name}</strong></td>
+      <td style="color:#64748B;">${a.cam}</td>
+      <td>
+        <span class="${isSpill ? "tbl-pill-red" : "tbl-pill-green"}">
+          ${isSpill ? "💧 Spill detected" : "✓ No spill"}
+        </span>
+      </td>
+      <td style="color:#64748B;">${isSpill ? (STATE.activeSpill.timestamp || "Just now") : a.lastChecked}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderIntegratedSpillHistory() {
+  const list = document.getElementById("spill-history-list");
+  if (!list) return;
+  list.innerHTML = "";
+
+  const historyItems = [
+    { area: "Entrance", cam: "CAM-6", time: "Cleaned at 9:20 AM" },
+    { area: "Rack A Aisle", cam: "CAM-1", time: "Cleaned yesterday" }
+  ];
+
+  historyItems.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <div class="history-left">
+        <div>
+          <span class="history-text">${item.area}</span>
+          <span style="font-size:10px;color:#64748B;display:block;">${item.cam} &bull; ${item.time}</span>
+        </div>
+      </div>
+      <span class="history-pill">Cleaned</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function selectSpillArea(areaId) {
+  document.querySelectorAll(".map-zone").forEach(z => z.classList.remove("selected"));
+  const zoneEl = document.getElementById(`map-area-${areaId}`);
+  if (zoneEl) zoneEl.classList.add("selected");
+}
+
+function openActiveSpillModal() {
+  if (!STATE.activeSpill || !STATE.activeSpill.snapshotUrl) return;
+  openPhotoModalDirect(STATE.activeSpill.snapshotUrl, `Liquid Spill • Near Rack ${STATE.activeSpill.nearestRack || "C"}`);
+}
+
+function openPhotoModalDirect(url, title) {
+  const modalImg = document.getElementById("modal-enlarged-img");
+  const modalTitle = document.getElementById("modal-area-title");
+  const modalBadge = document.getElementById("modal-cam-badge");
+  const photoModal = document.getElementById("photo-modal");
+
+  if (modalImg) modalImg.src = url;
+  if (modalTitle) modalTitle.textContent = title;
+  if (modalBadge) modalBadge.textContent = "CCTV HD CAPTURE";
+  if (photoModal) photoModal.classList.remove("hidden");
+}
+
+function closePhotoModal() {
+  const photoModal = document.getElementById("photo-modal");
+  if (photoModal) photoModal.classList.add("hidden");
+}
+
+/**
+ * Syncs event logs into Recent Activity list of Dashboard
+ */
+function renderIntegratedActivityFeed() {
+  const list = document.getElementById("activity-feed-list");
+  if (!list) return;
+  list.innerHTML = "";
+
+  const recent = STATE.eventLogs.slice(0, 15);
+  if (recent.length === 0) {
+    list.innerHTML = `<div style="font-size:11px;color:#94A3B8;padding:8px;">No events recorded yet.</div>`;
+    return;
+  }
+
+  recent.forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = `activity-item type-${item.type} ${idx === 0 ? "unread" : ""}`;
+
+    let icon = "ℹ️";
+    if (item.type === "spill") icon = "💧";
+    else if (item.type === "spoil") icon = "🥬";
+    else if (item.type === "temp") icon = "⚠️";
+    else if (item.type === "cool-off") icon = "✅";
+
+    div.innerHTML = `
+      <span class="act-icon">${icon}</span>
+      <div class="act-content">
+        <div class="act-msg">${escapeHtml(item.message)}</div>
+        <div class="act-time">${item.time}</div>
+      </div>
+      ${item.thumbUrl ? `
+        <img src="${item.thumbUrl}" class="act-thumb-img" alt="CCTV Snapshot" title="Click to enlarge" onclick="openPhotoModalDirect('${item.thumbUrl}', 'CCTV Spill Detection')">
+      ` : ""}
+    `;
+    list.appendChild(div);
+  });
+}
+

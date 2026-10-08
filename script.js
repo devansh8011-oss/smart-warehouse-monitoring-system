@@ -40,10 +40,12 @@ const CONFIG = {
 
   // Camera coordinates on the warehouse floor (SVG space: 1000 x 520)
   CAMERAS: [
-    { id: "CAM-1", x: 35,  y: 35  },
-    { id: "CAM-2", x: 965, y: 35  },
-    { id: "CAM-3", x: 35,  y: 485 },
-    { id: "CAM-4", x: 965, y: 485 }
+    { id: "CAM-1", x: 35,  y: 35,  name: "Rack A Aisle",         zone: "rack-a",        rack: "A" },
+    { id: "CAM-2", x: 705, y: 35,  name: "Rack B Aisle",         zone: "rack-b",        rack: "B" },
+    { id: "CAM-3", x: 35,  y: 485, name: "Rack C Aisle",         zone: "rack-c",        rack: "C" },
+    { id: "CAM-4", x: 705, y: 485, name: "Rack D Aisle",         zone: "rack-d",        rack: "D" },
+    { id: "CAM-5", x: 965, y: 35,  name: "Loading Dock Bay",     zone: "loading-dock",  rack: "B" },
+    { id: "CAM-6", x: 965, y: 485, name: "Facility Entrance",     zone: "entrance",      rack: "D" }
   ],
 
   // Racks geometric bounding boxes in SVG floor coordinates
@@ -811,6 +813,11 @@ function executeSpillAt(x, y) {
   // Show "Clean up spill" button
   document.getElementById("cleanup-spill-btn").classList.remove("hidden");
 
+  // Per user requirement: Do NOT open any modal/popup window on spill detection - only dispatch notification
+  closeImageModal();
+  const photoModal = document.getElementById("photo-modal");
+  if (photoModal) photoModal.classList.add("hidden");
+
   // Send WhatsApp Alert with image bubble
   const alertCaption = `Liquid spill detected near Rack ${nearestRack.id} by ${nearestCam.id} at ${timestampStr}. Please send someone to clean it.`;
   
@@ -1079,6 +1086,241 @@ function generateCameraSnapshot(spillX, spillY, camId, rackId, timeStr) {
 
   return canvas.toDataURL("image/jpeg", 0.90);
 }
+
+/**
+ * Generates photorealistic clean CCTV snapshot when no spill is present
+ * Shows dry concrete warehouse floor, safety walkways, industrial racking,
+ * optical AI Sentinel reticule overlay and status HUD
+ */
+function generateCleanCameraSnapshot(camId, rackId, timeStr) {
+  const canvas = document.getElementById("snapshot-canvas");
+  if (!canvas) return "";
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // 1. Concrete Floor Base
+  ctx.fillStyle = "#CBD5E1";
+  ctx.fillRect(0, 0, w, h);
+
+  // Micro-texture aggregate speckles
+  const camNum = parseInt(camId.replace("CAM-", "")) || 1;
+  const seed = camNum * 9973;
+  for (let i = 0; i < 420; i++) {
+    const px = Math.abs(Math.sin(seed + i * 1.3)) * w;
+    const py = Math.abs(Math.cos(seed + i * 2.1)) * h;
+    const alpha = (i % 3 === 0) ? 0.08 : 0.04;
+    ctx.fillStyle = (i % 2 === 0) ? `rgba(15, 23, 42, ${alpha})` : `rgba(255, 255, 255, ${alpha * 1.5})`;
+    ctx.fillRect(px, py, (i % 3) + 1, (i % 2) + 1);
+  }
+
+  // Expansion Joint Seams
+  ctx.strokeStyle = "#94A3B8";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(0, h * 0.42);
+  ctx.lineTo(w, h * 0.42);
+  ctx.moveTo(w * 0.58, 0);
+  ctx.lineTo(w * 0.58, h);
+  ctx.stroke();
+
+  // 2. OSHA Safety Warning Hazard Stripes (Walkway boundary)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, h - 36, w, 22);
+  ctx.clip();
+  ctx.fillStyle = "#E2E8F0";
+  ctx.fillRect(0, h - 36, w, 22);
+  for (let sx = -40; sx < w + 40; sx += 20) {
+    ctx.fillStyle = "#F59E0B";
+    ctx.beginPath();
+    ctx.moveTo(sx, h - 14);
+    ctx.lineTo(sx + 10, h - 14);
+    ctx.lineTo(sx + 20, h - 36);
+    ctx.lineTo(sx + 10, h - 36);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#0F172A";
+    ctx.beginPath();
+    ctx.moveTo(sx + 10, h - 14);
+    ctx.lineTo(sx + 20, h - 14);
+    ctx.lineTo(sx + 30, h - 36);
+    ctx.lineTo(sx + 20, h - 36);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // 3. Industrial Pallet Racking in Background
+  ctx.fillStyle = "#475569";
+  ctx.fillRect(16, 36, 12, h - 80);
+  ctx.fillRect(180, 36, 12, h - 80);
+  ctx.fillStyle = "#EA580C";
+  ctx.fillRect(16, 70, 176, 10);
+  ctx.fillRect(16, 140, 176, 10);
+
+  // Corrugated Cartons on shelf
+  ctx.fillStyle = "#D97706";
+  ctx.fillRect(36, 42, 60, 28);
+  ctx.fillStyle = "#B45309";
+  ctx.fillRect(104, 42, 62, 28);
+  // Barcode stickers on boxes
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(44, 48, 16, 10);
+  ctx.fillRect(112, 48, 16, 10);
+  ctx.fillStyle = "#0F172A";
+  ctx.fillRect(46, 50, 12, 2);
+  ctx.fillRect(46, 53, 8, 2);
+  ctx.fillRect(114, 50, 12, 2);
+
+  // Shelf identification text
+  ctx.fillStyle = "#E2E8F0";
+  ctx.font = "bold 9px monospace";
+  ctx.fillText(`RACK ${rackId || "A"} • ZONE MONITOR`, 38, 78);
+
+  // 4. Optical AI Sentinel Scan Reticule (Floor Center)
+  const cx = w * 0.52;
+  const cy = h * 0.54;
+  const boxW = 190;
+  const boxH = 90;
+
+  ctx.save();
+  ctx.strokeStyle = "#10B981";
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH);
+  ctx.setLineDash([]);
+
+  // Reticule Crosshairs
+  ctx.strokeStyle = "rgba(16, 185, 129, 0.4)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx - 20, cy);
+  ctx.lineTo(cx + 20, cy);
+  ctx.moveTo(cx, cy - 20);
+  ctx.lineTo(cx, cy + 20);
+  ctx.stroke();
+
+  // Green AI Sentinel Banner
+  ctx.fillStyle = "rgba(16, 185, 129, 0.92)";
+  ctx.fillRect(cx - boxW / 2, cy - boxH / 2 - 18, boxW, 18);
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "bold 9px monospace";
+  ctx.fillText("AI SENTINEL: ALL CLEAR • ZERO HAZARDS", cx - boxW / 2 + 6, cy - boxH / 2 - 5);
+  ctx.restore();
+
+  // 5. Security Camera Vignette
+  const vignette = ctx.createRadialGradient(w / 2, h / 2, w * 0.32, w / 2, h / 2, w * 0.65);
+  vignette.addColorStop(0, "rgba(0,0,0,0)");
+  vignette.addColorStop(1, "rgba(15, 23, 42, 0.45)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, w, h);
+
+  // 6. Security HUD Header Banner
+  ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+  ctx.fillRect(0, 0, w, 26);
+
+  // Red REC dot
+  ctx.fillStyle = "#EF4444";
+  ctx.beginPath();
+  ctx.arc(14, 13, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "bold 10px monospace";
+  ctx.fillText(`REC ${camId} HD`, 24, 16);
+
+  ctx.fillStyle = "#94A3B8";
+  ctx.font = "bold 9.5px monospace";
+  ctx.fillText(`${timeStr}  •  SECTOR 01 OPTICAL SURVEILLANCE`, w - 280, 16);
+
+  // Subtle Scanlines
+  ctx.fillStyle = "rgba(0, 0, 0, 0.03)";
+  for (let y = 0; y < h; y += 3) {
+    ctx.fillRect(0, y, w, 1);
+  }
+
+  return canvas.toDataURL("image/jpeg", 0.90);
+}
+
+/**
+ * Shutter click sound effect
+ */
+function playCameraShutterSound() {
+  if (STATE.isMuted) return;
+  try {
+    if (!STATE.audioCtx) initAudio();
+    if (STATE.audioCtx && STATE.audioCtx.state === "suspended") STATE.audioCtx.resume();
+    if (!STATE.audioCtx) return;
+    const ctx = STATE.audioCtx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.07);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.07);
+  } catch (e) {}
+}
+
+/**
+ * Live CCTV Inspection Function for all 6 cameras
+ */
+function inspectCameraFeed(camId) {
+  // Never open camera feed modal during spill interactive mode
+  if (STATE.interactiveMode === "spill-spot") return;
+
+  const cam = CONFIG.CAMERAS.find(c => c.id === camId) || CONFIG.CAMERAS[0];
+  const timeStr = getCurrentTimeString();
+
+  // Highlight active buttons in quick selector and modal switcher
+  document.querySelectorAll(".cam-sel-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.textContent.trim() === cam.id);
+  });
+
+  // Flash camera badge on warehouse SVG floor
+  triggerCameraCapture(cam.id);
+  playCameraShutterSound();
+
+  let snapshotUrl;
+  let statusBadgeText = "🔴 LIVE CCTV STREAM";
+  let footerText = `Optical surveillance active • ${cam.name} • Continuous AI Liquid Hazard Sentinel monitoring`;
+
+  // If there is an active spill near this camera, show the detected hazard snapshot
+  if (STATE.activeSpill && STATE.activeSpill.nearestCam === cam.id) {
+    snapshotUrl = STATE.activeSpill.snapshotUrl;
+    statusBadgeText = "⚠️ HAZARD DETECTED";
+    footerText = `CRITICAL ALERT: Liquid spill detected by ${cam.id} near Rack ${STATE.activeSpill.nearestRack || cam.rack}. Immediate maintenance dispatch requested.`;
+  } else {
+    // Generate clean clear floor feed
+    snapshotUrl = generateCleanCameraSnapshot(cam.id, cam.rack, timeStr);
+  }
+
+  const modalImg = document.getElementById("enlarged-snapshot-img");
+  if (modalImg) modalImg.src = snapshotUrl;
+
+  const titleEl = document.getElementById("img-modal-title");
+  if (titleEl) titleEl.textContent = `${cam.id} • ${cam.name}`;
+
+  const badgeEl = document.getElementById("cctv-modal-badge");
+  if (badgeEl) badgeEl.textContent = statusBadgeText;
+
+  const hudCam = document.getElementById("hud-cam-id");
+  if (hudCam) hudCam.textContent = cam.id;
+
+  const hudTime = document.getElementById("hud-timestamp");
+  if (hudTime) hudTime.textContent = `${timeStr} LIVE`;
+
+  const footerEl = document.getElementById("img-modal-footer");
+  if (footerEl) footerEl.textContent = footerText;
+
+  document.getElementById("image-modal").classList.remove("hidden");
+}
+window.inspectCameraFeed = inspectCameraFeed;
 
 /**
  * Removes active spill and logs cleanup
@@ -2074,12 +2316,7 @@ function initIntegratedCartonGrid() {
               <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
               <span>Gas alert flagged</span>
             </div>
-          ` : `
-            <div class="tile-safe-time">
-              <span class="safe-dot-green"></span>
-              <span>Optimal • Gas Normal</span>
-            </div>
-          `}
+          ` : ""}
         </div>
       `;
 
@@ -2379,12 +2616,7 @@ function renderOperationsDashboardView() {
           </div>
         `;
       } else {
-        timeBox.innerHTML = `
-          <div class="tile-safe-time">
-            <span class="safe-dot-green"></span>
-            <span>Optimal • Gas Normal</span>
-          </div>
-        `;
+        timeBox.innerHTML = "";
       }
     }
   });

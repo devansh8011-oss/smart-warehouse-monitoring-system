@@ -363,22 +363,21 @@ function updateSingleCartonTile(cartonId) {
   }
 
   // Time / status note
-  const timeBox = tile.querySelector(".tile-spoiled-time, .tile-safe-time");
-  if (timeBox) {
-    if (isSpoiled) {
-      timeBox.className = "tile-spoiled-time";
-      const spTime = c.spoiledInfo ? c.spoiledInfo.spoiledTime : "Just now";
-      timeBox.innerHTML = `
-        <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
-        <span>Since ${spTime}</span>
-      `;
-    } else {
-      timeBox.className = "tile-safe-time";
-      timeBox.innerHTML = `
-        <span class="safe-dot-green"></span>
-        <span>Optimal • Gas Normal</span>
-      `;
+  let timeBox = tile.querySelector(".tile-spoiled-time");
+  if (isSpoiled) {
+    if (!timeBox) {
+      timeBox = document.createElement("div");
+      tile.appendChild(timeBox);
     }
+    timeBox.className = "tile-spoiled-time";
+    const spTime = c.spoiledInfo ? c.spoiledInfo.spoiledTime : "Just now";
+    timeBox.innerHTML = `
+      <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
+      <span>Since ${spTime}</span>
+    `;
+  } else {
+    const existing = tile.querySelector(".tile-spoiled-time, .tile-safe-time");
+    if (existing) existing.remove();
   }
 
   if (STATE.activeFilter !== "all") {
@@ -852,12 +851,7 @@ function initCartonGrid() {
             <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
             <span>Since ${(SAMPLE_DATA.spoiledCartons[cartonId] && SAMPLE_DATA.spoiledCartons[cartonId].spoiledTime) ? SAMPLE_DATA.spoiledCartons[cartonId].spoiledTime : "Just now"}</span>
           </div>
-        ` : `
-          <div class="tile-safe-time">
-            <span class="safe-dot-green"></span>
-            <span>Optimal • Gas Normal</span>
-          </div>
-        `}
+        ` : ""}
       `;
 
       tilesRow.appendChild(tile);
@@ -1325,6 +1319,38 @@ function openPhotoModalDirect(url, title) {
   document.getElementById("modal-enlarged-img").src = url;
   document.getElementById("modal-area-title").textContent = title;
   document.getElementById("modal-cam-badge").textContent = "CCTV ARCHIVE";
+  document.getElementById("photo-modal").classList.remove("hidden");
+}
+
+function inspectCamera(camId, zoneName) {
+  const areaKeyMap = {
+    "CAM-1": "rack-a",
+    "CAM-2": "rack-b",
+    "CAM-3": "rack-c",
+    "CAM-4": "rack-d",
+    "CAM-5": "loading-dock",
+    "CAM-6": "entrance"
+  };
+  const areaKey = areaKeyMap[camId] || "rack-c";
+
+  let imgUrl = STATE.spillImages[areaKey];
+  if (!imgUrl) {
+    imgUrl = generateRealisticCCTVImage({
+      camId: camId,
+      timestamp: formatClockTime(new Date()),
+      zoneTitle: zoneName.toUpperCase(),
+      puddleX: -200,
+      puddleY: -200,
+      puddleRadiusX: 0,
+      puddleRadiusY: 0,
+      rackSide: camId === "CAM-5" ? "top" : "left"
+    });
+    STATE.spillImages[areaKey] = imgUrl;
+  }
+
+  document.getElementById("modal-enlarged-img").src = imgUrl;
+  document.getElementById("modal-area-title").textContent = `${zoneName} • ${camId}`;
+  document.getElementById("modal-cam-badge").textContent = `${camId} • LIVE CCTV INSPECTION`;
   document.getElementById("photo-modal").classList.remove("hidden");
 }
 

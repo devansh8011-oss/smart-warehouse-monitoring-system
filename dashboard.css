@@ -762,52 +762,65 @@ body {
 }
 
 .rack-label-box {
-  width: 82px;
+  width: 96px;
   flex-shrink: 0;
   background: #F1F5F9;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  padding: 10px 8px;
+  padding: 8px 6px;
   text-align: center;
   position: sticky;
   left: 0;
   z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .rack-tag {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--text-main);
   display: block;
+  line-height: 1.2;
 }
 
 .rack-veg-hint {
-  font-size: 10px;
+  font-size: 9.5px;
+  font-weight: 500;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+  margin-top: 3px;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  width: 100%;
 }
 
 .rack-tiles-row {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
-/* Individual Carton Tile */
+/* Individual Carton Tile - Compact & Clean */
 .carton-tile {
   background: #F0FDF4;
   border: 1.5px solid var(--status-green-border);
   border-radius: var(--radius-md);
-  padding: 9px 10px;
+  padding: 6px 8px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  justify-content: center;
+  gap: 2px;
   position: relative;
+  min-height: 48px;
+  box-sizing: border-box;
 }
 
 .carton-tile:hover {
@@ -834,15 +847,15 @@ body {
 }
 
 .tile-id {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
   color: var(--text-main);
 }
 
 .tile-status-pill {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
 }
 
@@ -857,9 +870,12 @@ body {
 }
 
 .tile-veg-name {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tile-spoiled-time {
@@ -1045,8 +1061,8 @@ body {
   background: #F8FAFC;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  padding: 12px;
-  height: 420px;
+  padding: 10px 12px;
+  height: 330px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1094,13 +1110,13 @@ body {
 }
 
 .zone-name {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   fill: var(--text-main);
 }
 
 .zone-cam {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
   fill: var(--text-muted);
 }
@@ -1111,30 +1127,66 @@ body {
 
 .zone-status-badge.badge-green rect {
   fill: #DCFCE7;
+  stroke: #86EFAC;
+  stroke-width: 1;
 }
 .zone-status-badge.badge-green text {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   fill: var(--status-green);
 }
 
 .zone-status-badge.badge-red rect {
   fill: #FEE2E2;
+  stroke: #FCA5A5;
+  stroke-width: 1;
 }
 .zone-status-badge.badge-red text {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   fill: var(--status-red);
 }
 
-.cam-circle {
-  fill: #F1F5F9;
-  stroke: #94A3B8;
-  stroke-width: 1.5;
+.cam-badge {
+  cursor: pointer;
+  transition: transform 0.15s ease;
 }
-.cam-circle.red {
+.cam-badge:hover {
+  transform: translate(124px, 11px) scale(1.06);
+}
+.cam-badge:hover .cam-badge-rect {
+  fill: #E0F2FE;
+  stroke: #0284C7;
+}
+
+.cam-badge-rect {
+  fill: #F1F5F9;
+  stroke: #CBD5E1;
+  stroke-width: 1;
+  transition: all 0.2s;
+}
+
+.cam-badge-lens {
+  fill: #64748B;
+  transition: all 0.2s;
+}
+
+.cam-badge-text {
+  font-size: 9.5px;
+  font-weight: 700;
+  fill: #334155;
+  letter-spacing: 0.2px;
+}
+
+.map-zone.zone-spill .cam-badge-rect {
   fill: #FEE2E2;
-  stroke: var(--status-red);
+  stroke: #FCA5A5;
+}
+.map-zone.zone-spill .cam-badge-lens {
+  fill: var(--status-red);
+}
+.map-zone.zone-spill .cam-badge-text {
+  fill: var(--status-red);
 }
 
 .map-puddle-dot {

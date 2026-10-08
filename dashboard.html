@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="dashboard.css?v=3.0">
 </head>
 <body>
 
@@ -366,98 +366,148 @@
           </div>
           
           <div class="svg-map-wrapper">
-            <svg id="warehouse-spill-map-svg" viewBox="0 0 680 400" preserveAspectRatio="xMidYMid meet">
+            <svg id="warehouse-spill-map-svg" viewBox="0 0 680 284" preserveAspectRatio="xMidYMid meet">
               <defs>
                 <pattern id="floor-grid" width="20" height="20" patternUnits="userSpaceOnUse">
                   <rect width="20" height="20" fill="#F8FAFC"/>
                   <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#EDF2F7" stroke-width="1"/>
                 </pattern>
-                <filter id="area-shadow" x="-4%" y="-4%" width="108%" height="110%">
-                  <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.06"/>
+                <filter id="area-shadow" x="-3%" y="-3%" width="106%" height="108%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.05"/>
                 </filter>
               </defs>
 
-              <!-- Floor Base -->
-              <rect x="10" y="10" width="660" height="380" rx="14" fill="url(#floor-grid)" stroke="#CBD5E1" stroke-width="2"/>
-              <rect x="20" y="20" width="640" height="360" rx="10" fill="none" stroke="#94A3B8" stroke-dasharray="6 4" stroke-width="1.5" opacity="0.6"/>
+              <!-- Floor Base & Warehouse Boundary -->
+              <rect x="10" y="10" width="660" height="264" rx="12" fill="url(#floor-grid)" stroke="#CBD5E1" stroke-width="1.5"/>
+              <rect x="18" y="18" width="644" height="248" rx="8" fill="none" stroke="#94A3B8" stroke-dasharray="6 4" stroke-width="1" opacity="0.5"/>
 
-              <!-- Central Passage Label -->
-              <text x="340" y="205" text-anchor="middle" font-size="10.5" font-weight="700" fill="#94A3B8" letter-spacing="1.5">MAIN CENTRAL AISLE</text>
+              <!-- Central Forklift Passage -->
+              <g class="central-aisle-guide">
+                <line x1="28" y1="131" x2="652" y2="131" stroke="#CBD5E1" stroke-dasharray="6 4" stroke-width="1.5"/>
+                <line x1="28" y1="153" x2="652" y2="153" stroke="#CBD5E1" stroke-dasharray="6 4" stroke-width="1.5"/>
+                <rect x="200" y="131" width="280" height="22" rx="11" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <text x="340" y="145.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#64748B" letter-spacing="1.2">MAIN CENTRAL AISLE &bull; TRANSIT</text>
+              </g>
 
-              <!-- 6 DEFINED MONITORING AREAS -->
+              <!-- 6 DEFINED MONITORING AREAS (3 COLUMNS x 2 BALANCED ROWS) -->
 
               <!-- 1. Rack A Aisle (CAM-1) [Top-Left] -->
               <g id="map-area-rack-a" class="map-zone zone-clear" onclick="selectSpillArea('rack-a')">
-                <rect x="35" y="35" width="280" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
-                <text x="50" y="62" class="zone-name">Rack A Aisle</text>
-                <text x="50" y="78" class="zone-cam">Camera: CAM-1</text>
-                <!-- Status icon + text -->
-                <g class="zone-status-badge badge-green" transform="translate(50, 95)">
-                  <rect width="88" height="24" rx="12"/>
-                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
+                <g transform="translate(28, 26)">
+                  <rect x="0" y="0" width="196" height="96" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                  <text x="14" y="24" class="zone-name">Rack A Aisle</text>
+                  <text x="14" y="40" class="zone-cam">Camera: CAM-1 &bull; Tomatoes</text>
+                  <g class="cam-badge" transform="translate(124, 11)" onclick="event.stopPropagation(); inspectCamera('CAM-1', 'Rack A Aisle')" title="Click to inspect live CAM-1 feed">
+                    <rect width="58" height="20" rx="10" class="cam-badge-rect"/>
+                    <circle cx="12" cy="10" r="3.5" class="cam-badge-lens"/>
+                    <circle cx="12" cy="10" r="1.5" fill="white"/>
+                    <text x="35" y="13.5" text-anchor="middle" class="cam-badge-text">CAM-1</text>
+                  </g>
+                  <g class="zone-status-badge badge-green" transform="translate(14, 58)">
+                    <rect width="84" height="24" rx="12"/>
+                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                  </g>
+                  <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
-                <!-- Camera Icon -->
-                <circle cx="290" cy="55" r="13" class="cam-circle"/>
-                <path d="M 285 52 L 295 52 L 297 55 L 300 55 L 300 62 L 280 62 L 280 55 L 283 55 Z" fill="#475569" transform="scale(0.7) translate(122, 23)"/>
               </g>
 
-              <!-- 2. Rack B Aisle (CAM-2) [Top-Right] -->
+              <!-- 2. Rack B Aisle (CAM-2) [Top-Center] -->
               <g id="map-area-rack-b" class="map-zone zone-clear" onclick="selectSpillArea('rack-b')">
-                <rect x="365" y="35" width="280" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
-                <text x="380" y="62" class="zone-name">Rack B Aisle</text>
-                <text x="380" y="78" class="zone-cam">Camera: CAM-2</text>
-                <g class="zone-status-badge badge-green" transform="translate(380, 95)">
-                  <rect width="88" height="24" rx="12"/>
-                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
+                <g transform="translate(242, 26)">
+                  <rect x="0" y="0" width="196" height="96" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                  <text x="14" y="24" class="zone-name">Rack B Aisle</text>
+                  <text x="14" y="40" class="zone-cam">Camera: CAM-2 &bull; Potatoes &amp; Onions</text>
+                  <g class="cam-badge" transform="translate(124, 11)" onclick="event.stopPropagation(); inspectCamera('CAM-2', 'Rack B Aisle')" title="Click to inspect live CAM-2 feed">
+                    <rect width="58" height="20" rx="10" class="cam-badge-rect"/>
+                    <circle cx="12" cy="10" r="3.5" class="cam-badge-lens"/>
+                    <circle cx="12" cy="10" r="1.5" fill="white"/>
+                    <text x="35" y="13.5" text-anchor="middle" class="cam-badge-text">CAM-2</text>
+                  </g>
+                  <g class="zone-status-badge badge-green" transform="translate(14, 58)">
+                    <rect width="84" height="24" rx="12"/>
+                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                  </g>
+                  <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
-                <circle cx="620" cy="55" r="13" class="cam-circle"/>
-                <path d="M 285 52 L 295 52 L 297 55 L 300 55 L 300 62 L 280 62 L 280 55 L 283 55 Z" fill="#475569" transform="scale(0.7) translate(593, 23)"/>
               </g>
 
-              <!-- 3. Rack C Aisle (CAM-3) [Middle-Left] -->
-              <g id="map-area-rack-c" class="map-zone zone-clear" onclick="selectSpillArea('rack-c')">
-                <rect x="35" y="225" width="180" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
-                <text x="50" y="252" class="zone-name">Rack C Aisle</text>
-                <text x="50" y="268" class="zone-cam">Camera: CAM-3</text>
-                <g class="zone-status-badge badge-green" transform="translate(50, 285)">
-                  <rect width="88" height="24" rx="12"/>
-                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
-                </g>
-                <circle cx="190" cy="245" r="13" class="cam-circle"/>
-              </g>
-
-              <!-- 4. Rack D Aisle (CAM-4) [Middle-Center] -->
-              <g id="map-area-rack-d" class="map-zone zone-clear" onclick="selectSpillArea('rack-d')">
-                <rect x="235" y="225" width="180" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
-                <text x="250" y="252" class="zone-name">Rack D Aisle</text>
-                <text x="250" y="268" class="zone-cam">Camera: CAM-4</text>
-                <g class="zone-status-badge badge-green" transform="translate(250, 285)">
-                  <rect width="88" height="24" rx="12"/>
-                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
-                </g>
-                <circle cx="390" cy="245" r="13" class="cam-circle"/>
-              </g>
-
-              <!-- 5. Loading Dock (CAM-5) [Bottom-Right] -->
+              <!-- 3. Loading Dock (CAM-5) [Top-Right] -->
               <g id="map-area-loading-dock" class="map-zone zone-clear" onclick="selectSpillArea('loading-dock')">
-                <rect x="435" y="225" width="210" height="85" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
-                <text x="450" y="250" class="zone-name">Loading Dock</text>
-                <text x="450" y="266" class="zone-cam">Camera: CAM-5</text>
-                <g class="zone-status-badge badge-green" transform="translate(450, 276)">
-                  <rect width="88" height="22" rx="11"/>
-                  <text x="44" y="15" text-anchor="middle">✓ No spill</text>
+                <g transform="translate(456, 26)">
+                  <rect x="0" y="0" width="196" height="96" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                  <text x="14" y="24" class="zone-name">Loading Dock</text>
+                  <text x="14" y="40" class="zone-cam">Camera: CAM-5 &bull; Inbound Bay</text>
+                  <g class="cam-badge" transform="translate(124, 11)" onclick="event.stopPropagation(); inspectCamera('CAM-5', 'Loading Dock')" title="Click to inspect live CAM-5 feed">
+                    <rect width="58" height="20" rx="10" class="cam-badge-rect"/>
+                    <circle cx="12" cy="10" r="3.5" class="cam-badge-lens"/>
+                    <circle cx="12" cy="10" r="1.5" fill="white"/>
+                    <text x="35" y="13.5" text-anchor="middle" class="cam-badge-text">CAM-5</text>
+                  </g>
+                  <g class="zone-status-badge badge-green" transform="translate(14, 58)">
+                    <rect width="84" height="24" rx="12"/>
+                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                  </g>
+                  <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
-                <circle cx="620" cy="245" r="13" class="cam-circle"/>
               </g>
 
-              <!-- 6. Entrance (CAM-6) [Bottom Right Corridor] -->
+              <!-- 4. Rack C Aisle (CAM-3) [Bottom-Left] -->
+              <g id="map-area-rack-c" class="map-zone zone-clear" onclick="selectSpillArea('rack-c')">
+                <g transform="translate(28, 162)">
+                  <rect x="0" y="0" width="196" height="96" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                  <text x="14" y="24" class="zone-name">Rack C Aisle</text>
+                  <text x="14" y="40" class="zone-cam">Camera: CAM-3 &bull; Spinach &amp; Cabbage</text>
+                  <g class="cam-badge" transform="translate(124, 11)" onclick="event.stopPropagation(); inspectCamera('CAM-3', 'Rack C Aisle')" title="Click to inspect live CAM-3 feed">
+                    <rect width="58" height="20" rx="10" class="cam-badge-rect"/>
+                    <circle cx="12" cy="10" r="3.5" class="cam-badge-lens"/>
+                    <circle cx="12" cy="10" r="1.5" fill="white"/>
+                    <text x="35" y="13.5" text-anchor="middle" class="cam-badge-text">CAM-3</text>
+                  </g>
+                  <g class="zone-status-badge badge-green" transform="translate(14, 58)">
+                    <rect width="84" height="24" rx="12"/>
+                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                  </g>
+                  <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
+                </g>
+              </g>
+
+              <!-- 5. Rack D Aisle (CAM-4) [Bottom-Center] -->
+              <g id="map-area-rack-d" class="map-zone zone-clear" onclick="selectSpillArea('rack-d')">
+                <g transform="translate(242, 162)">
+                  <rect x="0" y="0" width="196" height="96" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                  <text x="14" y="24" class="zone-name">Rack D Aisle</text>
+                  <text x="14" y="40" class="zone-cam">Camera: CAM-4 &bull; Carrots</text>
+                  <g class="cam-badge" transform="translate(124, 11)" onclick="event.stopPropagation(); inspectCamera('CAM-4', 'Rack D Aisle')" title="Click to inspect live CAM-4 feed">
+                    <rect width="58" height="20" rx="10" class="cam-badge-rect"/>
+                    <circle cx="12" cy="10" r="3.5" class="cam-badge-lens"/>
+                    <circle cx="12" cy="10" r="1.5" fill="white"/>
+                    <text x="35" y="13.5" text-anchor="middle" class="cam-badge-text">CAM-4</text>
+                  </g>
+                  <g class="zone-status-badge badge-green" transform="translate(14, 58)">
+                    <rect width="84" height="24" rx="12"/>
+                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                  </g>
+                  <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
+                </g>
+              </g>
+
+              <!-- 6. Facility Entrance (CAM-6) [Bottom-Right] -->
               <g id="map-area-entrance" class="map-zone zone-clear" onclick="selectSpillArea('entrance')">
-                <rect x="435" y="320" width="210" height="50" rx="6" class="zone-rect" filter="url(#area-shadow)"/>
-                <text x="450" y="340" class="zone-name">Entrance</text>
-                <text x="450" y="355" class="zone-cam">Camera: CAM-6</text>
-                <g class="zone-status-badge badge-green" transform="translate(535, 332)">
-                  <rect width="88" height="22" rx="11"/>
-                  <text x="44" y="15" text-anchor="middle">✓ No spill</text>
+                <g transform="translate(456, 162)">
+                  <rect x="0" y="0" width="196" height="96" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
+                  <text x="14" y="24" class="zone-name">Entrance</text>
+                  <text x="14" y="40" class="zone-cam">Camera: CAM-6 &bull; Main Entry</text>
+                  <g class="cam-badge" transform="translate(124, 11)" onclick="event.stopPropagation(); inspectCamera('CAM-6', 'Entrance')" title="Click to inspect live CAM-6 feed">
+                    <rect width="58" height="20" rx="10" class="cam-badge-rect"/>
+                    <circle cx="12" cy="10" r="3.5" class="cam-badge-lens"/>
+                    <circle cx="12" cy="10" r="1.5" fill="white"/>
+                    <text x="35" y="13.5" text-anchor="middle" class="cam-badge-text">CAM-6</text>
+                  </g>
+                  <g class="zone-status-badge badge-green" transform="translate(14, 58)">
+                    <rect width="84" height="24" rx="12"/>
+                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                  </g>
+                  <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
               </g>
             </svg>
@@ -648,6 +698,6 @@
   <!-- Hidden Canvas for Programmatic CCTV Image Generation -->
   <canvas id="cctv-gen-canvas" width="480" height="320" style="display:none;"></canvas>
 
-  <script src="dashboard.js"></script>
+  <script src="dashboard.js?v=3.0"></script>
 </body>
 </html>

@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Warehouse Monitoring System</title>
-  <!-- Google Font: Inter -->
+  <!-- Google Fonts: Inter, Plus Jakarta Sans, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3.0">
 </head>
 <body>
 
@@ -201,7 +201,7 @@
               <button type="button" class="btn-xs" onclick="cancelInteractiveMode()">Cancel (Esc)</button>
             </div>
 
-            <!-- Wall Sensor Badge inside floor header / overlay -->
+            <!-- Wall Sensor Badge inside floor header -->
             <div class="wall-sensor-badge" id="wall-sensor-badge">
               <div class="ws-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F57C00" stroke-width="2">
@@ -217,6 +217,7 @@
 
           <!-- Floor SVG Area -->
           <div class="floor-svg-container" id="floor-svg-container">
+
             <svg id="warehouse-svg" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet">
               <defs>
                 <!-- Polished Industrial Concrete Floor Pattern -->
@@ -237,13 +238,13 @@
                   <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.05" flood-color="#0F172A"/>
                 </filter>
 
-                <!-- Camera viewing cone radial gradients with soft edge -->
+                <!-- 6 Camera viewing cone radial gradients with soft edge -->
                 <radialGradient id="cam1-cone" cx="0%" cy="0%" r="100%">
                   <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
                   <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
                   <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </radialGradient>
-                <radialGradient id="cam2-cone" cx="100%" cy="0%" r="100%">
+                <radialGradient id="cam2-cone" cx="50%" cy="0%" r="100%">
                   <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
                   <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
                   <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
@@ -253,7 +254,17 @@
                   <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
                   <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </radialGradient>
-                <radialGradient id="cam4-cone" cx="100%" cy="100%" r="100%">
+                <radialGradient id="cam4-cone" cx="50%" cy="100%" r="100%">
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
+                  <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="cam5-cone" cx="100%" cy="0%" r="100%">
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
+                  <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="cam6-cone" cx="100%" cy="100%" r="100%">
                   <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
                   <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
                   <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
@@ -304,15 +315,15 @@
                 <text x="15" y="24" text-anchor="middle" fill="#475569" font-size="7.5" font-weight="700">N</text>
               </g>
 
-              <!-- 4 HIGH-ACCURACY CORNER SECURITY CAMERAS & VISION CONES -->
-              <!-- CAM-1 Top-Left -->
-              <g id="cam-1-group">
-                <path id="cam-1-cone-path" class="cam-cone" d="M 28 28 L 260 28 A 240 240 0 0 1 28 260 Z" fill="url(#cam1-cone)" />
-                <path d="M 180 28 A 160 160 0 0 1 28 180" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+              <!-- 6 HIGH-ACCURACY WAREHOUSE SURVEILLANCE CAMERAS & VISION CONES -->
+              <!-- CAM-1: Rack A Aisle (Top-Left) -->
+              <g id="cam-1-group" class="cam-interactive-group" onclick="inspectCameraFeed('CAM-1')" title="Click to inspect live CAM-1 feed (Rack A)">
+                <path id="cam-1-cone-path" class="cam-cone" pointer-events="none" d="M 28 28 L 260 28 A 240 240 0 0 1 28 260 Z" fill="url(#cam1-cone)" />
+                <path d="M 180 28 A 160 160 0 0 1 28 180" pointer-events="none" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
                 <rect x="22" y="22" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
                 <circle cx="33" cy="33" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
                 <circle cx="33" cy="33" r="3" fill="#38BDF8"/>
-                <circle cx="40" cy="26" r="1.5" fill="#15803D"/>
+                <circle cx="40" cy="26" r="1.5" fill="#15803D" class="cam-led"/>
                 <rect x="18" y="48" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
                 <text x="41" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-1</text>
                 <g id="cam-1-snap-badge" class="cam-snap-badge hidden">
@@ -321,30 +332,30 @@
                 </g>
               </g>
 
-              <!-- CAM-2 Top-Right -->
-              <g id="cam-2-group">
-                <path id="cam-2-cone-path" class="cam-cone" d="M 972 28 L 740 28 A 240 240 0 0 0 972 260 Z" fill="url(#cam2-cone)" />
-                <path d="M 820 28 A 160 160 0 0 0 972 180" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
-                <rect x="956" y="22" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
-                <circle cx="967" cy="33" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
-                <circle cx="967" cy="33" r="3" fill="#38BDF8"/>
-                <circle cx="960" cy="26" r="1.5" fill="#15803D"/>
-                <rect x="936" y="48" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
-                <text x="959" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-2</text>
+              <!-- CAM-2: Rack B Aisle (Top-Center / North Wall) -->
+              <g id="cam-2-group" class="cam-interactive-group" onclick="inspectCameraFeed('CAM-2')" title="Click to inspect live CAM-2 feed (Rack B)">
+                <path id="cam-2-cone-path" class="cam-cone" pointer-events="none" d="M 705 28 L 575 210 L 835 210 Z" fill="url(#cam2-cone)" />
+                <path d="M 625 150 Q 705 170 785 150" pointer-events="none" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <rect x="694" y="22" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="705" cy="33" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
+                <circle cx="705" cy="33" r="3" fill="#38BDF8"/>
+                <circle cx="712" cy="26" r="1.5" fill="#15803D" class="cam-led"/>
+                <rect x="682" y="48" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
+                <text x="705" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-2</text>
                 <g id="cam-2-snap-badge" class="cam-snap-badge hidden">
-                  <rect x="916" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
-                  <text x="949" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <rect x="672" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
+                  <text x="705" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
                 </g>
               </g>
 
-              <!-- CAM-3 Bottom-Left -->
-              <g id="cam-3-group">
-                <path id="cam-3-cone-path" class="cam-cone" d="M 28 492 L 260 492 A 240 240 0 0 0 28 260 Z" fill="url(#cam3-cone)" />
-                <path d="M 180 492 A 160 160 0 0 0 28 340" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+              <!-- CAM-3: Rack C Aisle (Bottom-Left) -->
+              <g id="cam-3-group" class="cam-interactive-group" onclick="inspectCameraFeed('CAM-3')" title="Click to inspect live CAM-3 feed (Rack C)">
+                <path id="cam-3-cone-path" class="cam-cone" pointer-events="none" d="M 28 492 L 260 492 A 240 240 0 0 0 28 260 Z" fill="url(#cam3-cone)" />
+                <path d="M 180 492 A 160 160 0 0 0 28 340" pointer-events="none" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
                 <rect x="22" y="476" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
                 <circle cx="33" cy="487" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
                 <circle cx="33" cy="487" r="3" fill="#38BDF8"/>
-                <circle cx="40" cy="480" r="1.5" fill="#15803D"/>
+                <circle cx="40" cy="480" r="1.5" fill="#15803D" class="cam-led"/>
                 <rect x="18" y="456" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
                 <text x="41" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-3</text>
                 <g id="cam-3-snap-badge" class="cam-snap-badge hidden">
@@ -353,17 +364,49 @@
                 </g>
               </g>
 
-              <!-- CAM-4 Bottom-Right -->
-              <g id="cam-4-group">
-                <path id="cam-4-cone-path" class="cam-cone" d="M 972 492 L 740 492 A 240 240 0 0 1 972 260 Z" fill="url(#cam4-cone)" />
-                <path d="M 820 492 A 160 160 0 0 1 972 340" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+              <!-- CAM-4: Rack D Aisle (Bottom-Center / South Wall) -->
+              <g id="cam-4-group" class="cam-interactive-group" onclick="inspectCameraFeed('CAM-4')" title="Click to inspect live CAM-4 feed (Rack D)">
+                <path id="cam-4-cone-path" class="cam-cone" pointer-events="none" d="M 705 492 L 575 310 L 835 310 Z" fill="url(#cam4-cone)" />
+                <path d="M 625 370 Q 705 350 785 370" pointer-events="none" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <rect x="694" y="476" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="705" cy="487" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
+                <circle cx="705" cy="487" r="3" fill="#38BDF8"/>
+                <circle cx="712" cy="480" r="1.5" fill="#15803D" class="cam-led"/>
+                <rect x="682" y="456" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
+                <text x="705" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-4</text>
+                <g id="cam-4-snap-badge" class="cam-snap-badge hidden">
+                  <rect x="672" y="434" width="66" height="17" rx="3" fill="#0284C7"/>
+                  <text x="705" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                </g>
+              </g>
+
+              <!-- CAM-5: Loading Dock & Inbound Bays (Top-Right) -->
+              <g id="cam-5-group" class="cam-interactive-group" onclick="inspectCameraFeed('CAM-5')" title="Click to inspect live CAM-5 feed (Loading Dock)">
+                <path id="cam-5-cone-path" class="cam-cone" pointer-events="none" d="M 972 28 L 740 28 A 240 240 0 0 0 972 260 Z" fill="url(#cam5-cone)" />
+                <path d="M 820 28 A 160 160 0 0 0 972 180" pointer-events="none" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <rect x="956" y="22" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="967" cy="33" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
+                <circle cx="967" cy="33" r="3" fill="#38BDF8"/>
+                <circle cx="960" cy="26" r="1.5" fill="#15803D" class="cam-led"/>
+                <rect x="936" y="48" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
+                <text x="959" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-5</text>
+                <g id="cam-5-snap-badge" class="cam-snap-badge hidden">
+                  <rect x="916" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
+                  <text x="949" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                </g>
+              </g>
+
+              <!-- CAM-6: Facility Entrance & Dispatch Area (Bottom-Right) -->
+              <g id="cam-6-group" class="cam-interactive-group" onclick="inspectCameraFeed('CAM-6')" title="Click to inspect live CAM-6 feed (Entrance)">
+                <path id="cam-6-cone-path" class="cam-cone" pointer-events="none" d="M 972 492 L 740 492 A 240 240 0 0 1 972 260 Z" fill="url(#cam6-cone)" />
+                <path d="M 820 492 A 160 160 0 0 1 972 340" pointer-events="none" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
                 <rect x="956" y="476" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
                 <circle cx="967" cy="487" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
                 <circle cx="967" cy="487" r="3" fill="#38BDF8"/>
-                <circle cx="960" cy="480" r="1.5" fill="#15803D"/>
+                <circle cx="960" cy="480" r="1.5" fill="#15803D" class="cam-led"/>
                 <rect x="936" y="456" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
-                <text x="959" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-4</text>
-                <g id="cam-4-snap-badge" class="cam-snap-badge hidden">
+                <text x="959" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-6</text>
+                <g id="cam-6-snap-badge" class="cam-snap-badge hidden">
                   <rect x="916" y="434" width="66" height="17" rx="3" fill="#0284C7"/>
                   <text x="949" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
                 </g>
@@ -968,14 +1011,32 @@
     <div class="modal-dialog img-modal-dialog">
       <div class="modal-header">
         <div class="modal-header-title">
-          <span class="cctv-badge">CCTV SNAPSHOT</span>
-          <h3 id="img-modal-title">CAM-3 &bull; Liquid Spill Detection</h3>
+          <span class="cctv-badge" id="cctv-modal-badge">🔴 LIVE CCTV STREAM</span>
+          <h3 id="img-modal-title">CAM-1 &bull; Rack A Aisle</h3>
         </div>
         <button type="button" class="btn-close-modal" onclick="closeImageModal()">×</button>
       </div>
       <div class="modal-body img-modal-body">
-        <img id="enlarged-snapshot-img" src="" alt="Enlarged CCTV Snapshot">
-        <div class="img-meta-footer" id="img-modal-footer">Captured live by warehouse vision camera</div>
+        <div class="cctv-frame-wrapper" style="position:relative;background:#0F172A;border-radius:8px;overflow:hidden;border:1px solid #334155;">
+          <img id="enlarged-snapshot-img" src="" alt="CCTV Camera Feed" style="width:100%;height:auto;display:block;">
+          <div class="cctv-stream-hud" style="position:absolute;top:8px;left:10px;right:10px;display:flex;justify-content:space-between;color:#38BDF8;font-family:monospace;font-size:10.5px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);pointer-events:none;">
+            <div><span style="color:#EF4444;">● REC</span> <span id="hud-cam-id">CAM-1</span> &bull; 1080p 30fps</div>
+            <div id="hud-timestamp">LIVE STREAM</div>
+          </div>
+        </div>
+
+        <!-- Camera Switcher Bar -->
+        <div class="cctv-feed-switcher" style="display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;">
+          <span style="font-size:10px;font-weight:700;color:#64748B;">SWITCH CAMERA:</span>
+          <button type="button" class="cam-sel-btn" onclick="inspectCameraFeed('CAM-1')">CAM-1</button>
+          <button type="button" class="cam-sel-btn" onclick="inspectCameraFeed('CAM-2')">CAM-2</button>
+          <button type="button" class="cam-sel-btn" onclick="inspectCameraFeed('CAM-3')">CAM-3</button>
+          <button type="button" class="cam-sel-btn" onclick="inspectCameraFeed('CAM-4')">CAM-4</button>
+          <button type="button" class="cam-sel-btn" onclick="inspectCameraFeed('CAM-5')">CAM-5</button>
+          <button type="button" class="cam-sel-btn" onclick="inspectCameraFeed('CAM-6')">CAM-6</button>
+        </div>
+
+        <div class="img-meta-footer" id="img-modal-footer">Optical surveillance active &bull; AI Liquid Hazard Sentinel continuous monitoring</div>
       </div>
     </div>
   </div>
@@ -983,6 +1044,6 @@
   <!-- Off-screen Canvas for generating camera snapshots -->
   <canvas id="snapshot-canvas" width="480" height="320" style="display:none;"></canvas>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=3.0"></script>
 </body>
 </html>

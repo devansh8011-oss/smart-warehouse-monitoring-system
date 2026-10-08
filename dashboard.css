@@ -140,46 +140,6 @@ body {
   gap: 16px;
 }
 
-.sync-indicator-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #F0FDF4;
-  color: #15803D;
-  border: 1px solid #BBF7D0;
-  padding: 5px 11px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  transition: all 0.2s ease;
-}
-
-.sync-indicator-pill.disconnected {
-  background: #F8FAFC;
-  color: #64748B;
-  border-color: #CBD5E1;
-}
-
-.sync-dot-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: #22C55E;
-  animation: pulseSync 1.5s infinite;
-}
-
-.sync-indicator-pill.disconnected .sync-dot-pulse {
-  background-color: #94A3B8;
-  animation: none;
-}
-
-@keyframes pulseSync {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 6px rgba(34, 197, 94, 0.7); }
-  100% { transform: scale(0.9); opacity: 0.8; }
-}
-
 .nav-switch-btn {
   display: flex;
   align-items: center;
@@ -377,125 +337,12 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Big Numbers (48 - 64px) & Radial Gauge Dial */
-.metric-dial-layout {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 4px 0 8px 0;
-}
-
+/* Big Numbers (48 - 64px) */
 .big-metric-display {
   display: flex;
   align-items: baseline;
   gap: 6px;
-}
-
-.dial-svg-container {
-  width: 96px;
-  height: 54px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.temp-dial-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.sensor-pill-micro {
-  font-size: 10px;
-  font-weight: 600;
-  color: #0284C7;
-  background: #F0F9FF;
-  padding: 2px 7px;
-  border-radius: 4px;
-  border: 1px solid #BAE6FD;
-}
-
-/* Multi-Band Humidity Spectrum */
-.hum-spectrum-container {
-  margin-bottom: 12px;
-}
-
-.ideal-spectrum-tag {
-  color: #0284C7;
-  font-weight: 700;
-}
-
-.hum-spectrum-track {
-  display: flex;
-  width: 100%;
-  height: 9px;
-  border-radius: 5px;
-  overflow: visible;
-  position: relative;
-  background: #F1F5F9;
-  border: 1px solid #E2E8F0;
-}
-
-.spectrum-band {
-  height: 100%;
-}
-
-.band-dry {
-  width: 33.3%;
-  background: #FEF3C7;
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
-}
-
-.band-optimal {
-  width: 40%;
-  background: #BAE6FD;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.band-tag-center {
-  font-size: 7.5px;
-  font-weight: 800;
-  color: #0369A1;
-  letter-spacing: 0.5px;
-  pointer-events: none;
-}
-
-.band-damp {
-  width: 26.7%;
-  background: #FDE68A;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-
-.hum-indicator-pin {
-  position: absolute;
-  top: -4px;
-  width: 2px;
-  height: 17px;
-  background-color: #0284C7;
-  transition: left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 2;
-}
-
-.hum-indicator-pin .pin-head {
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #0284C7;
-  box-shadow: 0 0 4px rgba(2, 132, 199, 0.6);
-}
-
-.humidity-range-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #0369A1;
+  margin: 4px 0 10px 0;
 }
 
 .metric-number {
@@ -641,7 +488,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 }
 
 .unit-name-box {
@@ -690,23 +537,6 @@ body {
 .unit-pill.pill-grey { background: #E2E8F0; color: #475569; }
 .unit-pill.pill-blue { background: #DBEAFE; color: #1D4ED8; }
 
-/* Visual Evaporator Load Meter */
-.unit-load-bar {
-  width: 100%;
-  height: 4px;
-  background: #E2E8F0;
-  border-radius: 2px;
-  margin-bottom: 5px;
-  overflow: hidden;
-}
-
-.unit-load-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #38BDF8, #0284C7);
-  border-radius: 2px;
-  transition: width 0.5s ease;
-}
-
 .unit-tile-body {
   display: flex;
   align-items: center;
@@ -734,7 +564,7 @@ body {
 }
 
 /* ==========================================================================
-   HEALTH SUMMARY CARD (Card 4 in Row 1: Donut + Bars)
+   HEALTH SUMMARY CARD (Card 4 in Row 1)
    ========================================================================== */
 .health-summary-card {
   padding: 18px 20px;
@@ -746,120 +576,59 @@ body {
   font-weight: 500;
 }
 
-.health-grade-badge {
-  font-size: 11px;
-  font-weight: 700;
-  color: #15803D;
-  background: #DCFCE7;
-  padding: 2px 8px;
-  border-radius: 12px;
-  border: 1px solid #BBF7D0;
+.health-counts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
 }
 
-.health-visual-flex {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 10px 0 12px 0;
-}
-
-.donut-container {
-  width: 82px;
-  height: 82px;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.health-donut-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(0deg);
-}
-
-.donut-center-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.health-count-box {
+  background: #F8FAFC;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 10px 8px;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  line-height: 1;
 }
 
-.donut-pct {
-  font-size: 17px;
+.health-count-box.box-fresh { border-top: 3px solid var(--status-green); }
+.health-count-box.box-spoiled { border-top: 3px solid var(--status-red); background: #FFF5F5; }
+.health-count-box.box-spill { border-top: 3px solid var(--status-red); background: #FFF5F5; }
+
+.hc-number {
+  font-size: 26px;
   font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.5px;
+  line-height: 1;
+  margin-bottom: 4px;
 }
 
-.donut-text {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  margin-top: 2px;
-}
+.box-fresh .hc-number { color: var(--status-green); }
+.box-spoiled .hc-number { color: var(--status-red); }
+.box-spill .hc-number { color: var(--status-red); }
 
-.health-breakdown-list {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  flex: 1;
-}
-
-.breakdown-item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.bi-header {
+.hc-label-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 11px;
-  font-weight: 600;
+  gap: 4px;
 }
 
-.bi-dot {
+.hc-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  margin-right: 4px;
 }
-.bi-dot.green { background: #22C55E; }
-.bi-dot.red { background: #EF4444; }
+.dot-green { background-color: var(--status-green); }
+.dot-red { background-color: var(--status-red); }
 
-.bi-name {
+.hc-label {
+  font-size: 10px;
+  font-weight: 600;
   color: var(--text-muted);
-  margin-right: auto;
 }
-
-.bi-val {
-  font-weight: 800;
-  font-size: 12px;
-}
-.bi-val.green { color: #15803D; }
-.bi-val.red { color: #DC2626; }
-
-.bi-meter {
-  width: 100%;
-  height: 4px;
-  background: #F1F5F9;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.bi-meter-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.4s ease;
-}
-.bi-meter-fill.green { background: #22C55E; }
-.bi-meter-fill.red { background: #EF4444; }
 
 .summary-extra-bar {
   display: flex;
@@ -892,97 +661,6 @@ body {
   height: 6px;
   border-radius: 50%;
   background-color: var(--status-green);
-}
-
-/* ==========================================================================
-   PRODUCE STORAGE BENCHMARK REFERENCE STRIP
-   ========================================================================== */
-.produce-reference-strip {
-  background: white;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-  padding: 14px 20px;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.produce-strip-header {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.strip-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.strip-desc {
-  font-size: 11.5px;
-  color: var(--text-muted);
-}
-
-.produce-cards-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.produce-benchmark-card {
-  background: #F8FAFC;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.2s ease;
-}
-
-.produce-benchmark-card:hover {
-  background: #F1F5F9;
-  border-color: #CBD5E1;
-}
-
-.pbc-icon {
-  font-size: 24px;
-  line-height: 1;
-}
-
-.pbc-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-
-.pbc-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.pbc-spec {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.pbc-spec strong {
-  color: var(--text-main);
-}
-
-.pbc-badge {
-  font-size: 9.5px;
-  font-weight: 600;
-  color: #0369A1;
-  background: #E0F2FE;
-  padding: 1px 6px;
-  border-radius: 4px;
-  align-self: flex-start;
-  margin-top: 2px;
 }
 
 /* ==========================================================================
@@ -1192,47 +870,6 @@ body {
   align-items: center;
   gap: 4px;
   margin-top: 2px;
-}
-
-/* Micro Freshness Bar on Carton Tile */
-.carton-micro-meter {
-  width: 100%;
-  height: 3.5px;
-  background: #E2E8F0;
-  border-radius: 2px;
-  overflow: hidden;
-  margin: 3px 0 2px 0;
-}
-
-.carton-micro-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s;
-}
-
-.carton-micro-fill.fresh {
-  background: linear-gradient(90deg, #4ADE80, #15803D);
-}
-
-.carton-micro-fill.spoiled {
-  background: #EF4444;
-}
-
-.tile-safe-time {
-  font-size: 9.5px;
-  color: #64748B;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 2px;
-}
-
-.safe-dot-green {
-  width: 4.5px;
-  height: 4.5px;
-  border-radius: 50%;
-  background-color: #22C55E;
 }
 
 .carton-tile.hidden-filter {

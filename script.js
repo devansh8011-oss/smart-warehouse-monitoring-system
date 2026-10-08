@@ -295,7 +295,7 @@ function renderCartonSvg(parentEl, c) {
   g.setAttribute("class", "carton-svg-group");
   g.style.cursor = "pointer";
 
-  // Box background
+  // Box base
   const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
   rect.setAttribute("id", `carton-rect-${c.id}`);
   rect.setAttribute("class", `carton-rect ${c.state === "spoiled" ? "carton-spoiled-tint" : ""}`);
@@ -303,43 +303,66 @@ function renderCartonSvg(parentEl, c) {
   rect.setAttribute("y", c.y);
   rect.setAttribute("width", c.width);
   rect.setAttribute("height", c.height);
-  rect.setAttribute("rx", "6");
-  rect.setAttribute("fill", c.state === "spoiled" ? "#FEE2E2" : "#FFFFFF");
+  rect.setAttribute("rx", "5");
+  rect.setAttribute("fill", c.state === "spoiled" ? "#FEF2F2" : "#FFFFFF");
   rect.setAttribute("stroke", c.state === "spoiled" ? "#EF4444" : "#CBD5E1");
-  rect.setAttribute("stroke-width", "1.5");
+  rect.setAttribute("stroke-width", "1.4");
+
+  // Center packing tape line
+  const tape = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  tape.setAttribute("x1", c.x + c.width / 2);
+  tape.setAttribute("y1", c.y + 2);
+  tape.setAttribute("x2", c.x + c.width / 2);
+  tape.setAttribute("y2", c.y + c.height - 2);
+  tape.setAttribute("stroke", c.state === "spoiled" ? "#FEE2E2" : "#F1F5F9");
+  tape.setAttribute("stroke-width", "1.5");
+
+  // Mini barcode / RFID glyph (top right)
+  const barcode = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  barcode.setAttribute("d", `M ${c.x + c.width - 26} ${c.y + 8} v 6 M ${c.x + c.width - 23} ${c.y + 8} v 6 M ${c.x + c.width - 21} ${c.y + 8} v 6 M ${c.x + c.width - 18} ${c.y + 8} v 6`);
+  barcode.setAttribute("stroke", "#CBD5E1");
+  barcode.setAttribute("stroke-width", "1");
 
   // Carton ID label
   const textId = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  textId.setAttribute("x", c.x + 10);
-  textId.setAttribute("y", c.y + 19);
-  textId.setAttribute("font-size", "10.5");
+  textId.setAttribute("x", c.x + 9);
+  textId.setAttribute("y", c.y + 18);
+  textId.setAttribute("font-size", "10");
   textId.setAttribute("font-weight", "700");
-  textId.setAttribute("fill", "#1E293B");
+  textId.setAttribute("fill", "#0F172A");
   textId.textContent = c.id;
 
   // Vegetable label
   const textVeg = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  textVeg.setAttribute("x", c.x + 10);
-  textVeg.setAttribute("y", c.y + 36);
-  textVeg.setAttribute("font-size", "10");
+  textVeg.setAttribute("x", c.x + 9);
+  textVeg.setAttribute("y", c.y + 35);
+  textVeg.setAttribute("font-size", "9.5");
   textVeg.setAttribute("font-weight", "500");
-  textVeg.setAttribute("fill", "#64748B");
+  textVeg.setAttribute("fill", "#475569");
   textVeg.textContent = c.vegetable;
+
+  // Gas Sensor Outer Halo (Breathing indicator)
+  const sensorHalo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  sensorHalo.setAttribute("id", `carton-halo-${c.id}`);
+  sensorHalo.setAttribute("cx", c.x + c.width - 12);
+  sensorHalo.setAttribute("cy", c.y + 34);
+  sensorHalo.setAttribute("r", "7");
+  sensorHalo.setAttribute("fill", c.state === "spoiled" ? "rgba(220, 38, 38, 0.15)" : "rgba(21, 128, 61, 0.12)");
 
   // Sensor Dot (Green for fresh, Red for spoiled)
   const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   dot.setAttribute("id", `carton-dot-${c.id}`);
   dot.setAttribute("class", "sensor-dot");
-  dot.setAttribute("cx", c.x + c.width - 14);
-  dot.setAttribute("cy", c.y + 16);
-  dot.setAttribute("r", "5.5");
-  dot.setAttribute("fill", c.state === "spoiled" ? CONFIG.COLORS.red : CONFIG.COLORS.green);
+  dot.setAttribute("cx", c.x + c.width - 12);
+  dot.setAttribute("cy", c.y + 34);
+  dot.setAttribute("r", "4");
+  dot.setAttribute("fill", c.state === "spoiled" ? "#DC2626" : "#15803D");
 
   // Ripple smell waves container for spoiled cartons
   const smellG = document.createElementNS("http://www.w3.org/2000/svg", "g");
   smellG.setAttribute("id", `smell-g-${c.id}`);
   smellG.setAttribute("class", `smell-waves-group ${c.state === "spoiled" ? "" : "hidden"}`);
-  smellG.setAttribute("transform", `translate(${c.x + c.width / 2}, ${c.y + 8})`);
+  smellG.setAttribute("transform", `translate(${c.x + c.width / 2}, ${c.y + 6})`);
 
   // 3 subtle wavy lines
   for (let i = 0; i < 3; i++) {
@@ -351,8 +374,11 @@ function renderCartonSvg(parentEl, c) {
   }
 
   g.appendChild(rect);
+  g.appendChild(tape);
+  g.appendChild(barcode);
   g.appendChild(textId);
   g.appendChild(textVeg);
+  g.appendChild(sensorHalo);
   g.appendChild(dot);
   g.appendChild(smellG);
 
@@ -831,8 +857,9 @@ function triggerCameraCapture(camId) {
 }
 
 /**
- * Generates CCTV-style snapshot using HTML5 canvas
- * Draws cropped floor area, puddle, timestamp, camera ID overlay, and red bounding box
+ * Generates photorealistic CCTV snapshot using HTML5 canvas
+ * Draws realistic warehouse concrete, OSHA safety lines, stacked cartons,
+ * fluid spill puddle with specular reflections, lens vignette, and security HUD overlay
  */
 function generateCameraSnapshot(spillX, spillY, camId, rackId, timeStr) {
   const canvas = document.getElementById("snapshot-canvas");
@@ -840,87 +867,176 @@ function generateCameraSnapshot(spillX, spillY, camId, rackId, timeStr) {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Background: CCTV floor tiles
-  ctx.fillStyle = "#E2E8F0";
+  // 1. Concrete Floor Base
+  ctx.fillStyle = "#CBD5E1";
   ctx.fillRect(0, 0, w, h);
 
-  // Subtle grid lines
-  ctx.strokeStyle = "#CBD5E1";
-  ctx.lineWidth = 1.5;
-  for (let x = 0; x < w; x += 30) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, h);
-    ctx.stroke();
-  }
-  for (let y = 0; y < h; y += 30) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(w, y);
-    ctx.stroke();
+  // Micro-texture aggregate speckles
+  const seed = (Math.round(spillX * 13) ^ Math.round(spillY * 17)) || 12345;
+  for (let i = 0; i < 400; i++) {
+    const px = Math.abs(Math.sin(seed + i * 1.3)) * w;
+    const py = Math.abs(Math.cos(seed + i * 2.1)) * h;
+    const alpha = (i % 3 === 0) ? 0.08 : 0.04;
+    ctx.fillStyle = (i % 2 === 0) ? `rgba(15, 23, 42, ${alpha})` : `rgba(255, 255, 255, ${alpha * 1.5})`;
+    ctx.fillRect(px, py, (i % 3) + 1, (i % 2) + 1);
   }
 
-  // Draw nearby rack boundary for realism
-  ctx.fillStyle = "#F8FAFC";
+  // Expansion Joint Seams
   ctx.strokeStyle = "#94A3B8";
-  ctx.lineWidth = 2;
-  ctx.fillRect(20, 20, 160, 90);
-  ctx.strokeRect(20, 20, 160, 90);
-  ctx.fillStyle = "#64748B";
-  ctx.font = "bold 11px Inter, sans-serif";
-  ctx.fillText(`RACK ${rackId} - SHELF STORAGE`, 30, 42);
-
-  // Draw puddle in center
-  const centerX = w / 2;
-  const centerY = h / 2 + 10;
-
-  ctx.fillStyle = "rgba(56, 189, 248, 0.65)";
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
-  ctx.ellipse(centerX, centerY, 70, 42, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = "#0284C7";
-  ctx.lineWidth = 2.5;
+  ctx.moveTo(0, h * 0.42);
+  ctx.lineTo(w, h * 0.42);
+  ctx.moveTo(w * 0.58, 0);
+  ctx.lineTo(w * 0.58, h);
   ctx.stroke();
 
-  // Draw red detection bounding box around spill
+  // 2. OSHA Safety Warning Hazard Stripes (Walkway boundary)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, h - 36, w, 22);
+  ctx.clip();
+  ctx.fillStyle = "#E2E8F0";
+  ctx.fillRect(0, h - 36, w, 22);
+  for (let sx = -40; sx < w + 40; sx += 20) {
+    ctx.fillStyle = "#F59E0B";
+    ctx.beginPath();
+    ctx.moveTo(sx, h - 14);
+    ctx.lineTo(sx + 10, h - 14);
+    ctx.lineTo(sx + 20, h - 36);
+    ctx.lineTo(sx + 10, h - 36);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#0F172A";
+    ctx.beginPath();
+    ctx.moveTo(sx + 10, h - 14);
+    ctx.lineTo(sx + 20, h - 14);
+    ctx.lineTo(sx + 30, h - 36);
+    ctx.lineTo(sx + 20, h - 36);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // 3. Industrial Pallet Racking in Background
+  ctx.fillStyle = "#475569";
+  ctx.fillRect(16, 36, 12, h - 80);
+  ctx.fillRect(180, 36, 12, h - 80);
+  ctx.fillStyle = "#EA580C";
+  ctx.fillRect(16, 70, 176, 10);
+  ctx.fillRect(16, 140, 176, 10);
+
+  // Corrugated Cartons on shelf
+  ctx.fillStyle = "#D97706";
+  ctx.fillRect(36, 42, 60, 28);
+  ctx.fillStyle = "#B45309";
+  ctx.fillRect(104, 42, 62, 28);
+  // Barcode stickers on boxes
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(44, 48, 16, 10);
+  ctx.fillRect(112, 48, 16, 10);
+  ctx.fillStyle = "#0F172A";
+  ctx.fillRect(46, 50, 12, 2);
+  ctx.fillRect(46, 53, 8, 2);
+  ctx.fillRect(114, 50, 12, 2);
+
+  // Shelf identification text
+  ctx.fillStyle = "#E2E8F0";
+  ctx.font = "bold 9px monospace";
+  ctx.fillText(`RACK ${rackId} &bull; BAY 01`, 38, 78);
+
+  // 4. Realistic Fluid Spill Puddle
+  const centerX = w * 0.55;
+  const centerY = h * 0.58;
+  const radX = 85;
+  const radY = 48;
+
+  // Outer fluid wet ring
+  const fluidGrad = ctx.createRadialGradient(centerX - 10, centerY - 6, 8, centerX, centerY, radX);
+  fluidGrad.addColorStop(0, "rgba(56, 189, 248, 0.85)");
+  fluidGrad.addColorStop(0.5, "rgba(2, 132, 199, 0.70)");
+  fluidGrad.addColorStop(0.85, "rgba(14, 116, 144, 0.45)");
+  fluidGrad.addColorStop(1, "rgba(15, 23, 42, 0.15)");
+
+  ctx.save();
+  ctx.fillStyle = fluidGrad;
+  ctx.beginPath();
+  ctx.ellipse(centerX, centerY, radX, radY, -0.06, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Secondary droplet satellite puddle
+  ctx.beginPath();
+  ctx.ellipse(centerX + radX * 0.75, centerY - radY * 0.4, 18, 11, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Crisp fluid boundary stroke
+  ctx.strokeStyle = "rgba(2, 132, 199, 0.75)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Specular Water Highlight (Reflected overhead warehouse lamp)
+  const highlightGrad = ctx.createLinearGradient(centerX - 40, centerY - 25, centerX + 10, centerY - 5);
+  highlightGrad.addColorStop(0, "rgba(255, 255, 255, 0.75)");
+  highlightGrad.addColorStop(0.4, "rgba(255, 255, 255, 0.35)");
+  highlightGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+  ctx.fillStyle = highlightGrad;
+  ctx.beginPath();
+  ctx.ellipse(centerX - 15, centerY - 12, 38, 14, -0.15, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 5. AI Detection Bounding Box
+  const boxX = centerX - radX - 12;
+  const boxY = centerY - radY - 14;
+  const boxW = radX * 2 + 38;
+  const boxH = radY * 2 + 28;
+
   ctx.strokeStyle = "#EF4444";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1.8;
   ctx.setLineDash([6, 3]);
-  ctx.strokeRect(centerX - 85, centerY - 55, 170, 105);
+  ctx.strokeRect(boxX, boxY, boxW, boxH);
   ctx.setLineDash([]);
 
-  // Bounding box tag
-  ctx.fillStyle = "#EF4444";
-  ctx.fillRect(centerX - 85, centerY - 72, 130, 18);
+  // Tag Banner
+  ctx.fillStyle = "rgba(239, 68, 68, 0.94)";
+  ctx.fillRect(boxX, boxY - 18, 144, 18);
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 10px monospace";
-  ctx.fillText("OBJECT: LIQUID SPILL 98%", centerX - 80, centerY - 59);
+  ctx.font = "bold 9px monospace";
+  ctx.fillText("AI DETECT: LIQUID 98.4%", boxX + 6, boxY - 5);
+  ctx.restore();
 
-  // CCTV Top Overlay (Camera ID + REC dot + Timestamp)
-  ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
-  ctx.fillRect(0, 0, w, 28);
+  // 6. Security Camera Vignette (darkened lens corners)
+  const vignette = ctx.createRadialGradient(w / 2, h / 2, w * 0.32, w / 2, h / 2, w * 0.65);
+  vignette.addColorStop(0, "rgba(0,0,0,0)");
+  vignette.addColorStop(1, "rgba(15, 23, 42, 0.45)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, w, h);
 
-  // Red blinking REC dot
+  // 7. Security HUD Header Banner
+  ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+  ctx.fillRect(0, 0, w, 26);
+
+  // Red REC dot
   ctx.fillStyle = "#EF4444";
   ctx.beginPath();
-  ctx.arc(15, 14, 5, 0, Math.PI * 2);
+  ctx.arc(14, 13, 4, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 11px monospace";
-  ctx.fillText(`REC  ${camId} - LIVE`, 28, 18);
+  ctx.font = "bold 10px monospace";
+  ctx.fillText(`REC ${camId} HD`, 24, 16);
 
-  ctx.fillStyle = "#E2E8F0";
-  ctx.fillText(`${timeStr}  [WAREHOUSE FACILITY]`, w - 230, 18);
+  ctx.fillStyle = "#94A3B8";
+  ctx.font = "bold 9.5px monospace";
+  ctx.fillText(`${timeStr}  •  SECTOR 01 COLD STORAGE`, w - 260, 16);
 
-  // Subtle CCTV scanlines effect
-  ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
-  for (let y = 0; y < h; y += 4) {
-    ctx.fillRect(0, y, w, 2);
+  // Subtle Scanlines
+  ctx.fillStyle = "rgba(0, 0, 0, 0.03)";
+  for (let y = 0; y < h; y += 3) {
+    ctx.fillRect(0, y, w, 1);
   }
 
-  return canvas.toDataURL("image/jpeg", 0.88);
+  return canvas.toDataURL("image/jpeg", 0.90);
 }
 
 /**

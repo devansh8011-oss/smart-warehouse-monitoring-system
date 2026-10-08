@@ -16,7 +16,7 @@
   <header class="dash-header">
     <div class="dash-header-left">
       <div class="brand-badge-box">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <rect width="24" height="24" rx="6" fill="#F57C00"/>
           <path d="M7 12L12 7L17 12L12 17L7 12Z" fill="white"/>
           <circle cx="12" cy="12" r="2" fill="#F57C00"/>
@@ -25,19 +25,27 @@
       </div>
       <div class="header-divider"></div>
       <div class="warehouse-title-group">
-        <h1 class="dash-title">Warehouse Dashboard</h1>
+        <h1 class="dash-title">Facility Overview</h1>
         <span class="facility-pill">Main Cold Storage &bull; Facility 01</span>
       </div>
     </div>
 
     <div class="dash-header-right">
+      <a href="index.html" class="nav-switch-btn" title="Open Interactive Floor Simulation">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <span>Live Simulation</span>
+      </a>
+
       <div class="live-status-pill">
         <span class="pulse-dot"></span>
-        <span class="live-text">Live</span>
+        <span class="live-text">Live System</span>
       </div>
+      
       <div class="header-meta-group">
         <span class="live-clock" id="dash-clock">11:20:00 AM</span>
-        <span class="last-updated-tag" id="last-updated-text">Last updated: just now</span>
+        <span class="last-updated-tag" id="last-updated-text">Telemetry current</span>
       </div>
     </div>
   </header>

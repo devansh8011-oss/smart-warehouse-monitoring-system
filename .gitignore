@@ -2,3 +2,6 @@
 Thumbs.db
 *.tmp
 *.log
+
+.vercel
+node_modules/

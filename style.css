@@ -5,42 +5,42 @@
 
 /* --- CSS VARIABLES & BRAND PALETTE --- */
 :root {
-  --bg-app: #F7F8FA;
+  --bg-app: #F8FAFC;
   --bg-card: #FFFFFF;
-  --bg-card-subtle: #F8FAFC;
+  --bg-card-subtle: #F1F5F9;
   --bg-border: #E2E8F0;
   --bg-border-focus: #CBD5E1;
 
   /* Typography */
-  --text-main: #1E293B;
-  --text-muted: #64748B;
+  --text-main: #0F172A;
+  --text-muted: #475569;
   --text-light: #94A3B8;
 
-  /* Brand Accents */
-  --brand-orange: #F57C00;
-  --brand-orange-hover: #E65100;
-  --brand-orange-light: #FFF3E0;
+  /* Refined Precision Accent */
+  --brand-orange: #EA580C;
+  --brand-orange-hover: #C2410C;
+  --brand-orange-light: #FFF7ED;
 
-  /* Functional Status Colors */
-  --status-green: #2E7D32;
-  --status-green-light: #E8F5E9;
-  --status-amber: #F9A825;
-  --status-amber-light: #FFFDE7;
-  --status-red: #D32F2F;
-  --status-red-light: #FFEBEE;
-  --status-blue: #1E88E5;
-  --status-blue-light: #E3F2FD;
+  /* Functional Status Colors (Clean Enterprise Spectrum) */
+  --status-green: #15803D;
+  --status-green-light: #F0FDF4;
+  --status-amber: #B45309;
+  --status-amber-light: #FFFBEB;
+  --status-red: #DC2626;
+  --status-red-light: #FEF2F2;
+  --status-blue: #0284C7;
+  --status-blue-light: #F0F9FF;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-phone: 0 20px 30px -10px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  /* Crisp Subtle Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+  --shadow-phone: 0 25px 40px -12px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(15, 23, 42, 0.08);
 
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
@@ -660,15 +660,20 @@ html, body {
   }
 }
 
-/* Fan rotation */
+/* Fan rotation & Active Cooler */
 .cooler-active .fan-blades {
   animation: rotateFan 0.4s linear infinite;
 }
 
 .cooler-active .cooler-body {
   stroke: var(--status-blue) !important;
-  stroke-width: 2.5px !important;
-  filter: drop-shadow(0 0 6px rgba(30, 136, 229, 0.5));
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 6px rgba(2, 132, 199, 0.45));
+}
+
+.cooler-active .cooler-led {
+  fill: #38BDF8 !important;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.9));
 }
 
 .cooler-active .cooler-label-bg {
@@ -1357,14 +1362,13 @@ input[type="range"]#heat-slider {
   width: 100%;
   height: 100%;
   max-height: 640px;
-  background: #0F172A;
-  border-radius: 40px;
-  padding: 10px;
-  box-shadow: var(--shadow-phone);
+  background: #0B0F19;
+  border-radius: 38px;
+  padding: 8px;
+  box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 0 4px #1E293B;
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 4px solid #334155;
   transition: transform 0.15s;
 }
 
@@ -1380,32 +1384,33 @@ input[type="range"]#heat-slider {
 }
 
 .phone-notch {
-  width: 120px;
+  width: 92px;
   height: 18px;
-  background: #0F172A;
+  background: #000000;
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  border-radius: 0 0 14px 14px;
+  border-radius: 12px;
   z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .camera-lens {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #1E293B;
-  border: 1px solid #334155;
+  background: #0F172A;
+  border: 1px solid #1E293B;
+  box-shadow: inset 0 0 2px #0284C7;
 }
 
 .earpiece-speaker {
-  width: 36px;
-  height: 4px;
+  width: 32px;
+  height: 3.5px;
   background: #1E293B;
   border-radius: 2px;
 }
@@ -1456,7 +1461,7 @@ input[type="range"]#heat-slider {
 
 /* VIEW A: LOCK SCREEN */
 .lock-screen {
-  background: linear-gradient(135deg, #1E293B 0%, #0F172A 50%, #1E3A8A 100%);
+  background: radial-gradient(circle at 50% 15%, #1E293B 0%, #0B0F19 80%);
   color: white;
   padding: 20px 14px 16px 14px;
   display: flex;
@@ -1465,21 +1470,22 @@ input[type="range"]#heat-slider {
 }
 
 .lock-date {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   color: #94A3B8;
   text-align: center;
-  margin-top: 15px;
+  margin-top: 14px;
+  letter-spacing: 0.3px;
 }
 
 .lock-clock {
-  font-size: 52px;
+  font-size: 54px;
   font-weight: 300;
   color: #FFFFFF;
   text-align: center;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  margin-bottom: 15px;
+  letter-spacing: -1.5px;
+  line-height: 1.05;
+  margin-bottom: 12px;
 }
 
 .lock-notifications-container {

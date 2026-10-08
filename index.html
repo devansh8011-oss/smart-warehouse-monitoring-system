@@ -219,198 +219,294 @@
           <div class="floor-svg-container" id="floor-svg-container">
             <svg id="warehouse-svg" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet">
               <defs>
-                <!-- Floor subtle grid pattern -->
-                <pattern id="floor-tiles" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <rect width="40" height="40" fill="#F4F6F9" />
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E5E9F0" stroke-width="1" />
+                <!-- Polished Industrial Concrete Floor Pattern -->
+                <pattern id="floor-tiles" width="50" height="50" patternUnits="userSpaceOnUse">
+                  <rect width="50" height="50" fill="#F8FAFC" />
+                  <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#E2E8F0" stroke-width="0.8" />
+                  <circle cx="50" cy="50" r="1" fill="#CBD5E1" />
                 </pattern>
 
-                <!-- Soft shadow for racks -->
-                <filter id="rack-shadow" x="-5%" y="-5%" width="110%" height="115%">
-                  <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.06"/>
+                <!-- OSHA Loading Bay Diagonal Hazard Stripes Pattern -->
+                <pattern id="hazard-stripes" width="20" height="20" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="0" x2="0" y2="20" stroke="#F59E0B" stroke-width="9" />
+                  <line x1="10" y1="0" x2="10" y2="20" stroke="#1E293B" stroke-width="9" />
+                </pattern>
+
+                <!-- Soft structural elevation shadow for racks -->
+                <filter id="rack-shadow" x="-5%" y="-5%" width="110%" height="116%">
+                  <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.05" flood-color="#0F172A"/>
                 </filter>
 
-                <!-- Camera viewing cone radial gradients -->
+                <!-- Camera viewing cone radial gradients with soft edge -->
                 <radialGradient id="cam1-cone" cx="0%" cy="0%" r="100%">
-                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
-                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
-                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
+                  <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </radialGradient>
                 <radialGradient id="cam2-cone" cx="100%" cy="0%" r="100%">
-                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
-                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
-                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
+                  <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </radialGradient>
                 <radialGradient id="cam3-cone" cx="0%" cy="100%" r="100%">
-                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
-                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
-                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
+                  <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </radialGradient>
                 <radialGradient id="cam4-cone" cx="100%" cy="100%" r="100%">
-                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
-                  <stop offset="70%" stop-color="#1E88E5" stop-opacity="0.08"/>
-                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.30"/>
+                  <stop offset="70%" stop-color="#0284C7" stop-opacity="0.06"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </radialGradient>
 
                 <!-- Cooling airflow particle markers & gradient -->
                 <linearGradient id="cool-air-left" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
-                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </linearGradient>
                 <linearGradient id="cool-air-top" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
-                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </linearGradient>
                 <linearGradient id="cool-air-right" x1="100%" y1="0%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#1E88E5" stop-opacity="0.35"/>
-                  <stop offset="100%" stop-color="#1E88E5" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#0284C7" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#0284C7" stop-opacity="0"/>
                 </linearGradient>
               </defs>
 
-              <!-- Warehouse Floor Base -->
-              <rect x="15" y="15" width="970" height="490" rx="14" fill="url(#floor-tiles)" stroke="#CBD5E1" stroke-width="2"/>
-              <!-- Wall perimeter outline -->
-              <rect x="25" y="25" width="950" height="470" rx="8" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="8 4" opacity="0.6"/>
+              <!-- Warehouse Floor Base (Polished Concrete) -->
+              <rect x="15" y="15" width="970" height="490" rx="10" fill="url(#floor-tiles)" stroke="#CBD5E1" stroke-width="1.8"/>
+              
+              <!-- Safety Perimeter Buffer Line -->
+              <rect x="26" y="26" width="948" height="468" rx="7" fill="none" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="8 6"/>
 
-              <!-- WALKWAYS & AISLE LABELS -->
-              <text x="500" y="44" text-anchor="middle" fill="#94A3B8" font-size="11" font-weight="600" letter-spacing="2">MAIN LOGISTICS CORRIDOR</text>
-              <text x="500" y="265" text-anchor="middle" fill="#94A3B8" font-size="11" font-weight="600" letter-spacing="2">CENTRAL INSPECTION AISLE</text>
-              <text x="500" y="488" text-anchor="middle" fill="#94A3B8" font-size="11" font-weight="600" letter-spacing="2">DISPATCH & LOADING BAYS</text>
+              <!-- BOTTOM LOADING BAYS (OSHA safety hatched floor strip) -->
+              <rect x="28" y="468" width="944" height="24" fill="url(#hazard-stripes)" opacity="0.22" rx="4"/>
+              <rect x="28" y="468" width="944" height="24" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+              <line x1="330" y1="468" x2="330" y2="492" stroke="#CBD5E1" stroke-width="1.5"/>
+              <line x1="670" y1="468" x2="670" y2="492" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="180" y="483" text-anchor="middle" fill="#475569" font-size="9.5" font-weight="700" letter-spacing="1">LOADING BAY 01</text>
+              <text x="500" y="483" text-anchor="middle" fill="#475569" font-size="9.5" font-weight="700" letter-spacing="1">DISPATCH BAY 02 (CLEAR)</text>
+              <text x="820" y="483" text-anchor="middle" fill="#475569" font-size="9.5" font-weight="700" letter-spacing="1">RECEIVING BAY 03</text>
 
-              <!-- 4 CAMERAS & VISION CONES -->
+              <!-- FORKLIFT AISLE & AISLE DEMARCATION LINES -->
+              <!-- Central AGV / Forklift Transit Lane -->
+              <line x1="45" y1="260" x2="955" y2="260" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="14 10" opacity="0.6"/>
+              <text x="500" y="254" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="700" letter-spacing="2">MAIN FORKLIFT TRANSIT AISLE &bull; 5 KM/H MAX</text>
+              
+              <!-- Top Corridor -->
+              <text x="500" y="46" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="700" letter-spacing="2">NORTH INSPECTION CORRIDOR</text>
+
+              <!-- Compass / Facility Orientation Badge -->
+              <g transform="translate(485, 275)" opacity="0.55">
+                <circle cx="15" cy="15" r="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+                <path d="M 15 6 L 19 18 L 15 15 L 11 18 Z" fill="#EA580C"/>
+                <text x="15" y="24" text-anchor="middle" fill="#475569" font-size="7.5" font-weight="700">N</text>
+              </g>
+
+              <!-- 4 HIGH-ACCURACY CORNER SECURITY CAMERAS & VISION CONES -->
               <!-- CAM-1 Top-Left -->
               <g id="cam-1-group">
-                <path id="cam-1-cone-path" class="cam-cone" d="M 30 30 L 260 30 A 240 240 0 0 1 30 260 Z" fill="url(#cam1-cone)" />
-                <circle cx="35" cy="35" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
-                <!-- Camera lens -->
-                <circle cx="35" cy="35" r="6" fill="#0EA5E9"/>
-                <path d="M 30 24 L 40 24 L 42 28 L 46 28 L 46 38 L 24 38 L 24 28 L 28 28 Z" fill="#FFFFFF" transform="scale(0.55) translate(18, 18)"/>
-                <rect x="20" y="56" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
-                <text x="44" y="68" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-1</text>
-                <!-- Flash label & flash ring -->
+                <path id="cam-1-cone-path" class="cam-cone" d="M 28 28 L 260 28 A 240 240 0 0 1 28 260 Z" fill="url(#cam1-cone)" />
+                <path d="M 180 28 A 160 160 0 0 1 28 180" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <rect x="22" y="22" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="33" cy="33" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
+                <circle cx="33" cy="33" r="3" fill="#38BDF8"/>
+                <circle cx="40" cy="26" r="1.5" fill="#15803D"/>
+                <rect x="18" y="48" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
+                <text x="41" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-1</text>
                 <g id="cam-1-snap-badge" class="cam-snap-badge hidden">
-                  <rect x="18" y="76" width="70" height="18" rx="4" fill="#0284C7"/>
-                  <text x="53" y="89" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <rect x="18" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
+                  <text x="51" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
                 </g>
               </g>
 
               <!-- CAM-2 Top-Right -->
               <g id="cam-2-group">
-                <path id="cam-2-cone-path" class="cam-cone" d="M 970 30 L 740 30 A 240 240 0 0 0 970 260 Z" fill="url(#cam2-cone)" />
-                <circle cx="965" cy="35" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
-                <circle cx="965" cy="35" r="6" fill="#0EA5E9"/>
-                <rect x="932" y="56" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
-                <text x="956" y="68" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-2</text>
+                <path id="cam-2-cone-path" class="cam-cone" d="M 972 28 L 740 28 A 240 240 0 0 0 972 260 Z" fill="url(#cam2-cone)" />
+                <path d="M 820 28 A 160 160 0 0 0 972 180" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <rect x="956" y="22" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="967" cy="33" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
+                <circle cx="967" cy="33" r="3" fill="#38BDF8"/>
+                <circle cx="960" cy="26" r="1.5" fill="#15803D"/>
+                <rect x="936" y="48" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
+                <text x="959" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-2</text>
                 <g id="cam-2-snap-badge" class="cam-snap-badge hidden">
-                  <rect x="912" y="76" width="70" height="18" rx="4" fill="#0284C7"/>
-                  <text x="947" y="89" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <rect x="916" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
+                  <text x="949" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
                 </g>
               </g>
 
               <!-- CAM-3 Bottom-Left -->
               <g id="cam-3-group">
-                <path id="cam-3-cone-path" class="cam-cone" d="M 30 490 L 260 490 A 240 240 0 0 0 30 260 Z" fill="url(#cam3-cone)" />
-                <circle cx="35" cy="485" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
-                <circle cx="35" cy="485" r="6" fill="#0EA5E9"/>
-                <rect x="20" y="448" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
-                <text x="44" y="460" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-3</text>
+                <path id="cam-3-cone-path" class="cam-cone" d="M 28 492 L 260 492 A 240 240 0 0 0 28 260 Z" fill="url(#cam3-cone)" />
+                <path d="M 180 492 A 160 160 0 0 0 28 340" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <rect x="22" y="476" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="33" cy="487" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
+                <circle cx="33" cy="487" r="3" fill="#38BDF8"/>
+                <circle cx="40" cy="480" r="1.5" fill="#15803D"/>
+                <rect x="18" y="456" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
+                <text x="41" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-3</text>
                 <g id="cam-3-snap-badge" class="cam-snap-badge hidden">
-                  <rect x="18" y="426" width="70" height="18" rx="4" fill="#0284C7"/>
-                  <text x="53" y="439" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <rect x="18" y="434" width="66" height="17" rx="3" fill="#0284C7"/>
+                  <text x="51" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
                 </g>
               </g>
 
               <!-- CAM-4 Bottom-Right -->
               <g id="cam-4-group">
-                <path id="cam-4-cone-path" class="cam-cone" d="M 970 490 L 740 490 A 240 240 0 0 1 970 260 Z" fill="url(#cam4-cone)" />
-                <circle cx="965" cy="485" r="16" fill="#1E293B" stroke="#0EA5E9" stroke-width="2"/>
-                <circle cx="965" cy="485" r="6" fill="#0EA5E9"/>
-                <rect x="932" y="448" width="48" height="16" rx="4" fill="#0F172A" opacity="0.85"/>
-                <text x="956" y="460" fill="#FFFFFF" font-size="9.5" font-weight="700" text-anchor="middle">CAM-4</text>
+                <path id="cam-4-cone-path" class="cam-cone" d="M 972 492 L 740 492 A 240 240 0 0 1 972 260 Z" fill="url(#cam4-cone)" />
+                <path d="M 820 492 A 160 160 0 0 1 972 340" fill="none" stroke="#0284C7" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <rect x="956" y="476" width="22" height="22" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="967" cy="487" r="7" fill="#1E293B" stroke="#0284C7" stroke-width="1.5"/>
+                <circle cx="967" cy="487" r="3" fill="#38BDF8"/>
+                <circle cx="960" cy="480" r="1.5" fill="#15803D"/>
+                <rect x="936" y="456" width="46" height="15" rx="3" fill="#0F172A" opacity="0.88"/>
+                <text x="959" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-4</text>
                 <g id="cam-4-snap-badge" class="cam-snap-badge hidden">
-                  <rect x="912" y="426" width="70" height="18" rx="4" fill="#0284C7"/>
-                  <text x="947" y="439" fill="#FFFFFF" font-size="9" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <rect x="916" y="434" width="66" height="17" rx="3" fill="#0284C7"/>
+                  <text x="949" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
                 </g>
               </g>
 
-              <!-- 3 COOLING UNITS -->
+              <!-- 3 HIGH-EFFICIENCY INDUSTRIAL EVAPORATOR UNITS -->
               <!-- Cooler 1: West Wall (Left) -->
               <g id="cooler-unit-1" class="cooler-group" transform="translate(18, 215)">
-                <!-- Cold air wave graphics -->
                 <path id="cool-air-flow-1" class="cool-air-wave hidden" d="M 28 0 C 70 -30, 110 -20, 160 0 C 110 30, 70 25, 28 15 Z" fill="url(#cool-air-left)"/>
-                <rect x="0" y="-30" width="22" height="60" rx="5" fill="#334155" stroke="#64748B" stroke-width="1.5" class="cooler-body"/>
-                <circle cx="11" cy="0" r="8" fill="#1E293B"/>
-                <!-- Fan Blades -->
-                <g class="fan-blades" id="fan-blades-1" transform="translate(11, 0)">
-                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                <rect x="0" y="-30" width="24" height="60" rx="4" fill="#0F172A" stroke="#475569" stroke-width="1.5" class="cooler-body"/>
+                <line x1="4" y1="-22" x2="20" y2="-22" stroke="#334155" stroke-width="1"/>
+                <line x1="4" y1="-16" x2="20" y2="-16" stroke="#334155" stroke-width="1"/>
+                <line x1="4" y1="16" x2="20" y2="16" stroke="#334155" stroke-width="1"/>
+                <line x1="4" y1="22" x2="20" y2="22" stroke="#334155" stroke-width="1"/>
+                <circle cx="12" cy="0" r="8" fill="#1E293B"/>
+                <g class="fan-blades" id="fan-blades-1" transform="translate(12, 0)">
+                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round"/>
                 </g>
-                <rect x="26" y="-12" width="68" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" class="cooler-label-bg"/>
-                <text x="60" y="3" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-1">Cooling OFF</text>
+                <circle cx="12" cy="-25" r="1.5" fill="#64748B" class="cooler-led" id="cooler-led-1"/>
+                <rect x="28" y="-12" width="72" height="24" rx="4" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" class="cooler-label-bg"/>
+                <text x="64" y="3" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-1">Cooling OFF</text>
               </g>
 
               <!-- Cooler 2: North Wall (Top Center) -->
               <g id="cooler-unit-2" class="cooler-group" transform="translate(460, 18)">
                 <path id="cool-air-flow-2" class="cool-air-wave hidden" d="M 0 28 C -35 70, -25 110, 0 160 C 25 110, 35 70, 15 28 Z" fill="url(#cool-air-top)"/>
-                <rect x="-30" y="0" width="60" height="22" rx="5" fill="#334155" stroke="#64748B" stroke-width="1.5" class="cooler-body"/>
-                <circle cx="0" cy="11" r="8" fill="#1E293B"/>
-                <g class="fan-blades" id="fan-blades-2" transform="translate(0, 11)">
-                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                <rect x="-30" y="0" width="60" height="24" rx="4" fill="#0F172A" stroke="#475569" stroke-width="1.5" class="cooler-body"/>
+                <line x1="-22" y1="4" x2="-22" y2="20" stroke="#334155" stroke-width="1"/>
+                <line x1="-16" y1="4" x2="-16" y2="20" stroke="#334155" stroke-width="1"/>
+                <line x1="16" y1="4" x2="16" y2="20" stroke="#334155" stroke-width="1"/>
+                <line x1="22" y1="4" x2="22" y2="20" stroke="#334155" stroke-width="1"/>
+                <circle cx="0" cy="12" r="8" fill="#1E293B"/>
+                <g class="fan-blades" id="fan-blades-2" transform="translate(0, 12)">
+                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round"/>
                 </g>
-                <rect x="-34" y="26" width="68" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" class="cooler-label-bg"/>
-                <text x="0" y="41" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-2">Cooling OFF</text>
+                <circle cx="-25" cy="12" r="1.5" fill="#64748B" class="cooler-led" id="cooler-led-2"/>
+                <rect x="-36" y="28" width="72" height="24" rx="4" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" class="cooler-label-bg"/>
+                <text x="0" y="43" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-2">Cooling OFF</text>
               </g>
 
               <!-- Cooler 3: East Wall (Right) -->
               <g id="cooler-unit-3" class="cooler-group" transform="translate(982, 215)">
                 <path id="cool-air-flow-3" class="cool-air-wave hidden" d="M -28 0 C -70 -30, -110 -20, -160 0 C -110 30, -70 25, -28 15 Z" fill="url(#cool-air-right)"/>
-                <rect x="-22" y="-30" width="22" height="60" rx="5" fill="#334155" stroke="#64748B" stroke-width="1.5" class="cooler-body"/>
-                <circle cx="-11" cy="0" r="8" fill="#1E293B"/>
-                <g class="fan-blades" id="fan-blades-3" transform="translate(-11, 0)">
-                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                <rect x="-24" y="-30" width="24" height="60" rx="4" fill="#0F172A" stroke="#475569" stroke-width="1.5" class="cooler-body"/>
+                <line x1="-20" y1="-22" x2="-4" y2="-22" stroke="#334155" stroke-width="1"/>
+                <line x1="-20" y1="-16" x2="-4" y2="-16" stroke="#334155" stroke-width="1"/>
+                <line x1="-20" y1="16" x2="-4" y2="16" stroke="#334155" stroke-width="1"/>
+                <line x1="-20" y1="22" x2="-4" y2="22" stroke="#334155" stroke-width="1"/>
+                <circle cx="-12" cy="0" r="8" fill="#1E293B"/>
+                <g class="fan-blades" id="fan-blades-3" transform="translate(-12, 0)">
+                  <path d="M-6 -2 L6 2 M-2 6 L2 -6" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round"/>
                 </g>
-                <rect x="-94" y="-12" width="68" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" class="cooler-label-bg"/>
-                <text x="-60" y="3" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-3">Cooling OFF</text>
+                <circle cx="-12" cy="-25" r="1.5" fill="#64748B" class="cooler-led" id="cooler-led-3"/>
+                <rect x="-100" y="-12" width="72" height="24" rx="4" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" class="cooler-label-bg"/>
+                <text x="-64" y="3" font-size="9" font-weight="700" fill="#64748B" text-anchor="middle" id="cooler-status-text-3">Cooling OFF</text>
               </g>
 
-              <!-- SPILLS LAYER (Generated dynamically or positioned here) -->
+              <!-- SPILLS LAYER -->
               <g id="spills-layer"></g>
 
-              <!-- 4 RACKS WITH 6 CARTONS EACH (24 CARTONS TOTAL) -->
+              <!-- 4 INDUSTRIAL PALLET RACKS (STEEL FRAMES + STRUCTURAL BEAMS) -->
               <!-- Rack A: Top-Left (x: 140, y: 70) -->
               <g id="rack-A-group" class="rack-group" filter="url(#rack-shadow)">
-                <rect x="140" y="70" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
-                <rect x="140" y="70" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
-                <text x="155" y="87" font-size="12" font-weight="700" fill="#334155">RACK A &bull; Fresh Leafy & Root Crops</text>
-                <!-- Cartons in Rack A: 2 rows of 3 -->
+                <rect x="136" y="66" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="445" y="66" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="136" y="215" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="445" y="215" width="9" height="9" fill="#334155" rx="1"/>
+                
+                <rect x="140" y="70" width="310" height="150" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                <line x1="140" y1="148" x2="450" y2="148" stroke="#E2E8F0" stroke-width="1.8"/>
+                <line x1="243" y1="96" x2="243" y2="220" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="347" y1="96" x2="347" y2="220" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+                <rect x="140" y="70" width="310" height="26" rx="8 8 0 0" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <line x1="140" y1="96" x2="450" y2="96" stroke="#EA580C" stroke-width="2"/>
+                <text x="154" y="87" font-size="11.5" font-weight="700" fill="#0F172A">RACK A &bull; Fresh Leafy & Root Crops</text>
+                <text x="438" y="87" font-size="9" font-weight="700" fill="#EA580C" text-anchor="end">BAY A1-A3</text>
+                
                 <g id="rack-A-cartons"></g>
               </g>
 
               <!-- Rack B: Top-Right (x: 550, y: 70) -->
               <g id="rack-B-group" class="rack-group" filter="url(#rack-shadow)">
-                <rect x="550" y="70" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
-                <rect x="550" y="70" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
-                <text x="565" y="87" font-size="12" font-weight="700" fill="#334155">RACK B &bull; Salad & Greens Reserve</text>
+                <rect x="546" y="66" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="855" y="66" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="546" y="215" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="855" y="215" width="9" height="9" fill="#334155" rx="1"/>
+
+                <rect x="550" y="70" width="310" height="150" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                <line x1="550" y1="148" x2="860" y2="148" stroke="#E2E8F0" stroke-width="1.8"/>
+                <line x1="653" y1="96" x2="653" y2="220" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="757" y1="96" x2="757" y2="220" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+                <rect x="550" y="70" width="310" height="26" rx="8 8 0 0" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <line x1="550" y1="96" x2="860" y2="96" stroke="#EA580C" stroke-width="2"/>
+                <text x="564" y="87" font-size="11.5" font-weight="700" fill="#0F172A">RACK B &bull; Salad & Greens Reserve</text>
+                <text x="848" y="87" font-size="9" font-weight="700" fill="#EA580C" text-anchor="end">BAY B1-B3</text>
+                
                 <g id="rack-B-cartons"></g>
               </g>
 
               <!-- Rack C: Bottom-Left (x: 140, y: 295) -->
               <g id="rack-C-group" class="rack-group" filter="url(#rack-shadow)">
-                <rect x="140" y="295" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
-                <rect x="140" y="295" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
-                <text x="155" y="312" font-size="12" font-weight="700" fill="#334155">RACK C &bull; Onion & Potato Bulk Store</text>
+                <rect x="136" y="291" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="445" y="291" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="136" y="440" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="445" y="440" width="9" height="9" fill="#334155" rx="1"/>
+
+                <rect x="140" y="295" width="310" height="150" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                <line x1="140" y1="373" x2="450" y2="373" stroke="#E2E8F0" stroke-width="1.8"/>
+                <line x1="243" y1="321" x2="243" y2="445" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="347" y1="321" x2="347" y2="445" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+                <rect x="140" y="295" width="310" height="26" rx="8 8 0 0" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <line x1="140" y1="321" x2="450" y2="321" stroke="#EA580C" stroke-width="2"/>
+                <text x="154" y="312" font-size="11.5" font-weight="700" fill="#0F172A">RACK C &bull; Onion & Potato Bulk Store</text>
+                <text x="438" y="312" font-size="9" font-weight="700" fill="#EA580C" text-anchor="end">BAY C1-C3</text>
+                
                 <g id="rack-C-cartons"></g>
               </g>
 
               <!-- Rack D: Bottom-Right (x: 550, y: 295) -->
               <g id="rack-D-group" class="rack-group" filter="url(#rack-shadow)">
-                <rect x="550" y="295" width="310" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
-                <rect x="550" y="295" width="310" height="26" rx="10 10 0 0" fill="#F1F5F9" />
-                <text x="565" y="312" font-size="12" font-weight="700" fill="#334155">RACK D &bull; Nightshade & Root Stock</text>
+                <rect x="546" y="291" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="855" y="291" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="546" y="440" width="9" height="9" fill="#334155" rx="1"/>
+                <rect x="855" y="440" width="9" height="9" fill="#334155" rx="1"/>
+
+                <rect x="550" y="295" width="310" height="150" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                <line x1="550" y1="373" x2="860" y2="373" stroke="#E2E8F0" stroke-width="1.8"/>
+                <line x1="653" y1="321" x2="653" y2="445" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="757" y1="321" x2="757" y2="445" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+                <rect x="550" y="295" width="310" height="26" rx="8 8 0 0" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                <line x1="550" y1="321" x2="860" y2="321" stroke="#EA580C" stroke-width="2"/>
+                <text x="564" y="312" font-size="11.5" font-weight="700" fill="#0F172A">RACK D &bull; Nightshade & Root Stock</text>
+                <text x="848" y="312" font-size="9" font-weight="700" fill="#EA580C" text-anchor="end">BAY D1-D3</text>
+                
                 <g id="rack-D-cartons"></g>
               </g>
 
               <!-- CAMERA FLASH OVERLAY (Blinks on snapshot) -->
-              <rect id="camera-flash-overlay" x="15" y="15" width="970" height="490" rx="14" fill="#FFFFFF" opacity="0" pointer-events="none"/>
+              <rect id="camera-flash-overlay" x="15" y="15" width="970" height="490" rx="10" fill="#FFFFFF" opacity="0" pointer-events="none"/>
             </svg>
 
             <!-- Floating Carton Hover Tooltip -->

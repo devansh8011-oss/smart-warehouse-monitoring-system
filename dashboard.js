@@ -671,123 +671,176 @@ function generateRealisticCCTVImage(params) {
   const w = canvas.width;
   const h = canvas.height;
 
-  // 1. Concrete floor background with subtle noise
-  ctx.fillStyle = "#CBD5E1";
+  // 1. Concrete floor base with subtle realistic gradient
+  const floorGrad = ctx.createLinearGradient(0, 0, w, h);
+  floorGrad.addColorStop(0, "#D1D5DB");
+  floorGrad.addColorStop(1, "#9CA3AF");
+  ctx.fillStyle = floorGrad;
   ctx.fillRect(0, 0, w, h);
 
-  // Subtle tile grid
-  ctx.strokeStyle = "#94A3B8";
-  ctx.lineWidth = 1;
-  ctx.globalAlpha = 0.35;
-  for (let x = 0; x < w; x += 36) {
+  // Concrete speckled micro-texture
+  ctx.fillStyle = "rgba(0, 0, 0, 0.035)";
+  for (let i = 0; i < 400; i++) {
+    const rx = (Math.sin(i * 12.9898) * 43758.5453 % 1 + 1) % 1 * w;
+    const ry = (Math.cos(i * 78.233) * 43758.5453 % 1 + 1) % 1 * h;
+    ctx.fillRect(rx, ry, 2, 2);
+  }
+
+  // Industrial warehouse floor expansion joints / grid
+  ctx.strokeStyle = "rgba(100, 116, 139, 0.4)";
+  ctx.lineWidth = 1.2;
+  for (let x = 0; x < w; x += 48) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, h);
     ctx.stroke();
   }
-  for (let y = 0; y < h; y += 36) {
+  for (let y = 0; y < h; y += 48) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(w, y);
     ctx.stroke();
   }
-  ctx.globalAlpha = 1.0;
 
-  // Yellow forklift aisle demarcation line
-  ctx.strokeStyle = "#EAB308";
-  ctx.lineWidth = 6;
-  ctx.globalAlpha = 0.7;
+  // High-contrast OSHA yellow safety pedestrian line
+  ctx.save();
+  ctx.strokeStyle = "#FACC15";
+  ctx.lineWidth = 5;
+  ctx.setLineDash([16, 8]);
   ctx.beginPath();
-  ctx.moveTo(20, h - 35);
-  ctx.lineTo(w - 20, h - 35);
+  ctx.moveTo(15, h - 30);
+  ctx.lineTo(w - 15, h - 30);
   ctx.stroke();
-  ctx.globalAlpha = 1.0;
+  ctx.restore();
 
-  // 2. Nearby Rack Edge / Carton Box
+  // 2. Storage shelf edge & corrugated carton boxes
   if (params.rackSide === "left") {
-    ctx.fillStyle = "#475569";
-    ctx.fillRect(0, 0, 70, h);
-    // Shelf boxes
-    ctx.fillStyle = "#E2E8F0";
-    ctx.fillRect(10, 40, 50, 60);
-    ctx.fillRect(10, 130, 50, 60);
-    ctx.fillRect(10, 220, 50, 60);
+    ctx.fillStyle = "#1E293B";
+    ctx.fillRect(0, 0, 65, h);
+    // Steel shelf uprights
+    ctx.fillStyle = "#F59E0B";
+    ctx.fillRect(60, 0, 5, h);
+    // Carton boxes stacked on racks
+    ctx.fillStyle = "#D97706";
+    ctx.fillRect(10, 30, 45, 55);
+    ctx.fillRect(10, 110, 45, 55);
+    ctx.fillRect(10, 190, 45, 55);
+    // Box barcode labels
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(20, 50, 25, 12);
+    ctx.fillRect(20, 130, 25, 12);
+    ctx.fillRect(20, 210, 25, 12);
   } else if (params.rackSide === "top") {
-    ctx.fillStyle = "#475569";
-    ctx.fillRect(0, 0, w, 55);
-    ctx.fillStyle = "#E2E8F0";
-    ctx.fillRect(40, 10, 80, 38);
-    ctx.fillRect(150, 10, 80, 38);
-    ctx.fillRect(260, 10, 80, 38);
+    ctx.fillStyle = "#1E293B";
+    ctx.fillRect(0, 0, w, 50);
+    ctx.fillStyle = "#F59E0B";
+    ctx.fillRect(0, 46, w, 4);
+    // Boxes
+    ctx.fillStyle = "#D97706";
+    ctx.fillRect(30, 10, 75, 32);
+    ctx.fillRect(130, 10, 75, 32);
+    ctx.fillRect(230, 10, 75, 32);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(45, 20, 30, 10);
+    ctx.fillRect(145, 20, 30, 10);
   } else {
-    ctx.fillStyle = "#475569";
-    ctx.fillRect(w - 70, 0, 70, h);
+    ctx.fillStyle = "#1E293B";
+    ctx.fillRect(w - 65, 0, 65, h);
+    ctx.fillStyle = "#F59E0B";
+    ctx.fillRect(w - 65, 0, 5, h);
   }
 
-  // 3. Glossy irregular puddle shape (translucent blue-grey with reflection)
+  // 3. Fluid liquid puddle with specular water reflections
   ctx.save();
-  ctx.fillStyle = "rgba(56, 189, 248, 0.65)";
+  // Outer wet sheen
+  ctx.fillStyle = "rgba(14, 165, 233, 0.22)";
   ctx.beginPath();
-  ctx.ellipse(params.puddleX, params.puddleY, params.puddleRadiusX, params.puddleRadiusY, -0.15, 0, Math.PI * 2);
+  ctx.ellipse(params.puddleX, params.puddleY, params.puddleRadiusX + 8, params.puddleRadiusY + 6, -0.1, 0, Math.PI * 2);
   ctx.fill();
 
-  // Puddle stroke
-  ctx.strokeStyle = "rgba(2, 132, 199, 0.85)";
-  ctx.lineWidth = 2.5;
+  // Core volume of liquid
+  const puddleGrad = ctx.createRadialGradient(
+    params.puddleX - 10, params.puddleY - 8, 5,
+    params.puddleX, params.puddleY, params.puddleRadiusX
+  );
+  puddleGrad.addColorStop(0, "rgba(56, 189, 248, 0.75)");
+  puddleGrad.addColorStop(0.7, "rgba(2, 132, 199, 0.65)");
+  puddleGrad.addColorStop(1, "rgba(3, 105, 161, 0.5)");
+
+  ctx.fillStyle = puddleGrad;
+  ctx.beginPath();
+  ctx.ellipse(params.puddleX, params.puddleY, params.puddleRadiusX, params.puddleRadiusY, -0.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Edge meniscus
+  ctx.strokeStyle = "rgba(2, 132, 199, 0.9)";
+  ctx.lineWidth = 1.8;
   ctx.stroke();
 
-  // Glossy highlight reflection
-  ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+  // Specular glossy reflection ripples
+  ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
   ctx.beginPath();
-  ctx.ellipse(params.puddleX - 18, params.puddleY - 10, params.puddleRadiusX * 0.45, params.puddleRadiusY * 0.35, -0.15, 0, Math.PI * 2);
+  ctx.ellipse(params.puddleX - 22, params.puddleY - 12, params.puddleRadiusX * 0.38, params.puddleRadiusY * 0.25, -0.15, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+  ctx.beginPath();
+  ctx.ellipse(params.puddleX + 15, params.puddleY + 8, params.puddleRadiusX * 0.25, params.puddleRadiusY * 0.18, -0.05, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  // 4. Red object detection bounding box around puddle
+  // 4. Object Detection AI Bounding Box
   ctx.save();
   ctx.strokeStyle = "#EF4444";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6, 3]);
-  const boxX = params.puddleX - params.puddleRadiusX - 16;
-  const boxY = params.puddleY - params.puddleRadiusY - 14;
-  const boxW = params.puddleRadiusX * 2 + 32;
-  const boxH = params.puddleRadiusY * 2 + 28;
+  ctx.lineWidth = 1.8;
+  ctx.setLineDash([5, 3]);
+  const boxX = params.puddleX - params.puddleRadiusX - 14;
+  const boxY = params.puddleY - params.puddleRadiusY - 12;
+  const boxW = params.puddleRadiusX * 2 + 28;
+  const boxH = params.puddleRadiusY * 2 + 24;
   ctx.strokeRect(boxX, boxY, boxW, boxH);
   ctx.setLineDash([]);
 
-  // Tag banner on box
-  ctx.fillStyle = "#EF4444";
-  ctx.fillRect(boxX, boxY - 18, 140, 18);
+  // Minimal AI detection tag
+  ctx.fillStyle = "rgba(239, 68, 68, 0.92)";
+  ctx.fillRect(boxX, boxY - 16, 126, 16);
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 9.5px monospace";
-  ctx.fillText("OBJECT: LIQUID SPILL 98%", boxX + 5, boxY - 5);
+  ctx.font = "600 9px monospace";
+  ctx.fillText("AI DETECT: LIQUID 98.4%", boxX + 5, boxY - 4);
   ctx.restore();
 
-  // 5. CCTV Top Overlay Banner
-  ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-  ctx.fillRect(0, 0, w, 28);
+  // 5. Security Camera Vignette (darkened lens corners)
+  const vignette = ctx.createRadialGradient(w/2, h/2, w*0.35, w/2, h/2, w*0.65);
+  vignette.addColorStop(0, "rgba(0,0,0,0)");
+  vignette.addColorStop(1, "rgba(15,23,42,0.45)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, w, h);
 
-  // Red REC dot
+  // 6. Security HUD Header Banner
+  ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+  ctx.fillRect(0, 0, w, 24);
+
+  // Pulsing red REC indicator
   ctx.fillStyle = "#EF4444";
   ctx.beginPath();
-  ctx.arc(16, 14, 5, 0, Math.PI * 2);
+  ctx.arc(14, 12, 4, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 11px monospace";
-  ctx.fillText(`REC ${params.camId} - LIVE`, 28, 18);
+  ctx.font = "600 10px monospace";
+  ctx.fillText(`REC ${params.camId} HD`, 24, 15);
 
-  ctx.fillStyle = "#E2E8F0";
-  ctx.font = "11px monospace";
-  ctx.fillText(`${params.timestamp}  [${params.zoneTitle}]`, w - 280, 18);
+  ctx.fillStyle = "#94A3B8";
+  ctx.font = "500 10px monospace";
+  ctx.fillText(`${params.timestamp} • ${params.zoneTitle}`, w - 245, 15);
 
-  // 6. Security scanlines effect
-  ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
-  for (let y = 0; y < h; y += 4) {
-    ctx.fillRect(0, y, w, 2);
+  // Faint scanlines
+  ctx.fillStyle = "rgba(0, 0, 0, 0.03)";
+  for (let y = 0; y < h; y += 3) {
+    ctx.fillRect(0, y, w, 1);
   }
 
-  return canvas.toDataURL("image/jpeg", 0.9);
+  return canvas.toDataURL("image/jpeg", 0.92);
 }
 
 /* ============================================================================

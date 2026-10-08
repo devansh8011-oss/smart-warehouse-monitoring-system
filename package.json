@@ -1,0 +1,18 @@
+{
+  "name": "smart-warehouse-monitoring-system",
+  "version": "1.0.0",
+  "description": "Smart Warehouse Monitoring System - Live Simulation & Operations Dashboard",
+  "scripts": {
+    "test": "node -c script.js && node -c dashboard.js",
+    "lint:clean": "node -e \"const fs=require('fs'); ['index.html','style.css','script.js','dashboard.html','dashboard.css','dashboard.js'].forEach(f => { const content = fs.readFileSync(f, 'utf8'); if (/Orange Future Tech/i.test(content)) throw new Error('Unsanitized company name in ' + f); }); console.log('Sanitization check passed: zero company names found.');\"",
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "iot",
+    "warehouse",
+    "monitoring",
+    "simulation",
+    "dashboard"
+  ],
+  "license": "MIT"
+}

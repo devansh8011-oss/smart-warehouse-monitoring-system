@@ -40,17 +40,11 @@ const CONFIG = {
 
 const SAMPLE_DATA = {
   // Starting values
-  initialTemp: 7.4,
-  initialHumidity: 84.0,
+  initialTemp: 6.0,
+  initialHumidity: 85.0,
 
-  // Fixed sample carton status (24 total)
-  // Spoiled: A-04, B-02, C-05, D-01. All other 20: Fresh.
-  spoiledCartons: {
-    "A-04": { spoiledTime: "10:42 AM", reason: "Elevated ethylene gas detected" },
-    "B-02": { spoiledTime: "10:18 AM", reason: "Skin browning & gas emission" },
-    "C-05": { spoiledTime: "10:05 AM", reason: "Wilting & moisture breakdown" },
-    "D-01": { spoiledTime: "09:47 AM", reason: "Surface rot detected by optical sensor" }
-  },
+  // Default: All 24 cartons start Fresh. Cartons only spoil when triggered in simulation.
+  spoiledCartons: {},
 
   // Vegetable mapping per rack:
   // Rack A = Tomatoes
@@ -88,13 +82,13 @@ const SAMPLE_DATA = {
     }
   ],
 
-  // 6 Monitored areas for Liquid Spill Detection
+  // 6 Monitored areas for Liquid Spill Detection (All clean by default)
   areas: [
     { id: "rack-a", name: "Rack A Aisle", cam: "CAM-1", hasSpill: false, lastChecked: "Just now" },
     { id: "rack-b", name: "Rack B Aisle", cam: "CAM-2", hasSpill: false, lastChecked: "Just now" },
-    { id: "rack-c", name: "Rack C Aisle", cam: "CAM-3", hasSpill: true,  detectedTime: "11:15 AM", lastChecked: "Just now" },
+    { id: "rack-c", name: "Rack C Aisle", cam: "CAM-3", hasSpill: false, lastChecked: "Just now" },
     { id: "rack-d", name: "Rack D Aisle", cam: "CAM-4", hasSpill: false, lastChecked: "Just now" },
-    { id: "loading-dock", name: "Loading Dock", cam: "CAM-5", hasSpill: true, detectedTime: "11:02 AM", lastChecked: "Just now" },
+    { id: "loading-dock", name: "Loading Dock", cam: "CAM-5", hasSpill: false, lastChecked: "Just now" },
     { id: "entrance", name: "Entrance", cam: "CAM-6", hasSpill: false, lastChecked: "Just now" }
   ],
 
@@ -111,18 +105,11 @@ const SAMPLE_DATA = {
     { area: "Rack A Aisle", cam: "CAM-1", time: "Cleaned yesterday", thumbSeed: 102 }
   ],
 
-  // Initial Activity Feed entries (believable history from earlier today)
+  // Initial Activity Feed entries (clean baseline state)
   initialActivities: [
-    { type: "spill", message: "Spill detected at Rack C Aisle (CAM-3). Maintenance alerted.", time: "11:15 AM", hasPhoto: "rack-c", unread: true },
-    { type: "spill", message: "Spill detected at Loading Dock (CAM-5). Vision AI flagged puddle.", time: "11:02 AM", hasPhoto: "loading-dock", unread: true },
-    { type: "cooling-off", message: "Temperature back to normal (8.1 °C). Cooling stopped.", time: "10:58 AM", unread: false },
-    { type: "spoil", message: "Carton A-04 (Tomatoes) has spoiled. Removal suggested.", time: "10:42 AM", unread: false },
-    { type: "cooling-on", message: "Temperature reached 10.3 °C. 3 wall coolers started.", time: "10:31 AM", unread: false },
-    { type: "spoil", message: "Carton B-02 (Potatoes) has spoiled.", time: "10:18 AM", unread: false },
-    { type: "spoil", message: "Carton C-05 (Spinach) has spoiled.", time: "10:05 AM", unread: false },
-    { type: "spoil", message: "Carton D-01 (Carrots) has spoiled.", time: "09:47 AM", unread: false },
-    { type: "cleaned", message: "Spill at Entrance cleaned up and area cleared.", time: "09:20 AM", unread: false },
-    { type: "cooling-off", message: "Morning facility cycle complete. Target temperature met.", time: "08:50 AM", unread: false }
+    { type: "cleaned", message: "Facility inspection passed. All 24 cartons verified fresh.", time: "11:00 AM", unread: false },
+    { type: "cooling-off", message: "Morning facility cycle complete. Target temperature met.", time: "10:30 AM", unread: false },
+    { type: "cleaned", message: "All 6 aisles inspected. Zero liquid hazards detected.", time: "09:45 AM", unread: false }
   ]
 };
 
@@ -689,7 +676,9 @@ function updateHealthSummary() {
     else freshCount++;
   });
 
+  const totalCartons = Math.max(1, freshCount + spoiledCount);
   const activeSpills = SAMPLE_DATA.areas.filter(a => a.hasSpill).length;
+  const freshPct = Math.round((freshCount / totalCartons) * 100);
 
   const freshEl = document.getElementById("hc-fresh-count");
   const spoiledEl = document.getElementById("hc-spoiled-count");
@@ -698,6 +687,42 @@ function updateHealthSummary() {
   if (freshEl) freshEl.textContent = freshCount;
   if (spoiledEl) spoiledEl.textContent = spoiledCount;
   if (spillsEl) spillsEl.textContent = activeSpills;
+
+  // Update filter buttons chip counts
+  const filterFreshCount = document.querySelector("#filter-fresh .chip-count");
+  const filterSpoiledCount = document.querySelector("#filter-spoiled .chip-count");
+  if (filterFreshCount) filterFreshCount.textContent = freshCount;
+  if (filterSpoiledCount) filterSpoiledCount.textContent = spoiledCount;
+
+  // Update SVG donut ring & percentage label
+  const donutPctEl = document.querySelector(".donut-pct");
+  if (donutPctEl) donutPctEl.textContent = `${freshPct}%`;
+
+  // Update progress bars
+  const freshMeter = document.querySelector(".bi-meter-fill.green");
+  const spoiledMeter = document.querySelector(".bi-meter-fill.red");
+  if (freshMeter) freshMeter.style.width = `${(freshCount / totalCartons) * 100}%`;
+  if (spoiledMeter) spoiledMeter.style.width = `${(spoiledCount / totalCartons) * 100}%`;
+
+  // Update Row 3 spill badges
+  const spillPillTag = document.getElementById("pill-active-spills-tag");
+  const spillCleanTag = document.getElementById("pill-clean-areas-tag");
+  const spillText = document.getElementById("pill-spills-text");
+  const noSpillBanner = document.getElementById("no-spills-banner");
+  const spillPaneBadge = document.getElementById("spill-pane-status-badge");
+
+  if (activeSpills > 0) {
+    if (spillPillTag) spillPillTag.style.display = "inline-flex";
+    if (spillText) spillText.textContent = `${activeSpills} Active Spill${activeSpills > 1 ? "s" : ""} Detected`;
+    if (spillCleanTag) spillCleanTag.textContent = `${6 - activeSpills} Areas Clear`;
+    if (noSpillBanner) noSpillBanner.classList.add("hidden");
+    if (spillPaneBadge) spillPaneBadge.textContent = "Waiting for clean-up";
+  } else {
+    if (spillPillTag) spillPillTag.style.display = "none";
+    if (spillCleanTag) spillCleanTag.textContent = "6 Areas Clear";
+    if (noSpillBanner) noSpillBanner.classList.remove("hidden");
+    if (spillPaneBadge) spillPaneBadge.textContent = "All Areas Clear";
+  }
 }
 
 /* ============================================================================

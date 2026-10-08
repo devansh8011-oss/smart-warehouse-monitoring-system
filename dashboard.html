@@ -465,11 +465,11 @@
           <p class="section-subtitle">6 key facility areas continuously monitored by vision AI cameras</p>
         </div>
         <div class="spill-summary-pill-group">
-          <span class="pill-spill-count">
+          <span class="pill-spill-count" id="pill-active-spills-tag" style="display:none;">
             <span class="pulse-dot-red"></span>
-            2 Active Spills Detected
+            <span id="pill-spills-text">0 Active Spills</span>
           </span>
-          <span class="pill-clean-count">4 Areas Clear</span>
+          <span class="pill-clean-count" id="pill-clean-areas-tag">6 Areas Clear</span>
         </div>
       </div>
 
@@ -535,21 +535,18 @@
                 <path d="M 285 52 L 295 52 L 297 55 L 300 55 L 300 62 L 280 62 L 280 55 L 283 55 Z" fill="#475569" transform="scale(0.7) translate(593, 23)"/>
               </g>
 
-              <!-- 3. Rack C Aisle (CAM-3) [Middle-Left: SPILL DETECTED] -->
-              <g id="map-area-rack-c" class="map-zone zone-spill selected" onclick="selectSpillArea('rack-c')">
+              <!-- 3. Rack C Aisle (CAM-3) -->
+              <g id="map-area-rack-c" class="map-zone zone-clear" onclick="selectSpillArea('rack-c')">
                 <rect x="35" y="225" width="180" height="145" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
-                <!-- Vision Cone (Red / Hazard Detected) -->
-                <polygon points="190,245 45,280 145,360" fill="#EF4444" opacity="0.14"/>
+                <!-- Vision Cone (Clear Green) -->
+                <polygon points="190,245 45,280 145,360" fill="#22C55E" opacity="0.08"/>
                 <text x="50" y="252" class="zone-name">Rack C Aisle</text>
                 <text x="50" y="268" class="zone-cam">Camera: CAM-3</text>
-                <g class="zone-status-badge badge-red" transform="translate(50, 285)">
-                  <rect width="112" height="24" rx="12"/>
-                  <text x="56" y="16" text-anchor="middle">💧 Spill detected</text>
+                <g class="zone-status-badge badge-green" transform="translate(50, 285)">
+                  <rect width="88" height="24" rx="12"/>
+                  <text x="44" y="16" text-anchor="middle">✓ No spill</text>
                 </g>
-                <circle cx="190" cy="245" r="13" class="cam-circle red"/>
-                <!-- Pulsing puddle graphic in area -->
-                <ellipse cx="125" cy="336" rx="28" ry="12" class="map-puddle-dot"/>
-                <ellipse cx="125" cy="336" rx="16" ry="7" fill="#DC2626" opacity="0.8"/>
+                <circle cx="190" cy="245" r="13" class="cam-circle"/>
               </g>
 
               <!-- 4. Rack D Aisle (CAM-4) [Middle-Center] -->
@@ -566,20 +563,18 @@
                 <circle cx="390" cy="245" r="13" class="cam-circle"/>
               </g>
 
-              <!-- 5. Loading Dock (CAM-5) [Bottom-Right: SPILL DETECTED] -->
-              <g id="map-area-loading-dock" class="map-zone zone-spill" onclick="selectSpillArea('loading-dock')">
+              <!-- 5. Loading Dock (CAM-5) -->
+              <g id="map-area-loading-dock" class="map-zone zone-clear" onclick="selectSpillArea('loading-dock')">
                 <rect x="435" y="225" width="210" height="85" rx="8" class="zone-rect" filter="url(#area-shadow)"/>
                 <!-- Vision Cone -->
-                <polygon points="620,245 445,245 570,305" fill="#EF4444" opacity="0.14"/>
+                <polygon points="620,245 445,245 570,305" fill="#22C55E" opacity="0.08"/>
                 <text x="450" y="250" class="zone-name">Loading Dock</text>
                 <text x="450" y="266" class="zone-cam">Camera: CAM-5</text>
-                <g class="zone-status-badge badge-red" transform="translate(450, 276)">
-                  <rect width="112" height="22" rx="11"/>
-                  <text x="56" y="15" text-anchor="middle">💧 Spill detected</text>
+                <g class="zone-status-badge badge-green" transform="translate(450, 276)">
+                  <rect width="88" height="22" rx="11"/>
+                  <text x="44" y="15" text-anchor="middle">✓ No spill</text>
                 </g>
-                <circle cx="620" cy="245" r="13" class="cam-circle red"/>
-                <ellipse cx="585" cy="285" rx="18" ry="8" class="map-puddle-dot"/>
-                <ellipse cx="585" cy="285" rx="10" ry="4.5" fill="#DC2626" opacity="0.8"/>
+                <circle cx="620" cy="245" r="13" class="cam-circle"/>
               </g>
 
               <!-- 6. Entrance (CAM-6) [Bottom Right Corridor] -->
@@ -604,13 +599,17 @@
           <!-- Active Spills Highlight Container -->
           <div class="pane-title-row">
             <span class="pane-tag">ACTIVE SPILL ALERTS</span>
-            <span class="alert-status-badge">Waiting for clean-up</span>
+            <span class="alert-status-badge" id="spill-pane-status-badge">All Areas Clear</span>
           </div>
 
           <div class="active-spill-cards-grid">
+            <div id="no-spills-banner" class="no-spills-clean-msg" style="padding:14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;font-size:12px;color:#15803D;font-weight:600;display:flex;align-items:center;gap:8px;">
+              <span>✓</span>
+              <span>All 6 camera-monitored zones are clear. No active liquid hazards detected.</span>
+            </div>
             
             <!-- Spill Alert Card 1: Rack C Aisle -->
-            <div class="spill-alert-card" id="spill-card-rack-c">
+            <div class="spill-alert-card hidden" id="spill-card-rack-c">
               <div class="spill-img-wrapper" onclick="openPhotoModal('rack-c')">
                 <img id="spill-img-rack-c" src="" alt="CCTV Snapshot Rack C Aisle" class="spill-snapshot-img">
                 <div class="cctv-overlay-tag">
@@ -636,7 +635,7 @@
             </div>
 
             <!-- Spill Alert Card 2: Loading Dock -->
-            <div class="spill-alert-card" id="spill-card-loading-dock">
+            <div class="spill-alert-card hidden" id="spill-card-loading-dock">
               <div class="spill-img-wrapper" onclick="openPhotoModal('loading-dock')">
                 <img id="spill-img-loading-dock" src="" alt="CCTV Snapshot Loading Dock" class="spill-snapshot-img">
                 <div class="cctv-overlay-tag">

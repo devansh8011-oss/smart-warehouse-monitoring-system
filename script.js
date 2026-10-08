@@ -547,6 +547,7 @@ function spoilCarton(cartonId) {
   );
 
   logEvent("spoil", alertMsg, null, false);
+  broadcastSimulationState();
 
   // Resume Guided demo if waiting on spoilage step
   if (STATE.demo.isRunning && STATE.demo.currentStep === 5) {
@@ -587,6 +588,7 @@ function replaceCartonFresh(cartonId) {
 
   // Log in dashboard (per spec: "logs 'Carton B-04 replaced with fresh stock', no phone alert")
   logEvent("info", `Carton ${c.id} (${c.vegetable}) replaced with fresh stock.`, null, false);
+  broadcastSimulationState();
 }
 
 function updateCartonCountCards() {
@@ -782,6 +784,7 @@ function executeSpillAt(x, y) {
   );
 
   logEvent("spill", alertCaption, snapshotDataUrl, false);
+  broadcastSimulationState();
 
   // Resume Guided demo if waiting on spill step
   if (STATE.demo.isRunning && STATE.demo.currentStep === 6) {
@@ -1052,6 +1055,7 @@ function cleanUpSpill() {
   document.getElementById("cleanup-spill-btn").classList.add("hidden");
 
   logEvent("info", "Liquid spill on floor cleaned up. Area verified clear.", null, false);
+  broadcastSimulationState();
 }
 
 /* ============================================================================
@@ -1130,6 +1134,9 @@ function simulationTick() {
   // 6. Refresh Displays
   renderDashboard();
   renderSparklines();
+
+  // 7. Sync state to Dashboard in real time
+  broadcastSimulationState();
 }
 
 /**
@@ -1812,4 +1819,65 @@ function escapeHtml(str) {
       "'": '&#39;'
     }[m];
   });
+}
+
+/* ============================================================================
+   LIVE DASHBOARD SYNCHRONIZATION BRIDGE
+   Broadcasts simulation telemetry, carton states, cooling, and spills in real time
+   ============================================================================ */
+let simSyncChannel = null;
+try {
+  if (typeof BroadcastChannel !== "undefined") {
+    simSyncChannel = new BroadcastChannel("warehouse_simulation_sync");
+  }
+} catch (e) {
+  console.warn("BroadcastChannel not supported", e);
+}
+
+function broadcastSimulationState() {
+  const syncPayload = {
+    type: "SIM_STATE_UPDATE",
+    timestamp: Date.now(),
+    simTime: getCurrentTimeString(),
+    temp: STATE.currentTemp,
+    humidity: STATE.currentHumidity,
+    coolingActive: STATE.coolingActive,
+    coolingSeconds: STATE.coolingSecondsActive,
+    coolingLimit: STATE.config.coolingLimit,
+    cartons: {},
+    activeSpill: STATE.activeSpill ? {
+      id: STATE.activeSpill.id,
+      nearestCam: STATE.activeSpill.nearestCam,
+      nearestRack: STATE.activeSpill.nearestRack,
+      timestamp: STATE.activeSpill.timestamp,
+      snapshotUrl: STATE.activeSpill.snapshotUrl
+    } : null
+  };
+
+  // Extract cartons state map
+  if (STATE.cartons) {
+    Object.keys(STATE.cartons).forEach(cid => {
+      const c = STATE.cartons[cid];
+      syncPayload.cartons[cid] = {
+        id: c.id,
+        rack: c.rack,
+        vegetable: c.vegetable,
+        state: c.state
+      };
+    });
+  }
+
+  try {
+    localStorage.setItem("warehouse_sim_state", JSON.stringify(syncPayload));
+  } catch (err) {
+    // quota safe fallback
+  }
+
+  if (simSyncChannel) {
+    try {
+      simSyncChannel.postMessage(syncPayload);
+    } catch (e) {
+      console.warn("Sync postMessage error", e);
+    }
+  }
 }

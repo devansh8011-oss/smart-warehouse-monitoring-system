@@ -146,8 +146,270 @@ const STATE = {
   
   spillImages: {}, // Data URLs generated via Canvas
 
-  lastUpdateTimestamp: Date.now()
+  lastUpdateTimestamp: Date.now(),
+  isLiveLinked: false,
+  lastSimSyncTime: 0
 };
+
+/* ============================================================================
+   SIMULATION LIVE LINK BRIDGE
+   Listens for live state changes from the main simulation tab (BroadcastChannel + localStorage)
+   ============================================================================ */
+let dashSyncChannel = null;
+
+function initSimulationSyncBridge() {
+  try {
+    if (typeof BroadcastChannel !== "undefined") {
+      dashSyncChannel = new BroadcastChannel("warehouse_simulation_sync");
+      dashSyncChannel.onmessage = (event) => {
+        if (event.data && event.data.type === "SIM_STATE_UPDATE") {
+          applySimulationSyncData(event.data);
+        }
+      };
+    }
+  } catch (err) {
+    console.warn("BroadcastChannel error:", err);
+  }
+
+  // Also listen for cross-tab storage events
+  window.addEventListener("storage", (e) => {
+    if (e.key === "warehouse_sim_state" && e.newValue) {
+      try {
+        const payload = JSON.parse(e.newValue);
+        applySimulationSyncData(payload);
+      } catch (err) {}
+    }
+  });
+
+  // Check initial state from localStorage if simulation was already running
+  try {
+    const cached = localStorage.getItem("warehouse_sim_state");
+    if (cached) {
+      const payload = JSON.parse(cached);
+      if (Date.now() - payload.timestamp < 10000) {
+        applySimulationSyncData(payload);
+      }
+    }
+  } catch (err) {}
+
+  // Periodic heartbeat checker for simulation connection status
+  setInterval(checkSimLinkHealth, 2000);
+}
+
+function checkSimLinkHealth() {
+  const pill = document.getElementById("sim-sync-pill");
+  const text = document.getElementById("sync-status-text");
+  const isRecent = (Date.now() - STATE.lastSimSyncTime) < 4500;
+  STATE.isLiveLinked = isRecent;
+
+  if (pill && text) {
+    if (isRecent) {
+      pill.classList.remove("disconnected");
+      text.textContent = "Sim Live";
+    } else {
+      pill.classList.add("disconnected");
+      text.textContent = "Autonomous";
+    }
+  }
+}
+
+function applySimulationSyncData(data) {
+  STATE.lastSimSyncTime = Date.now();
+  STATE.isLiveLinked = true;
+
+  // 1. Live Temperature & Cooling
+  if (typeof data.temp === "number") {
+    STATE.temp = Math.round(data.temp * 10) / 10;
+    animateValue("temp-big-val", STATE.displayedTemp, STATE.temp, 400, 1);
+    STATE.displayedTemp = STATE.temp;
+
+    STATE.tempHistory.push(STATE.temp);
+    if (STATE.tempHistory.length > CONFIG.CHART_POINTS) STATE.tempHistory.shift();
+  }
+
+  if (typeof data.coolingActive === "boolean") {
+    const wasCooling = STATE.coolingOn;
+    STATE.coolingOn = data.coolingActive;
+    if (typeof data.coolingSeconds === "number") {
+      STATE.coolingRunningSeconds = Math.round(data.coolingSeconds);
+    }
+    if (!wasCooling && STATE.coolingOn) {
+      addActivity("cooling-on", `Temperature reached ${STATE.temp.toFixed(1)} °C. Cooling units switched ON via simulation.`);
+    } else if (wasCooling && !STATE.coolingOn) {
+      addActivity("cooling-off", `Temperature normalised (${STATE.temp.toFixed(1)} °C). Cooling units switched OFF.`);
+    }
+  }
+
+  // 2. Live Humidity
+  if (typeof data.humidity === "number") {
+    STATE.humidity = Math.round(data.humidity * 10) / 10;
+    animateValue("hum-big-val", STATE.displayedHumidity, STATE.humidity, 400, 0);
+    STATE.displayedHumidity = STATE.humidity;
+
+    STATE.humidityHistory.push(STATE.humidity);
+    if (STATE.humidityHistory.length > CONFIG.CHART_POINTS) STATE.humidityHistory.shift();
+  }
+
+  // 3. Update Cartons States Dynamically
+  if (data.cartons) {
+    let cartonStateChanged = false;
+    Object.keys(data.cartons).forEach(cid => {
+      const simC = data.cartons[cid];
+      const dashC = STATE.cartons[cid];
+      if (dashC) {
+        const newStatus = simC.state === "spoiled" ? "spoiled" : "fresh";
+        if (dashC.status !== newStatus) {
+          cartonStateChanged = true;
+          dashC.status = newStatus;
+          if (newStatus === "spoiled") {
+            dashC.spoiledInfo = {
+              spoiledTime: data.simTime || formatClockTime(new Date()),
+              reason: "Gas detection alert triggered in simulation"
+            };
+            addActivity("spoil", `Carton ${cid} (${dashC.vegetable}) spoiled in simulation.`);
+          } else {
+            dashC.spoiledInfo = null;
+            addActivity("cleaned", `Carton ${cid} (${dashC.vegetable}) replaced with fresh stock in simulation.`);
+          }
+          updateSingleCartonTile(cid);
+        }
+      }
+    });
+
+    if (cartonStateChanged) {
+      updateHealthSummary();
+    }
+  }
+
+  // 4. Update Spills Dynamically from Simulation
+  if (data.activeSpill) {
+    const rackId = (data.activeSpill.nearestRack || "C").toLowerCase();
+    const areaId = `rack-${rackId}`;
+    const area = SAMPLE_DATA.areas.find(a => a.id === areaId);
+    if (area && !area.hasSpill) {
+      area.hasSpill = true;
+      area.detectedTime = data.activeSpill.timestamp || formatClockTime(new Date());
+      if (data.activeSpill.snapshotUrl) {
+        STATE.spillImages[areaId] = data.activeSpill.snapshotUrl;
+      }
+      addActivity("spill", `Liquid spill detected in simulation near Rack ${data.activeSpill.nearestRack}.`, areaId);
+      renderAreasTable();
+      updateSpillSvgArea(areaId, true);
+      updateSpillAlertCard(areaId, true);
+      updateHealthSummary();
+    }
+  } else {
+    // If no active spill in simulation, clear simulation-triggered spills if any
+    ["rack-a", "rack-b", "rack-d"].forEach(aid => {
+      const area = SAMPLE_DATA.areas.find(a => a.id === aid);
+      if (area && area.hasSpill) {
+        area.hasSpill = false;
+        renderAreasTable();
+        updateSpillSvgArea(aid, false);
+        updateSpillAlertCard(aid, false);
+        updateHealthSummary();
+      }
+    });
+  }
+
+  // 5. Render Metric Visuals & UI
+  renderMetrics();
+  renderSparklines();
+  renderCoolingCard();
+  updateHealthSummary();
+
+  const updatedTag = document.getElementById("last-updated-text");
+  if (updatedTag) updatedTag.textContent = "Telemetry synced";
+  STATE.lastUpdateTimestamp = Date.now();
+  checkSimLinkHealth();
+}
+
+/**
+ * Updates DOM for an individual carton tile dynamically
+ */
+function updateSingleCartonTile(cartonId) {
+  const c = STATE.cartons[cartonId];
+  const tile = document.getElementById(`carton-tile-${cartonId}`);
+  if (!c || !tile) return;
+
+  const isSpoiled = c.status === "spoiled";
+  tile.className = `carton-tile ${isSpoiled ? "spoiled" : "fresh"}`;
+
+  const statusPill = tile.querySelector(".tile-status-pill");
+  if (statusPill) {
+    statusPill.className = `tile-status-pill ${isSpoiled ? "spoiled" : "fresh"}`;
+    statusPill.textContent = isSpoiled ? "Spoiled" : "Fresh";
+  }
+
+  const microFill = tile.querySelector(".carton-micro-fill");
+  if (microFill) {
+    microFill.className = `carton-micro-fill ${isSpoiled ? "spoiled" : "fresh"}`;
+    microFill.style.width = isSpoiled ? "18%" : "96%";
+  }
+
+  // Time / status note
+  const timeBox = tile.querySelector(".tile-spoiled-time, .tile-safe-time");
+  if (timeBox) {
+    if (isSpoiled) {
+      timeBox.className = "tile-spoiled-time";
+      const spTime = c.spoiledInfo ? c.spoiledInfo.spoiledTime : "Just now";
+      timeBox.innerHTML = `
+        <span class="pulse-dot-red" style="width:5px;height:5px;"></span>
+        <span>Since ${spTime}</span>
+      `;
+    } else {
+      timeBox.className = "tile-safe-time";
+      timeBox.innerHTML = `
+        <span class="safe-dot-green"></span>
+        <span>Optimal • Gas Normal</span>
+      `;
+    }
+  }
+
+  if (STATE.activeFilter !== "all") {
+    filterCartons(STATE.activeFilter);
+  }
+}
+
+function updateSpillSvgArea(areaId, hasSpill) {
+  const mapZone = document.getElementById(`map-area-${areaId}`);
+  if (!mapZone) return;
+
+  if (hasSpill) {
+    mapZone.className.baseVal = "map-zone zone-spill selected";
+    const badge = mapZone.querySelector(".zone-status-badge");
+    if (badge) {
+      badge.className.baseVal = "zone-status-badge badge-red";
+      const txt = badge.querySelector("text");
+      if (txt) txt.textContent = "💧 Spill detected";
+    }
+  } else {
+    mapZone.className.baseVal = "map-zone zone-clear";
+    const badge = mapZone.querySelector(".zone-status-badge");
+    if (badge) {
+      badge.className.baseVal = "zone-status-badge badge-green";
+      const txt = badge.querySelector("text");
+      if (txt) txt.textContent = "✓ No spill";
+    }
+  }
+}
+
+function updateSpillAlertCard(areaId, hasSpill) {
+  const card = document.getElementById(`spill-card-${areaId}`);
+  if (card) {
+    if (hasSpill) {
+      card.style.opacity = "1";
+      card.style.pointerEvents = "auto";
+      const img = document.getElementById(`spill-img-${areaId}`);
+      if (img && STATE.spillImages[areaId]) {
+        img.src = STATE.spillImages[areaId];
+      }
+    } else {
+      card.style.opacity = "0.5";
+      card.style.pointerEvents = "none";
+    }
+  }
+}
 
 /* ============================================================================
    INIT & BOOTSTRAP
@@ -175,7 +437,10 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCoolingCard();
   updateHealthSummary();
 
-  // 7. Start Live Loop (2s updates) & Clock
+  // 7. Initialize Simulation Live Link Bridge
+  initSimulationSyncBridge();
+
+  // 8. Start Live Loop (2s updates) & Clock
   setInterval(liveTick, CONFIG.UPDATE_INTERVAL_MS);
   setInterval(updateLiveClock, 1000);
   setInterval(updateCoolingTimer, 1000);
@@ -185,6 +450,10 @@ document.addEventListener("DOMContentLoaded", () => {
    LIVE SIMULATION TICK (Every 2 seconds)
    ============================================================================ */
 function liveTick() {
+  // If receiving live telemetry from simulation tab, let simulation drive values
+  if (STATE.isLiveLinked) {
+    return;
+  }
   // --- TEMPERATURE RANDOM WALK ---
   let tempDelta = (Math.random() * 2 - 1) * CONFIG.TEMP_STEP_MAX;
   

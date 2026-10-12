@@ -565,51 +565,61 @@ function animateValue(elementId, startVal, endVal, durationMs, decimals) {
 function renderMetrics() {
   // 1. Temperature Card Status
   const tempChip = document.getElementById("temp-status-chip");
-  if (STATE.temp > CONFIG.COOLING_LIMIT) {
-    tempChip.textContent = "Too warm";
-    tempChip.className = "status-chip chip-red";
-  } else if (STATE.temp >= 9.0) {
-    tempChip.textContent = "Near limit";
-    tempChip.className = "status-chip chip-amber";
-  } else {
-    tempChip.textContent = "Normal";
-    tempChip.className = "status-chip chip-normal";
+  if (tempChip) {
+    if (STATE.temp > CONFIG.COOLING_LIMIT) {
+      tempChip.className = "status-pill-badge pill-red";
+      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Too warm</span>`;
+    } else if (STATE.temp >= 9.0) {
+      tempChip.className = "status-pill-badge pill-amber";
+      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Near limit</span>`;
+    } else {
+      tempChip.className = "status-pill-badge pill-normal";
+      tempChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Normal</span>`;
+    }
   }
 
   // Cooling Chip in Temp Card
   const coolingChip = document.getElementById("temp-cooling-chip");
   const coolingChipText = document.getElementById("temp-cooling-chip-text");
-  if (STATE.coolingOn) {
-    coolingChip.className = "cooling-inline-chip chip-on";
-    coolingChipText.textContent = "Cooling: ON";
-  } else {
-    coolingChip.className = "cooling-inline-chip chip-off";
-    coolingChipText.textContent = "Cooling: OFF";
+  if (coolingChip && coolingChipText) {
+    if (STATE.coolingOn) {
+      coolingChip.className = "cooling-inline-chip chip-on";
+      coolingChipText.textContent = "Cooling: ON";
+    } else {
+      coolingChip.className = "cooling-inline-chip chip-off";
+      coolingChipText.textContent = "Cooling: OFF";
+    }
   }
 
-  // Temperature Gauge Fill
+  // Temperature Gauge Fill & Slider Thumb
   // Range 5.0 to 12.0 °C
   const gaugePct = Math.max(0, Math.min(100, ((STATE.temp - 5.0) / (12.0 - 5.0)) * 100));
   const tempGaugeFill = document.getElementById("temp-gauge-fill");
   if (tempGaugeFill) tempGaugeFill.style.width = `${gaugePct}%`;
+  const tempSliderThumb = document.getElementById("temp-slider-thumb");
+  if (tempSliderThumb) tempSliderThumb.style.left = `${gaugePct}%`;
 
   // 2. Humidity Card Status
   const humChip = document.getElementById("hum-status-chip");
-  if (STATE.humidity > 92) {
-    humChip.textContent = "Slightly high";
-    humChip.className = "status-chip chip-amber";
-  } else if (STATE.humidity < 80) {
-    humChip.textContent = "Slightly low";
-    humChip.className = "status-chip chip-amber";
-  } else {
-    humChip.textContent = "Good for storage";
-    humChip.className = "status-chip chip-normal";
+  if (humChip) {
+    if (STATE.humidity > 92) {
+      humChip.className = "status-pill-badge pill-amber";
+      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly high</span>`;
+    } else if (STATE.humidity < 80) {
+      humChip.className = "status-pill-badge pill-amber";
+      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly low</span>`;
+    } else {
+      humChip.className = "status-pill-badge pill-normal";
+      humChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Good for storage</span>`;
+    }
   }
 
-  // Humidity Gauge Fill (70 to 100%)
+  // Humidity Gauge Fill & Slider Thumb (70 to 100%)
   const humPct = Math.max(0, Math.min(100, ((STATE.humidity - 70) / (100 - 70)) * 100));
   const humGaugeFill = document.getElementById("hum-gauge-fill");
   if (humGaugeFill) humGaugeFill.style.width = `${humPct}%`;
+  const humSliderThumb = document.getElementById("hum-slider-thumb");
+  if (humSliderThumb) humSliderThumb.style.left = `${humPct}%`;
 }
 
 /**
@@ -697,6 +707,40 @@ function updateHealthSummary() {
   const filterSpoiledCount = document.querySelector("#filter-spoiled .chip-count");
   if (filterFreshCount) filterFreshCount.textContent = freshCount;
   if (filterSpoiledCount) filterSpoiledCount.textContent = spoiledCount;
+
+  // Calculate comfort / health score (0-100%)
+  let comfortScore = 100;
+  if (spoiledCount > 0) comfortScore -= spoiledCount * 12;
+  if (activeSpills > 0) comfortScore -= activeSpills * 10;
+  if (STATE.temp > CONFIG.COOLING_LIMIT) comfortScore -= 15;
+  else if (STATE.temp >= 9.0) comfortScore -= 6;
+  if (STATE.humidity < 75 || STATE.humidity > 95) comfortScore -= 8;
+  comfortScore = Math.max(10, Math.min(100, comfortScore));
+
+  const comfortScoreVal = document.getElementById("comfort-score-val");
+  if (comfortScoreVal) comfortScoreVal.textContent = `${comfortScore}%`;
+
+  const comfortArc = document.getElementById("comfort-arc-fill");
+  if (comfortArc) {
+    // Arc length is 110
+    const offset = 110 * (1 - comfortScore / 100);
+    comfortArc.style.strokeDashoffset = `${offset}`;
+  }
+
+  const overallHealthPill = document.getElementById("overall-health-pill");
+  if (overallHealthPill) {
+    if (activeSpills === 0 && spoiledCount === 0 && STATE.temp <= CONFIG.COOLING_LIMIT) {
+      overallHealthPill.className = "status-pill-badge pill-normal";
+      overallHealthPill.innerHTML = `<span class="pill-status-icon">✓</span><span class="pill-status-text">All Clear</span>`;
+    } else if (spoiledCount > 0 || activeSpills > 0) {
+      const alertNum = spoiledCount + activeSpills;
+      overallHealthPill.className = "status-pill-badge pill-red";
+      overallHealthPill.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">${alertNum} Alert${alertNum > 1 ? "s" : ""}</span>`;
+    } else {
+      overallHealthPill.className = "status-pill-badge pill-amber";
+      overallHealthPill.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Near Limit</span>`;
+    }
+  }
 
   // Update Row 3 spill badges
   const spillPillTag = document.getElementById("pill-active-spills-tag");

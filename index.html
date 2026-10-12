@@ -652,17 +652,49 @@
             
             <!-- Temperature Card -->
             <div class="metric-card" id="card-temp">
-              <div class="metric-head">
-                <span class="m-title">Temperature</span>
-                <span class="m-chip chip-normal" id="temp-status-chip">Normal</span>
+              <div class="card-top-row">
+                <div class="card-header-badge">
+                  <div class="card-icon-pill icon-pill-cyan">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                    </svg>
+                  </div>
+                  <span class="card-eyebrow">TEMPERATURE</span>
+                </div>
+                <div class="cooling-inline-chip chip-off" id="sim-temp-cooling-chip">
+                  <span id="sim-cooling-chip-text">Cooling: OFF</span>
+                </div>
               </div>
-              <div class="metric-val-row">
-                <span class="m-val" id="val-temp">6.0</span>
-                <span class="m-unit">°C</span>
+
+              <div class="big-metric-display">
+                <span class="metric-number" id="val-temp">6.0</span>
+                <span class="metric-unit">°C</span>
               </div>
+
+              <!-- Status Chip Below Number -->
+              <div class="metric-status-badge-row">
+                <span class="status-pill-badge pill-normal" id="sim-temp-status-chip">
+                  <span class="pill-status-icon">☺</span>
+                  <span class="pill-status-text">Normal</span>
+                </span>
+              </div>
+
+              <!-- Industrial Range Slider Track with Thumb Marker -->
+              <div class="temp-gauge-wrapper">
+                <div class="gauge-labels">
+                  <span>5.0°C</span>
+                  <span class="limit-marker-text" id="sim-cooling-limit-lbl">Limit: 10.0°C</span>
+                  <span>12.0°C</span>
+                </div>
+                <div class="gauge-track industrial-track temp-track">
+                  <div class="gauge-slider-thumb" id="sim-temp-slider-thumb" style="left: 14%;"></div>
+                  <div class="gauge-limit-pin" title="Cooling Limit"></div>
+                </div>
+              </div>
+
               <!-- Small live line chart canvas -->
               <div class="chart-box">
-                <canvas id="temp-chart-canvas" width="220" height="42"></canvas>
+                <canvas id="temp-chart-canvas" width="220" height="34"></canvas>
               </div>
               <div class="m-footer">
                 <span id="temp-sub-note">Cooling triggers at 10.0°C</span>
@@ -671,16 +703,44 @@
 
             <!-- Humidity Card -->
             <div class="metric-card" id="card-humidity">
-              <div class="metric-head">
-                <span class="m-title">Relative Humidity</span>
-                <span class="m-chip chip-info" id="humidity-status-chip">Optimal</span>
+              <div class="card-top-row">
+                <div class="card-header-badge">
+                  <div class="card-icon-pill icon-pill-teal">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    </svg>
+                  </div>
+                  <span class="card-eyebrow">RELATIVE HUMIDITY</span>
+                </div>
               </div>
-              <div class="metric-val-row">
-                <span class="m-val" id="val-humidity">85</span>
-                <span class="m-unit">%</span>
+
+              <div class="big-metric-display">
+                <span class="metric-number" id="val-humidity">85</span>
+                <span class="metric-unit">% RH</span>
               </div>
+
+              <!-- Status Chip Below Number -->
+              <div class="metric-status-badge-row">
+                <span class="status-pill-badge pill-normal" id="sim-hum-status-chip">
+                  <span class="pill-status-icon">☺</span>
+                  <span class="pill-status-text">Good for storage</span>
+                </span>
+              </div>
+
+              <!-- Industrial Range Slider Track with Thumb Marker -->
+              <div class="temp-gauge-wrapper">
+                <div class="gauge-labels">
+                  <span>70%</span>
+                  <span class="limit-marker-text">Ideal: 80–92%</span>
+                  <span>100%</span>
+                </div>
+                <div class="gauge-track industrial-track hum-track">
+                  <div class="gauge-slider-thumb" id="sim-hum-slider-thumb" style="left: 50%;"></div>
+                </div>
+              </div>
+
               <div class="chart-box">
-                <canvas id="humidity-chart-canvas" width="220" height="42"></canvas>
+                <canvas id="humidity-chart-canvas" width="220" height="34"></canvas>
               </div>
               <div class="m-footer">
                 <span>Optimal storage: 80–92% RH</span>
@@ -689,40 +749,98 @@
 
             <!-- Cartons Card -->
             <div class="metric-card" id="card-cartons">
-              <div class="metric-head">
-                <span class="m-title">Vegetable Cartons</span>
+              <div class="card-top-row">
+                <div class="card-header-badge">
+                  <div class="card-icon-pill icon-pill-purple">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    </svg>
+                  </div>
+                  <span class="card-eyebrow">INVENTORY HEALTH</span>
+                </div>
                 <span class="m-chip chip-gray">24 Total</span>
               </div>
-              <div class="cartons-stat-row">
-                <div class="stat-pill pill-fresh">
-                  <span class="dot green"></span>
-                  <span class="stat-num" id="count-fresh">24</span>
-                  <span class="stat-lbl">Fresh</span>
+
+              <div class="health-comfort-row">
+                <div class="comfort-gauge-box">
+                  <svg class="comfort-arc-svg" viewBox="0 0 100 65" width="64" height="42">
+                    <path d="M 15 55 A 35 35 0 0 1 85 55" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round"/>
+                    <path id="sim-comfort-arc-fill" d="M 15 55 A 35 35 0 0 1 85 55" fill="none" stroke="url(#sim-comfort-grad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="110" stroke-dashoffset="0"/>
+                    <defs>
+                      <linearGradient id="sim-comfort-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#38BDF8"/>
+                        <stop offset="50%" stop-color="#10B981"/>
+                        <stop offset="100%" stop-color="#34D399"/>
+                      </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="48" r="8" fill="#ECFDF5"/>
+                    <text x="50" y="52" text-anchor="middle" font-size="10">☺</text>
+                  </svg>
+                  <div class="comfort-score-text">
+                    <span class="comfort-score-val" id="sim-comfort-score-val">100%</span>
+                  </div>
                 </div>
-                <div class="stat-pill pill-spoiled">
-                  <span class="dot red"></span>
-                  <span class="stat-num" id="count-spoiled">0</span>
-                  <span class="stat-lbl">Spoiled</span>
+
+                <div class="cartons-stat-row">
+                  <div class="stat-pill pill-fresh">
+                    <span class="dot green"></span>
+                    <span class="stat-num" id="count-fresh">24</span>
+                    <span class="stat-lbl">Fresh</span>
+                  </div>
+                  <div class="stat-pill pill-spoiled">
+                    <span class="dot red"></span>
+                    <span class="stat-num" id="count-spoiled">0</span>
+                    <span class="stat-lbl">Spoiled</span>
+                  </div>
                 </div>
               </div>
+
+              <div class="metric-status-badge-row">
+                <span class="status-pill-badge pill-normal" id="sim-inventory-status-chip">
+                  <span class="pill-status-icon">✓</span>
+                  <span class="pill-status-text">All Cartons Fresh</span>
+                </span>
+              </div>
+
               <div class="m-footer-help">
-                <span>Click any carton to simulate spoilage</span>
+                <span>Click carton to test spoilage</span>
               </div>
             </div>
 
             <!-- Cooling Status Card -->
             <div class="metric-card" id="card-cooling">
-              <div class="metric-head">
-                <span class="m-title">Cooling System</span>
+              <div class="card-top-row">
+                <div class="card-header-badge">
+                  <div class="card-icon-pill icon-pill-blue">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                      <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
+                      <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
+                      <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
+                      <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
+                    </svg>
+                  </div>
+                  <span class="card-eyebrow">COOLING SYSTEM</span>
+                </div>
                 <span class="m-chip chip-cooling-off" id="cooling-state-chip">OFF</span>
               </div>
+
               <div class="metric-val-row">
                 <span class="m-val-sm" id="cooling-units-title">3 Units Standby</span>
               </div>
+
               <div class="cooling-timer-box">
                 <span class="timer-lbl">Running Time:</span>
                 <span class="timer-val" id="cooling-timer-val">00:00</span>
               </div>
+
+              <div class="metric-status-badge-row">
+                <span class="status-pill-badge pill-normal" id="sim-cooling-status-pill">
+                  <span class="pill-status-icon">●</span>
+                  <span class="pill-status-text">Standby Ready</span>
+                </span>
+              </div>
+
               <div class="m-footer">
                 <span id="cooling-hysteresis-note">Turns off at limit −2°C</span>
               </div>

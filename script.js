@@ -645,6 +645,29 @@ function updateCartonCountCards() {
 
   if (freshEl) freshEl.textContent = freshCount;
   if (spoiledEl) spoiledEl.textContent = spoiledCount;
+
+  // Update Inventory Comfort / Health Arc & Badge
+  const total = Math.max(1, freshCount + spoiledCount);
+  const healthScore = Math.round((freshCount / total) * 100);
+  const arcVal = document.getElementById("sim-comfort-score-val");
+  if (arcVal) arcVal.textContent = `${healthScore}%`;
+
+  const arcFill = document.getElementById("sim-comfort-arc-fill");
+  if (arcFill) {
+    const offset = 110 * (1 - healthScore / 100);
+    arcFill.style.strokeDashoffset = `${offset}`;
+  }
+
+  const invChip = document.getElementById("sim-inventory-status-chip");
+  if (invChip) {
+    if (spoiledCount === 0) {
+      invChip.className = "status-pill-badge pill-normal";
+      invChip.innerHTML = `<span class="pill-status-icon">✓</span><span class="pill-status-text">All Cartons Fresh</span>`;
+    } else {
+      invChip.className = "status-pill-badge pill-red";
+      invChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">${spoiledCount} Spoiled Carton${spoiledCount > 1 ? "s" : ""}</span>`;
+    }
+  }
 }
 
 /* ============================================================================
@@ -1501,15 +1524,28 @@ function setCoolersVisualState(isActive) {
 
   const coolingChip = document.getElementById("cooling-state-chip");
   const unitsTitle = document.getElementById("cooling-units-title");
+  const coolingPill = document.getElementById("sim-cooling-status-pill");
 
   if (isActive) {
-    coolingChip.textContent = "ON (3 UNITS)";
-    coolingChip.className = "m-chip chip-cooling-on";
-    unitsTitle.textContent = "3 Units Active";
+    if (coolingChip) {
+      coolingChip.textContent = "ON (3 UNITS)";
+      coolingChip.className = "m-chip chip-cooling-on";
+    }
+    if (unitsTitle) unitsTitle.textContent = "3 Units Active";
+    if (coolingPill) {
+      coolingPill.className = "status-pill-badge pill-amber";
+      coolingPill.innerHTML = `<span class="pill-status-icon">❄</span><span class="pill-status-text">Actively Cooling</span>`;
+    }
   } else {
-    coolingChip.textContent = "OFF";
-    coolingChip.className = "m-chip chip-cooling-off";
-    unitsTitle.textContent = "3 Units Standby";
+    if (coolingChip) {
+      coolingChip.textContent = "OFF";
+      coolingChip.className = "m-chip chip-cooling-off";
+    }
+    if (unitsTitle) unitsTitle.textContent = "3 Units Standby";
+    if (coolingPill) {
+      coolingPill.className = "status-pill-badge pill-normal";
+      coolingPill.innerHTML = `<span class="pill-status-icon">●</span><span class="pill-status-text">Standby Ready</span>`;
+    }
   }
 }
 
@@ -1542,9 +1578,14 @@ function handleHeatSlider(val) {
 
 function adjustCoolingLimit(delta) {
   STATE.config.coolingLimit = Math.round((STATE.config.coolingLimit + delta) * 10) / 10;
-  document.getElementById("cooling-limit-display").textContent = `${STATE.config.coolingLimit.toFixed(1)}°C`;
-  document.getElementById("temp-sub-note").textContent = `Cooling triggers at ${STATE.config.coolingLimit.toFixed(1)}°C`;
-  document.getElementById("cooling-hysteresis-note").textContent = `Turns off at ${(STATE.config.coolingLimit - CONFIG.COOLING_HYSTERESIS_DELTA).toFixed(1)}°C`;
+  const limitDisp = document.getElementById("cooling-limit-display");
+  if (limitDisp) limitDisp.textContent = `${STATE.config.coolingLimit.toFixed(1)}°C`;
+  const tempSub = document.getElementById("temp-sub-note");
+  if (tempSub) tempSub.textContent = `Cooling triggers at ${STATE.config.coolingLimit.toFixed(1)}°C`;
+  const hystNote = document.getElementById("cooling-hysteresis-note");
+  if (hystNote) hystNote.textContent = `Turns off at ${(STATE.config.coolingLimit - CONFIG.COOLING_HYSTERESIS_DELTA).toFixed(1)}°C`;
+  const simLimitLbl = document.getElementById("sim-cooling-limit-lbl");
+  if (simLimitLbl) simLimitLbl.textContent = `Limit: ${STATE.config.coolingLimit.toFixed(1)}°C`;
   renderSparklines();
 }
 
@@ -1559,24 +1600,68 @@ function renderDashboard() {
 
   if (tempChip) {
     if (STATE.currentTemp > STATE.config.coolingLimit) {
-      tempChip.textContent = "Too warm";
-      tempChip.className = "m-chip chip-alert";
+      tempChip.className = "status-pill-badge pill-red";
+      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Too warm</span>`;
     } else if (STATE.coolingActive) {
-      tempChip.textContent = "Cooling down";
-      tempChip.className = "m-chip chip-info";
+      tempChip.className = "status-pill-badge pill-amber";
+      tempChip.innerHTML = `<span class="pill-status-icon">❄</span><span class="pill-status-text">Cooling down</span>`;
+    } else if (STATE.currentTemp >= 9.0) {
+      tempChip.className = "status-pill-badge pill-amber";
+      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Near limit</span>`;
     } else {
-      tempChip.textContent = "Normal";
-      tempChip.className = "m-chip chip-normal";
+      tempChip.className = "status-pill-badge pill-normal";
+      tempChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Normal</span>`;
     }
+  }
+
+  // Cooling Chip in Temp Card
+  const simCoolChip = document.getElementById("sim-temp-cooling-chip");
+  const simCoolChipText = document.getElementById("sim-cooling-chip-text");
+  if (simCoolChip && simCoolChipText) {
+    if (STATE.coolingActive) {
+      simCoolChip.className = "cooling-inline-chip chip-on";
+      simCoolChipText.textContent = "Cooling: ON";
+    } else {
+      simCoolChip.className = "cooling-inline-chip chip-off";
+      simCoolChipText.textContent = "Cooling: OFF";
+    }
+  }
+
+  // Dynamic Slider Thumb for Temperature (5.0 to 12.0 °C)
+  const tempThumb = document.getElementById("sim-temp-slider-thumb");
+  if (tempThumb) {
+    const tempPct = Math.max(0, Math.min(100, ((STATE.currentTemp - 5.0) / (12.0 - 5.0)) * 100));
+    tempThumb.style.left = `${tempPct}%`;
   }
 
   // 2. Humidity Card
   const humValEl = document.getElementById("val-humidity");
-  humValEl.textContent = Math.round(STATE.currentHumidity);
+  if (humValEl) humValEl.textContent = Math.round(STATE.currentHumidity);
+
+  const humChip = document.getElementById("sim-hum-status-chip");
+  if (humChip) {
+    if (STATE.currentHumidity > 92) {
+      humChip.className = "status-pill-badge pill-amber";
+      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly high</span>`;
+    } else if (STATE.currentHumidity < 80) {
+      humChip.className = "status-pill-badge pill-amber";
+      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly low</span>`;
+    } else {
+      humChip.className = "status-pill-badge pill-normal";
+      humChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Good for storage</span>`;
+    }
+  }
+
+  // Dynamic Slider Thumb for Humidity (70 to 100%)
+  const humThumb = document.getElementById("sim-hum-slider-thumb");
+  if (humThumb) {
+    const humPct = Math.max(0, Math.min(100, ((STATE.currentHumidity - 70) / (100 - 70)) * 100));
+    humThumb.style.left = `${humPct}%`;
+  }
 
   // 3. Wall Sensor Badge
   const wsEl = document.getElementById("wall-sensor-readings");
-  wsEl.textContent = `${STATE.currentTemp.toFixed(1)}°C • ${Math.round(STATE.currentHumidity)}% RH`;
+  if (wsEl) wsEl.textContent = `${STATE.currentTemp.toFixed(1)}°C • ${Math.round(STATE.currentHumidity)}% RH`;
 }
 
 /**

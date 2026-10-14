@@ -328,7 +328,7 @@
                 <text x="41" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-1</text>
                 <g id="cam-1-snap-badge" class="cam-snap-badge hidden">
                   <rect x="18" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
-                  <text x="51" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <text x="51" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">CAPTURED</text>
                 </g>
               </g>
 
@@ -344,7 +344,7 @@
                 <text x="705" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-2</text>
                 <g id="cam-2-snap-badge" class="cam-snap-badge hidden">
                   <rect x="672" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
-                  <text x="705" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <text x="705" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">CAPTURED</text>
                 </g>
               </g>
 
@@ -360,7 +360,7 @@
                 <text x="41" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-3</text>
                 <g id="cam-3-snap-badge" class="cam-snap-badge hidden">
                   <rect x="18" y="434" width="66" height="17" rx="3" fill="#0284C7"/>
-                  <text x="51" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <text x="51" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">CAPTURED</text>
                 </g>
               </g>
 
@@ -376,7 +376,7 @@
                 <text x="705" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-4</text>
                 <g id="cam-4-snap-badge" class="cam-snap-badge hidden">
                   <rect x="672" y="434" width="66" height="17" rx="3" fill="#0284C7"/>
-                  <text x="705" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <text x="705" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">CAPTURED</text>
                 </g>
               </g>
 
@@ -392,7 +392,7 @@
                 <text x="959" y="59" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-5</text>
                 <g id="cam-5-snap-badge" class="cam-snap-badge hidden">
                   <rect x="916" y="66" width="66" height="17" rx="3" fill="#0284C7"/>
-                  <text x="949" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <text x="949" y="78" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">CAPTURED</text>
                 </g>
               </g>
 
@@ -408,7 +408,7 @@
                 <text x="959" y="467" fill="#FFFFFF" font-size="9" font-weight="700" text-anchor="middle">CAM-6</text>
                 <g id="cam-6-snap-badge" class="cam-snap-badge hidden">
                   <rect x="916" y="434" width="66" height="17" rx="3" fill="#0284C7"/>
-                  <text x="949" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">📸 Captured</text>
+                  <text x="949" y="446" fill="#FFFFFF" font-size="8.5" font-weight="600" text-anchor="middle">CAPTURED</text>
                 </g>
               </g>
 
@@ -583,34 +583,281 @@
           </div>
         </div>
 
-        <!-- CONTROLS & DASHBOARD ROW -->
-        <div class="controls-dashboard-row">
+        <!-- ROW 1: PRIMARY TELEMETRY & EQUIPMENT (4 Dedicated Cards Grid) -->
+        <div class="sim-telemetry-grid">
+          
+          <!-- 1. Temperature Card -->
+          <div class="metric-card clickable-metric-card" id="card-temp" onclick="openSimHistoryModal('temp')" title="Click to view 12-Month Temperature Graph & Numerical Table">
+            <div class="card-top-row">
+              <div class="card-header-badge">
+                <div class="card-icon-pill icon-pill-cyan">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                  </svg>
+                </div>
+                <span class="card-eyebrow">TEMPERATURE</span>
+              </div>
+              <div class="cooling-inline-chip chip-off" id="sim-temp-cooling-chip">
+                <span id="sim-cooling-chip-text">Cooling: OFF</span>
+              </div>
+            </div>
+
+            <div class="big-metric-display">
+              <span class="metric-number" id="val-temp">6.0</span>
+              <span class="metric-unit">°C</span>
+            </div>
+
+            <div class="metric-status-badge-row">
+              <span class="status-pill-badge pill-normal" id="sim-temp-status-chip">
+                <span class="pill-status-icon">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </span>
+                <span class="pill-status-text">Normal</span>
+              </span>
+            </div>
+
+            <div class="temp-gauge-wrapper">
+              <div class="gauge-labels">
+                <span>5.0°C</span>
+                <span class="limit-marker-text" id="sim-cooling-limit-lbl">Limit: 10.0°C</span>
+                <span>12.0°C</span>
+              </div>
+              <div class="gauge-track industrial-track temp-track">
+                <div class="gauge-slider-thumb" id="sim-temp-slider-thumb" style="left: 14%;"></div>
+                <div class="gauge-limit-pin" title="Cooling Limit"></div>
+              </div>
+            </div>
+
+            <div class="chart-box">
+              <canvas id="temp-chart-canvas" width="260" height="44"></canvas>
+            </div>
+            <div class="m-footer">
+              <span id="temp-sub-note">Cooling triggers at 10.0°C</span>
+              <span class="click-history-badge">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;vertical-align:-1px;">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                12-Mo Data
+              </span>
+            </div>
+          </div>
+
+          <!-- 2. Humidity Card -->
+          <div class="metric-card clickable-metric-card" id="card-humidity" onclick="openSimHistoryModal('humidity')" title="Click to view 12-Month Humidity Graph & Numerical Table">
+            <div class="card-top-row">
+              <div class="card-header-badge">
+                <div class="card-icon-pill icon-pill-teal">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                  </svg>
+                </div>
+                <span class="card-eyebrow">RELATIVE HUMIDITY</span>
+              </div>
+            </div>
+
+            <div class="big-metric-display">
+              <span class="metric-number" id="val-humidity">85</span>
+              <span class="metric-unit">% RH</span>
+            </div>
+
+            <div class="metric-status-badge-row">
+              <span class="status-pill-badge pill-normal" id="sim-hum-status-chip">
+                <span class="pill-status-icon">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </span>
+                <span class="pill-status-text">Good for storage</span>
+              </span>
+            </div>
+
+            <div class="temp-gauge-wrapper">
+              <div class="gauge-labels">
+                <span>70%</span>
+                <span class="limit-marker-text">Ideal: 80–92%</span>
+                <span>100%</span>
+              </div>
+              <div class="gauge-track industrial-track hum-track">
+                <div class="gauge-slider-thumb" id="sim-hum-slider-thumb" style="left: 50%;"></div>
+              </div>
+            </div>
+
+            <div class="chart-box">
+              <canvas id="humidity-chart-canvas" width="260" height="44"></canvas>
+            </div>
+            <div class="m-footer">
+              <span>Optimal storage: 80–92% RH</span>
+              <span class="click-history-badge">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;vertical-align:-1px;">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                12-Mo Data
+              </span>
+            </div>
+          </div>
+
+          <!-- 3. Power Consumption Card -->
+          <div class="metric-card clickable-metric-card" id="card-power" onclick="openSimHistoryModal('power')" title="Click to view 12-Month Power Consumption Graph & Numerical Table">
+            <div class="card-top-row">
+              <div class="card-header-badge">
+                <div class="card-icon-pill icon-pill-amber">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                  </svg>
+                </div>
+                <span class="card-eyebrow">POWER CONSUMPTION</span>
+              </div>
+              <span class="m-chip chip-amber" id="sim-power-tag">45.0 kW</span>
+            </div>
+
+            <div class="big-metric-display">
+              <span class="metric-number" id="val-power">45.0</span>
+              <span class="metric-unit">kW</span>
+            </div>
+
+            <div class="metric-status-badge-row">
+              <span class="status-pill-badge pill-normal" id="sim-power-status-chip">
+                <span class="pill-status-icon">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                </span>
+                <span class="pill-status-text">Baseline Facility Load</span>
+              </span>
+            </div>
+
+            <div class="temp-gauge-wrapper">
+              <div class="gauge-labels">
+                <span>20 kW</span>
+                <span class="limit-marker-text">Peak: 90 kW</span>
+                <span>120 kW</span>
+              </div>
+              <div class="gauge-track industrial-track power-track">
+                <div class="gauge-slider-thumb power-thumb" id="sim-power-slider-thumb" style="left: 25%;"></div>
+                <div class="gauge-limit-pin power-limit-pin" title="Peak Demand: 90 kW"></div>
+              </div>
+            </div>
+
+            <div class="chart-box">
+              <canvas id="power-chart-canvas" width="260" height="44"></canvas>
+            </div>
+            <div class="m-footer">
+              <span id="sim-power-sub-note">Daily Est: ~1,080 kWh</span>
+              <span class="click-history-badge">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;vertical-align:-1px;">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                12-Mo Data
+              </span>
+            </div>
+          </div>
+
+          <!-- 4. Cooling Units (AC) Widget -->
+          <div class="metric-card sim-cooling-side-card" id="sim-cooling-side-widget">
+            <div class="card-top-row">
+              <div class="card-header-badge">
+                <div class="card-icon-pill icon-pill-blue">
+                  <svg class="ac-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="11" rx="2" ry="2"/>
+                    <line x1="5" y1="8" x2="14" y2="8"/>
+                    <circle cx="18" cy="8" r="1" fill="currentColor"/>
+                    <path d="M4 15h16"/>
+                    <path d="M7 18c0 1.5-1 2-1 3" stroke-dasharray="2 1"/>
+                    <path d="M12 18c0 1.5 0 2 0 3"/>
+                    <path d="M17 18c0 1.5 1 2 1 3" stroke-dasharray="2 1"/>
+                  </svg>
+                </div>
+                <span class="card-eyebrow">COOLING UNITS (AC)</span>
+              </div>
+              <span class="m-chip chip-cooling-off" id="cooling-state-chip">OFF</span>
+            </div>
+
+            <div class="sim-ac-units-list">
+              <div class="sim-ac-unit-row" id="sim-ac-row-1">
+                <div class="ac-dot-name">
+                  <span class="ac-mini-indicator" id="sim-ac-dot-1">●</span>
+                  <span class="sim-ac-name">AC-1 North</span>
+                </div>
+                <span class="sim-ac-status off" id="sim-ac-pill-1">Standby</span>
+              </div>
+              <div class="sim-ac-unit-row" id="sim-ac-row-2">
+                <div class="ac-dot-name">
+                  <span class="ac-mini-indicator" id="sim-ac-dot-2">●</span>
+                  <span class="sim-ac-name">AC-2 East</span>
+                </div>
+                <span class="sim-ac-status off" id="sim-ac-pill-2">Standby</span>
+              </div>
+              <div class="sim-ac-unit-row" id="sim-ac-row-3">
+                <div class="ac-dot-name">
+                  <span class="ac-mini-indicator" id="sim-ac-dot-3">●</span>
+                  <span class="sim-ac-name">AC-3 West</span>
+                </div>
+                <span class="sim-ac-status off" id="sim-ac-pill-3">Standby</span>
+              </div>
+            </div>
+
+            <div class="cooling-timer-box-mini">
+              <span class="timer-lbl">Active Runtime:</span>
+              <span class="timer-val" id="cooling-timer-val">00:00</span>
+            </div>
+
+            <div class="m-footer">
+              <span id="cooling-hysteresis-note">Auto triggers &gt; 10.0°C</span>
+              <span style="font-size:10.5px; font-weight:700; color:#0284C7;">3 Units</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ROW 2: OPERATIONAL CONSOLE (Interactive Controls + Inventory Health) -->
+        <div class="sim-console-row">
           
           <!-- CONTROLS PANEL -->
           <div class="panel-card controls-card">
             <div class="card-head">
-              <h4>Interactive Controls</h4>
-              <span class="help-label">Adjust warehouse environment</span>
+              <h4>Interactive Environment Controls</h4>
+              <span class="help-label">Adjust warehouse environment &amp; test live sensor response</span>
             </div>
 
             <div class="controls-content">
               <!-- Outside Heat Slider -->
               <div class="control-box">
                 <div class="control-label-row">
-                  <label for="heat-slider">Outside Heat Level</label>
+                  <label for="heat-slider">Outside Ambient Heat Level</label>
                   <span class="badge-tag" id="heat-weather-tag">Normal day (0°C diff)</span>
                 </div>
                 <div class="slider-container">
-                  <span class="slider-side-label">Cooler</span>
+                  <span class="slider-side-label">Cooler (-5°C)</span>
                   <input type="range" id="heat-slider" min="-5" max="20" value="0" step="1" oninput="handleHeatSlider(this.value)">
-                  <span class="slider-side-label">Hotter</span>
+                  <span class="slider-side-label">Hotter (+20°C)</span>
+                </div>
+              </div>
+
+              <!-- Power Consumption Load Slider -->
+              <div class="control-box">
+                <div class="control-label-row">
+                  <label for="power-slider">Facility Power Grid Baseline Load</label>
+                  <span class="badge-tag" id="power-load-tag">45.0 kW (Standard)</span>
+                </div>
+                <div class="slider-container">
+                  <span class="slider-side-label">25 kW (Eco)</span>
+                  <input type="range" id="power-slider" min="25" max="85" value="45" step="1" oninput="handlePowerSlider(this.value)">
+                  <span class="slider-side-label">85 kW (Heavy)</span>
                 </div>
               </div>
 
               <!-- Cooling Limit & Actions -->
               <div class="controls-row-2">
                 <div class="limit-adjust-box">
-                  <span class="limit-caption">Cooling limit</span>
+                  <span class="limit-caption">Cooling trigger limit</span>
                   <div class="limit-controls">
                     <button type="button" class="btn-step" onclick="adjustCoolingLimit(-0.5)" title="Decrease limit">−</button>
                     <span class="limit-val" id="cooling-limit-display">10.0°C</span>
@@ -635,7 +882,7 @@
                     <span>Spill Liquid</span>
                   </button>
 
-                  <!-- Clean up Spill Button (appears only when spill active) -->
+                  <!-- Clean up Spill Button -->
                   <button type="button" class="btn-action btn-cleanup hidden" id="cleanup-spill-btn" onclick="cleanUpSpill()">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="20 6 9 17 4 12"></polyline>
@@ -647,123 +894,29 @@
             </div>
           </div>
 
-          <!-- DASHBOARD METRICS CARDS -->
-          <div class="metrics-grid">
-            
-            <!-- Temperature Card -->
-            <div class="metric-card" id="card-temp">
-              <div class="card-top-row">
-                <div class="card-header-badge">
-                  <div class="card-icon-pill icon-pill-cyan">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
-                    </svg>
-                  </div>
-                  <span class="card-eyebrow">TEMPERATURE</span>
-                </div>
-                <div class="cooling-inline-chip chip-off" id="sim-temp-cooling-chip">
-                  <span id="sim-cooling-chip-text">Cooling: OFF</span>
-                </div>
-              </div>
-
-              <div class="big-metric-display">
-                <span class="metric-number" id="val-temp">6.0</span>
-                <span class="metric-unit">°C</span>
-              </div>
-
-              <!-- Status Chip Below Number -->
-              <div class="metric-status-badge-row">
-                <span class="status-pill-badge pill-normal" id="sim-temp-status-chip">
-                  <span class="pill-status-icon">☺</span>
-                  <span class="pill-status-text">Normal</span>
-                </span>
-              </div>
-
-              <!-- Industrial Range Slider Track with Thumb Marker -->
-              <div class="temp-gauge-wrapper">
-                <div class="gauge-labels">
-                  <span>5.0°C</span>
-                  <span class="limit-marker-text" id="sim-cooling-limit-lbl">Limit: 10.0°C</span>
-                  <span>12.0°C</span>
-                </div>
-                <div class="gauge-track industrial-track temp-track">
-                  <div class="gauge-slider-thumb" id="sim-temp-slider-thumb" style="left: 14%;"></div>
-                  <div class="gauge-limit-pin" title="Cooling Limit"></div>
-                </div>
-              </div>
-
-              <!-- Small live line chart canvas -->
-              <div class="chart-box">
-                <canvas id="temp-chart-canvas" width="220" height="34"></canvas>
-              </div>
-              <div class="m-footer">
-                <span id="temp-sub-note">Cooling triggers at 10.0°C</span>
-              </div>
-            </div>
-
-            <!-- Humidity Card -->
-            <div class="metric-card" id="card-humidity">
-              <div class="card-top-row">
-                <div class="card-header-badge">
-                  <div class="card-icon-pill icon-pill-teal">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                    </svg>
-                  </div>
-                  <span class="card-eyebrow">RELATIVE HUMIDITY</span>
-                </div>
-              </div>
-
-              <div class="big-metric-display">
-                <span class="metric-number" id="val-humidity">85</span>
-                <span class="metric-unit">% RH</span>
-              </div>
-
-              <!-- Status Chip Below Number -->
-              <div class="metric-status-badge-row">
-                <span class="status-pill-badge pill-normal" id="sim-hum-status-chip">
-                  <span class="pill-status-icon">☺</span>
-                  <span class="pill-status-text">Good for storage</span>
-                </span>
-              </div>
-
-              <!-- Industrial Range Slider Track with Thumb Marker -->
-              <div class="temp-gauge-wrapper">
-                <div class="gauge-labels">
-                  <span>70%</span>
-                  <span class="limit-marker-text">Ideal: 80–92%</span>
-                  <span>100%</span>
-                </div>
-                <div class="gauge-track industrial-track hum-track">
-                  <div class="gauge-slider-thumb" id="sim-hum-slider-thumb" style="left: 50%;"></div>
-                </div>
-              </div>
-
-              <div class="chart-box">
-                <canvas id="humidity-chart-canvas" width="220" height="34"></canvas>
-              </div>
-              <div class="m-footer">
-                <span>Optimal storage: 80–92% RH</span>
-              </div>
-            </div>
-
-            <!-- Cartons Card -->
-            <div class="metric-card" id="card-cartons">
-              <div class="card-top-row">
+          <!-- INVENTORY PRODUCE HEALTH PANEL -->
+          <div class="panel-card inventory-health-card" id="card-cartons">
+            <div class="card-head">
+              <div class="card-title-row">
                 <div class="card-header-badge">
                   <div class="card-icon-pill icon-pill-purple">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                     </svg>
                   </div>
-                  <span class="card-eyebrow">INVENTORY HEALTH</span>
+                  <div>
+                    <h4>Inventory Produce Health</h4>
+                    <span class="help-label">Real-time ethylene &amp; visual produce condition</span>
+                  </div>
                 </div>
-                <span class="m-chip chip-gray">24 Total</span>
+                <span class="m-chip chip-gray">24 Total Cartons</span>
               </div>
+            </div>
 
+            <div class="inventory-card-body">
               <div class="health-comfort-row">
                 <div class="comfort-gauge-box">
-                  <svg class="comfort-arc-svg" viewBox="0 0 100 65" width="64" height="42">
+                  <svg class="comfort-arc-svg" viewBox="0 0 100 65" width="84" height="54">
                     <path d="M 15 55 A 35 35 0 0 1 85 55" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round"/>
                     <path id="sim-comfort-arc-fill" d="M 15 55 A 35 35 0 0 1 85 55" fill="none" stroke="url(#sim-comfort-grad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="110" stroke-dashoffset="0"/>
                     <defs>
@@ -773,11 +926,12 @@
                         <stop offset="100%" stop-color="#34D399"/>
                       </linearGradient>
                     </defs>
-                    <circle cx="50" cy="48" r="8" fill="#ECFDF5"/>
-                    <text x="50" y="52" text-anchor="middle" font-size="10">☺</text>
+                    <circle cx="50" cy="48" r="9" fill="#ECFDF5"/>
+                    <path d="M46 48l3 3 5-5" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                   <div class="comfort-score-text">
                     <span class="comfort-score-val" id="sim-comfort-score-val">100%</span>
+                    <span class="comfort-score-label">Freshness</span>
                   </div>
                 </div>
 
@@ -785,68 +939,54 @@
                   <div class="stat-pill pill-fresh">
                     <span class="dot green"></span>
                     <span class="stat-num" id="count-fresh">24</span>
-                    <span class="stat-lbl">Fresh</span>
+                    <span class="stat-lbl">Fresh Cartons</span>
                   </div>
                   <div class="stat-pill pill-spoiled">
                     <span class="dot red"></span>
                     <span class="stat-num" id="count-spoiled">0</span>
-                    <span class="stat-lbl">Spoiled</span>
+                    <span class="stat-lbl">Spoiled Cartons</span>
                   </div>
                 </div>
               </div>
 
-              <div class="metric-status-badge-row">
+              <!-- Produce Icons Health Grid (Vector SVGs) -->
+              <div class="sim-produce-grid">
+                <div class="sim-produce-badge" title="Rack A: Tomatoes">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 5v3M10 5c1 1 2 1 4 0"/></svg>
+                  <span class="sp-name">Tomatoes</span>
+                  <span class="sp-count">6/6</span>
+                </div>
+                <div class="sim-produce-badge" title="Rack B: Potatoes &amp; Onions">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><ellipse cx="12" cy="12" rx="9" ry="7"/><circle cx="9" cy="11" r="1" fill="#D97706"/><circle cx="15" cy="13" r="1" fill="#D97706"/></svg>
+                  <span class="sp-name">Root Crops</span>
+                  <span class="sp-count">6/6</span>
+                </div>
+                <div class="sim-produce-badge" title="Rack C: Spinach &amp; Cabbage">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 17 4.5s-.5 1.5-1.6 7.2A7 7 0 0 1 11 20z"/><path d="M2 21c0-4 3.5-7.5 8-8.5"/></svg>
+                  <span class="sp-name">Leafy Greens</span>
+                  <span class="sp-count">6/6</span>
+                </div>
+                <div class="sim-produce-badge" title="Rack D: Carrots">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2"><path d="M8.5 14.5L4 20l5.5-4.5"/><path d="M17.5 6.5l-9 9 4 4 9-9-4-4z"/><path d="M18 6l2-3M19 8l3-1"/></svg>
+                  <span class="sp-name">Carrots</span>
+                  <span class="sp-count">6/6</span>
+                </div>
+              </div>
+
+              <div class="inventory-card-footer">
                 <span class="status-pill-badge pill-normal" id="sim-inventory-status-chip">
-                  <span class="pill-status-icon">✓</span>
-                  <span class="pill-status-text">All Cartons Fresh</span>
-                </span>
-              </div>
-
-              <div class="m-footer-help">
-                <span>Click carton to test spoilage</span>
-              </div>
-            </div>
-
-            <!-- Cooling Status Card -->
-            <div class="metric-card" id="card-cooling">
-              <div class="card-top-row">
-                <div class="card-header-badge">
-                  <div class="card-icon-pill icon-pill-blue">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                      <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
-                      <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
-                      <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
-                      <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
-                      <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
+                  <span class="pill-status-icon">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                  </div>
-                  <span class="card-eyebrow">COOLING SYSTEM</span>
-                </div>
-                <span class="m-chip chip-cooling-off" id="cooling-state-chip">OFF</span>
-              </div>
-
-              <div class="metric-val-row">
-                <span class="m-val-sm" id="cooling-units-title">3 Units Standby</span>
-              </div>
-
-              <div class="cooling-timer-box">
-                <span class="timer-lbl">Running Time:</span>
-                <span class="timer-val" id="cooling-timer-val">00:00</span>
-              </div>
-
-              <div class="metric-status-badge-row">
-                <span class="status-pill-badge pill-normal" id="sim-cooling-status-pill">
-                  <span class="pill-status-icon">●</span>
-                  <span class="pill-status-text">Standby Ready</span>
+                  </span>
+                  <span class="pill-status-text" id="sim-produce-tag">All 24 Fresh</span>
                 </span>
-              </div>
-
-              <div class="m-footer">
-                <span id="cooling-hysteresis-note">Turns off at limit −2°C</span>
+                <span class="inv-action-hint">Click any carton on floor plan to test spoilage</span>
               </div>
             </div>
-
           </div>
+
         </div>
 
         <!-- EVENT LOG (BOTTOM STRIP) -->
@@ -1033,10 +1173,10 @@
               <rect width="180" height="110" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
               <rect width="180" height="24" rx="10 10 0 0" fill="#E2E8F0"/>
               <text x="90" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">1. SENSORS & CAMERAS</text>
-              <text x="90" y="46" text-anchor="middle" font-size="11" fill="#475569">🌡️ Temperature sensor</text>
-              <text x="90" y="66" text-anchor="middle" font-size="11" fill="#475569">💧 Humidity sensor</text>
-              <text x="90" y="86" text-anchor="middle" font-size="11" fill="#475569">🏷️ Gas dots on cartons</text>
-              <text x="90" y="106" text-anchor="middle" font-size="11" fill="#475569">📸 CCTV vision cameras</text>
+              <text x="90" y="46" text-anchor="middle" font-size="11" fill="#475569">Temperature sensor</text>
+              <text x="90" y="66" text-anchor="middle" font-size="11" fill="#475569">Humidity sensor</text>
+              <text x="90" y="86" text-anchor="middle" font-size="11" fill="#475569">Gas dots on cartons</text>
+              <text x="90" y="106" text-anchor="middle" font-size="11" fill="#475569">CCTV vision cameras</text>
             </g>
 
             <!-- Arrow 1 -> 2 -->
@@ -1072,15 +1212,15 @@
             <g transform="translate(620, 20)">
               <!-- Sub item 1: Coolers -->
               <rect width="105" height="40" rx="6" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5"/>
-              <text x="52" y="24" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1D4ED8">❄️ Wall Coolers</text>
+              <text x="52" y="24" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1D4ED8">Wall Coolers</text>
               
               <!-- Sub item 2: WhatsApp -->
               <rect y="48" width="105" height="40" rx="6" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.5"/>
-              <text x="52" y="72" text-anchor="middle" font-size="10.5" font-weight="600" fill="#15803D">📱 WhatsApp</text>
+              <text x="52" y="72" text-anchor="middle" font-size="10.5" font-weight="600" fill="#15803D">WhatsApp</text>
 
               <!-- Sub item 3: Dashboard -->
               <rect y="96" width="105" height="40" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
-              <text x="52" y="120" text-anchor="middle" font-size="10.5" font-weight="600" fill="#334155">📊 Live Screen</text>
+              <text x="52" y="120" text-anchor="middle" font-size="10.5" font-weight="600" fill="#334155">Live Screen</text>
             </g>
           </svg>
         </div>
@@ -1129,7 +1269,7 @@
     <div class="modal-dialog img-modal-dialog">
       <div class="modal-header">
         <div class="modal-header-title">
-          <span class="cctv-badge" id="cctv-modal-badge">🔴 LIVE CCTV STREAM</span>
+          <span class="cctv-badge" id="cctv-modal-badge">LIVE CCTV STREAM</span>
           <h3 id="img-modal-title">CAM-1 &bull; Rack A Aisle</h3>
         </div>
         <button type="button" class="btn-close-modal" onclick="closeImageModal()">×</button>
@@ -1155,6 +1295,110 @@
         </div>
 
         <div class="img-meta-footer" id="img-modal-footer">Optical surveillance active &bull; AI Liquid Hazard Sentinel continuous monitoring</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: HISTORICAL TELEMETRY (TEMP, HUM & POWER) -->
+  <!-- ========================================== -->
+  <div id="sim-history-modal" class="modal-backdrop hidden" onclick="handleSimModalBackdropClick(event)">
+    <div class="modal-dialog history-modal-dialog">
+      <!-- Modal Header -->
+      <div class="history-modal-header">
+        <div class="hist-header-left">
+          <div class="hist-title-group">
+            <span class="hist-badge-tag">HISTORICAL DATA ARCHIVE &bull; PREVIOUS YEAR (2025)</span>
+            <h2 class="hist-modal-title" id="sim-history-modal-title">Facility Temperature Records & Monthly Analysis</h2>
+          </div>
+        </div>
+
+        <div class="hist-header-actions">
+          <!-- Metric Tab Switcher (3 Tabs) -->
+          <div class="hist-metric-tabs">
+            <button type="button" class="hist-tab-btn active" id="sim-hist-tab-temp" onclick="switchSimHistoryTab('temp')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+              </svg>
+              <span>Temperature</span>
+            </button>
+            <button type="button" class="hist-tab-btn" id="sim-hist-tab-humidity" onclick="switchSimHistoryTab('humidity')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+              </svg>
+              <span>Humidity</span>
+            </button>
+            <button type="button" class="hist-tab-btn" id="sim-hist-tab-power" onclick="switchSimHistoryTab('power')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>Power</span>
+            </button>
+          </div>
+          <button type="button" class="btn-modal-close" onclick="closeSimHistoryModal()" title="Close (Esc)">×</button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="history-kpi-row" id="sim-history-kpi-row">
+        <!-- Rendered in script.js -->
+      </div>
+
+      <!-- VISUAL GRAPH SECTION -->
+      <div class="history-section-card graph-card">
+        <div class="history-section-head">
+          <div class="section-head-left">
+            <h3 class="hist-section-heading" id="sim-history-graph-title">12-Month Temperature Trend & Target Band</h3>
+            <span class="hist-section-caption" id="sim-history-graph-caption">Visual month-by-month cold chain distribution across 2025</span>
+          </div>
+          <div class="graph-legend-group" id="sim-history-graph-legend">
+            <!-- Dynamic legend items -->
+          </div>
+        </div>
+        
+        <div class="history-chart-viewport" id="sim-history-chart-viewport">
+          <svg id="sim-history-svg-chart" viewBox="0 0 960 260" preserveAspectRatio="none">
+            <!-- Rendered in script.js -->
+          </svg>
+        </div>
+      </div>
+
+      <!-- NUMERICAL TABLE SECTION -->
+      <div class="history-section-card table-card">
+        <div class="history-section-head">
+          <div class="section-head-left">
+            <h3 class="hist-section-heading" id="sim-history-table-title">Monthly Numerical Telemetry Table</h3>
+            <span class="hist-section-caption" id="sim-history-table-caption">Full audited monthly records with min/max intervals and compliance status</span>
+          </div>
+          <div class="table-actions-group">
+            <span class="records-count-chip">12 Months (Jan – Dec 2025)</span>
+          </div>
+        </div>
+
+        <div class="history-table-wrap">
+          <table class="history-data-table" id="sim-history-data-table">
+            <thead id="sim-history-table-head">
+              <!-- Rendered in script.js -->
+            </thead>
+            <tbody id="sim-history-table-body">
+              <!-- Rendered in script.js -->
+            </tbody>
+            <tfoot id="sim-history-table-foot">
+              <!-- Rendered in script.js -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="history-modal-footer">
+        <div class="footer-source-note">
+          <span class="dot-live-green">●</span>
+          <span>Verified cold-storage telemetry from Facility IoT Gateway & Submeter Network</span>
+        </div>
+        <div class="footer-btn-group">
+          <button type="button" class="btn-hist-secondary" onclick="closeSimHistoryModal()">Close</button>
+        </div>
       </div>
     </div>
   </div>

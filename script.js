@@ -10,6 +10,24 @@
    Note: Per change request, automatic freshness decay and random spills are removed.
    Cartons and Spills only transition upon explicit user manual action.
    ============================================================================ */
+function getVegetableSvg(name, size = 16) {
+  switch (name) {
+    case "Tomatoes":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#EF4444" style="vertical-align:middle;flex-shrink:0;"><circle cx="12" cy="13" r="8"/><path d="M12 5v3M10 5c1 1 2 1 4 0" stroke="#15803D" stroke-width="2" fill="none"/></svg>`;
+    case "Potatoes":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#D97706" style="vertical-align:middle;flex-shrink:0;"><ellipse cx="12" cy="12" rx="9" ry="7"/><circle cx="9" cy="10" r="1" fill="#78350F"/><circle cx="14" cy="13" r="1" fill="#78350F"/></svg>`;
+    case "Onions":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#A855F7" style="vertical-align:middle;flex-shrink:0;"><path d="M12 3c-4 5-7 8-7 12a7 7 0 0 0 14 0c0-4-3-7-7-12z"/><path d="M12 3v4" stroke="#15803D" stroke-width="2"/></svg>`;
+    case "Spinach":
+    case "Cabbage":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#10B981" style="vertical-align:middle;flex-shrink:0;"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6" stroke="#047857" stroke-width="2" fill="none"/></svg>`;
+    case "Carrots":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#F97316" style="vertical-align:middle;flex-shrink:0;"><polygon points="7,21 3,21 3,17 17,3 21,7"/><path d="M17 3l4-2M19 5l3 2" stroke="#15803D" stroke-width="1.8" fill="none"/></svg>`;
+    default:
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#64748B" style="vertical-align:middle;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>`;
+  }
+}
+
 const CONFIG = {
   // Simulation loop tick interval in milliseconds (at 1x speed)
   TICK_INTERVAL_MS: 500,
@@ -30,12 +48,12 @@ const CONFIG = {
 
   // Vegetable catalog assigned across the 24 cartons
   VEGETABLES: [
-    { name: "Tomatoes", icon: "🍅" },
-    { name: "Potatoes", icon: "🥔" },
-    { name: "Onions",   icon: "🧅" },
-    { name: "Spinach",  icon: "🥬" },
-    { name: "Cabbage",  icon: "🥬" },
-    { name: "Carrots",  icon: "🥕" }
+    { name: "Tomatoes" },
+    { name: "Potatoes" },
+    { name: "Onions" },
+    { name: "Spinach" },
+    { name: "Cabbage" },
+    { name: "Carrots" }
   ],
 
   // Camera coordinates on the warehouse floor (SVG space: 1000 x 520)
@@ -91,10 +109,14 @@ const STATE = {
   outsideHeatDelta: 0.0,  // From Outside Heat slider (-5 to +20)
   coolingActive: false,
   coolingSecondsActive: 0,
+  basePower: 45.0,
+  currentPower: 45.0,
 
   // Chart data history
   tempHistory: [],
   humidityHistory: [],
+  powerHistory: [],
+  historyTab: "temp",
 
   // Cartons (24 items: A-01 to D-06)
   // Per Change Request: only 2 states ("fresh" | "spoiled")
@@ -193,6 +215,9 @@ function handleStartWarehouse(event) {
   // Reset chart histories
   STATE.tempHistory = Array(CONFIG.CHART_HISTORY_MAX).fill(tempIn);
   STATE.humidityHistory = Array(CONFIG.CHART_HISTORY_MAX).fill(humIn);
+  STATE.basePower = 45.0;
+  STATE.currentPower = 45.0;
+  STATE.powerHistory = Array(CONFIG.CHART_HISTORY_MAX).fill(45.0);
 
   // Switch Screens
   document.getElementById("setup-screen").classList.remove("active");
@@ -309,7 +334,6 @@ function generateCartons() {
           id: cartonId,
           rack: rackId,
           vegetable: veg.name,
-          icon: veg.icon,
           state: "fresh", // "fresh" | "spoiled"
           x: x,
           y: y,
@@ -662,10 +686,21 @@ function updateCartonCountCards() {
   if (invChip) {
     if (spoiledCount === 0) {
       invChip.className = "status-pill-badge pill-normal";
-      invChip.innerHTML = `<span class="pill-status-icon">✓</span><span class="pill-status-text">All Cartons Fresh</span>`;
+      invChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span><span class="pill-status-text">All Cartons Fresh</span>`;
     } else {
       invChip.className = "status-pill-badge pill-red";
-      invChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">${spoiledCount} Spoiled Carton${spoiledCount > 1 ? "s" : ""}</span>`;
+      invChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">${spoiledCount} Spoiled Carton${spoiledCount > 1 ? "s" : ""}</span>`;
+    }
+  }
+
+  const produceTag = document.getElementById("sim-produce-tag");
+  if (produceTag) {
+    if (spoiledCount === 0) {
+      produceTag.textContent = "All 24 Fresh";
+      produceTag.style.color = "#059669";
+    } else {
+      produceTag.textContent = `${freshCount} Fresh • ${spoiledCount} Spoiled`;
+      produceTag.style.color = "#DC2626";
     }
   }
 }
@@ -736,6 +771,7 @@ function initEscKeyListener() {
       closeCartonPopover();
       closeHowItWorksModal();
       closeImageModal();
+      closeSimHistoryModal();
     }
   });
 }
@@ -900,7 +936,7 @@ function renderSpillSvg(x, y, id) {
 }
 
 /**
- * Triggers camera cone flash, floor white blink, and "📸 Captured" badge
+ * Triggers camera cone flash, floor white blink, and "CAPTURED" badge
  */
 function triggerCameraCapture(camId) {
   const num = camId.split("-")[1];
@@ -1310,13 +1346,13 @@ function inspectCameraFeed(camId) {
   playCameraShutterSound();
 
   let snapshotUrl;
-  let statusBadgeText = "🔴 LIVE CCTV STREAM";
+  let statusBadgeText = "LIVE CCTV STREAM";
   let footerText = `Optical surveillance active • ${cam.name} • Continuous AI Liquid Hazard Sentinel monitoring`;
 
   // If there is an active spill near this camera, show the detected hazard snapshot
   if (STATE.activeSpill && STATE.activeSpill.nearestCam === cam.id) {
     snapshotUrl = STATE.activeSpill.snapshotUrl;
-    statusBadgeText = "⚠️ HAZARD DETECTED";
+    statusBadgeText = "HAZARD DETECTED";
     footerText = `CRITICAL ALERT: Liquid spill detected by ${cam.id} near Rack ${STATE.activeSpill.nearestRack || cam.rack}. Immediate maintenance dispatch requested.`;
   } else {
     // Generate clean clear floor feed
@@ -1434,6 +1470,13 @@ function simulationTick() {
   STATE.humidityHistory.push(STATE.currentHumidity);
   if (STATE.humidityHistory.length > CONFIG.CHART_HISTORY_MAX) STATE.humidityHistory.shift();
 
+  // Dynamic Power Calculation
+  const coolingPowerAdd = STATE.coolingActive ? 36.0 : 0.0;
+  const powerNoise = (Math.random() - 0.5) * 0.8;
+  STATE.currentPower = Math.round((STATE.basePower + coolingPowerAdd + powerNoise) * 10) / 10;
+  STATE.powerHistory.push(STATE.currentPower);
+  if (STATE.powerHistory.length > CONFIG.CHART_HISTORY_MAX) STATE.powerHistory.shift();
+
   // 6. Refresh Displays
   renderDashboard();
   renderSparklines();
@@ -1460,7 +1503,7 @@ function checkCoolingThresholds() {
       STATE.alertsSent.coolingOn = true;
       STATE.alertsSent.coolingOff = false; // reset off flag
 
-      const msg = `⚠️ Hello ${STATE.config.ownerName}, the warehouse temperature has reached ${STATE.currentTemp.toFixed(1)}°C (limit ${limit.toFixed(1)}°C). Cooling units have been switched ON automatically.`;
+      const msg = `ALERT: Hello ${STATE.config.ownerName}, the warehouse temperature has reached ${STATE.currentTemp.toFixed(1)}°C (limit ${limit.toFixed(1)}°C). Cooling units have been switched ON automatically.`;
       
       sendWhatsAppAlert(
         "temp-high",
@@ -1482,7 +1525,7 @@ function checkCoolingThresholds() {
       STATE.alertsSent.coolingOff = true;
       STATE.alertsSent.coolingOn = false; // reset on flag
 
-      const msg = `✅ Temperature is back to normal at ${STATE.currentTemp.toFixed(1)}°C. Cooling units switched OFF.`;
+      const msg = `NORMAL: Temperature is back to normal at ${STATE.currentTemp.toFixed(1)}°C. Cooling units switched OFF.`;
 
       sendWhatsAppAlert(
         "temp-normal",
@@ -1534,7 +1577,7 @@ function setCoolersVisualState(isActive) {
     if (unitsTitle) unitsTitle.textContent = "3 Units Active";
     if (coolingPill) {
       coolingPill.className = "status-pill-badge pill-amber";
-      coolingPill.innerHTML = `<span class="pill-status-icon">❄</span><span class="pill-status-text">Actively Cooling</span>`;
+      coolingPill.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg></span><span class="pill-status-text">Actively Cooling</span>`;
     }
   } else {
     if (coolingChip) {
@@ -1544,7 +1587,7 @@ function setCoolersVisualState(isActive) {
     if (unitsTitle) unitsTitle.textContent = "3 Units Standby";
     if (coolingPill) {
       coolingPill.className = "status-pill-badge pill-normal";
-      coolingPill.innerHTML = `<span class="pill-status-icon">●</span><span class="pill-status-text">Standby Ready</span>`;
+      coolingPill.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span><span class="pill-status-text">Standby Ready</span>`;
     }
   }
 }
@@ -1576,6 +1619,30 @@ function handleHeatSlider(val) {
   }
 }
 
+function handlePowerSlider(val) {
+  const num = parseFloat(val);
+  STATE.basePower = num;
+
+  const tag = document.getElementById("power-load-tag");
+  if (tag) {
+    if (num > 70) {
+      tag.textContent = `${num.toFixed(1)} kW (Peak Heavy)`;
+    } else if (num > 55) {
+      tag.textContent = `${num.toFixed(1)} kW (Elevated Load)`;
+    } else if (num >= 40) {
+      tag.textContent = `${num.toFixed(1)} kW (Standard)`;
+    } else {
+      tag.textContent = `${num.toFixed(1)} kW (Eco Low)`;
+    }
+  }
+
+  const coolingAdd = STATE.coolingActive ? 36.0 : 0.0;
+  STATE.currentPower = Math.round((STATE.basePower + coolingAdd) * 10) / 10;
+  renderDashboard();
+  renderSparklines();
+  broadcastSimulationState();
+}
+
 function adjustCoolingLimit(delta) {
   STATE.config.coolingLimit = Math.round((STATE.config.coolingLimit + delta) * 10) / 10;
   const limitDisp = document.getElementById("cooling-limit-display");
@@ -1601,16 +1668,16 @@ function renderDashboard() {
   if (tempChip) {
     if (STATE.currentTemp > STATE.config.coolingLimit) {
       tempChip.className = "status-pill-badge pill-red";
-      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Too warm</span>`;
+      tempChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Too warm</span>`;
     } else if (STATE.coolingActive) {
       tempChip.className = "status-pill-badge pill-amber";
-      tempChip.innerHTML = `<span class="pill-status-icon">❄</span><span class="pill-status-text">Cooling down</span>`;
+      tempChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg></span><span class="pill-status-text">Cooling down</span>`;
     } else if (STATE.currentTemp >= 9.0) {
       tempChip.className = "status-pill-badge pill-amber";
-      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Near limit</span>`;
+      tempChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Near limit</span>`;
     } else {
       tempChip.className = "status-pill-badge pill-normal";
-      tempChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Normal</span>`;
+      tempChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span><span class="pill-status-text">Normal</span>`;
     }
   }
 
@@ -1642,13 +1709,13 @@ function renderDashboard() {
   if (humChip) {
     if (STATE.currentHumidity > 92) {
       humChip.className = "status-pill-badge pill-amber";
-      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly high</span>`;
+      humChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Slightly high</span>`;
     } else if (STATE.currentHumidity < 80) {
       humChip.className = "status-pill-badge pill-amber";
-      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly low</span>`;
+      humChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Slightly low</span>`;
     } else {
       humChip.className = "status-pill-badge pill-normal";
-      humChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Good for storage</span>`;
+      humChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span><span class="pill-status-text">Good for storage</span>`;
     }
   }
 
@@ -1662,6 +1729,54 @@ function renderDashboard() {
   // 3. Wall Sensor Badge
   const wsEl = document.getElementById("wall-sensor-readings");
   if (wsEl) wsEl.textContent = `${STATE.currentTemp.toFixed(1)}°C • ${Math.round(STATE.currentHumidity)}% RH`;
+
+  // 4. Power Card
+  const powerValEl = document.getElementById("val-power");
+  const powerTagEl = document.getElementById("sim-power-tag");
+  const powerChipEl = document.getElementById("sim-power-status-chip");
+  const powerThumbEl = document.getElementById("sim-power-slider-thumb");
+  const powerSubNoteEl = document.getElementById("sim-power-sub-note");
+
+  if (powerValEl) powerValEl.textContent = STATE.currentPower.toFixed(1);
+  if (powerTagEl) powerTagEl.textContent = `${STATE.currentPower.toFixed(1)} kW`;
+  if (powerThumbEl) {
+    const powerPct = Math.max(0, Math.min(100, ((STATE.currentPower - 20) / (120 - 20)) * 100));
+    powerThumbEl.style.left = `${powerPct}%`;
+  }
+  if (powerSubNoteEl) {
+    const dailyKwh = Math.round(STATE.currentPower * 24);
+    powerSubNoteEl.textContent = `Daily Est: ~${dailyKwh.toLocaleString()} kWh`;
+  }
+  if (powerChipEl) {
+    if (STATE.currentPower > 90) {
+      powerChipEl.className = "status-pill-badge pill-red";
+      powerChipEl.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Peak Load Exceeded</span>`;
+    } else if (STATE.coolingActive) {
+      powerChipEl.className = "status-pill-badge pill-amber";
+      powerChipEl.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span class="pill-status-text">Cooling Load Active (+36 kW)</span>`;
+    } else {
+      powerChipEl.className = "status-pill-badge pill-normal";
+      powerChipEl.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span class="pill-status-text">Baseline Facility Load</span>`;
+    }
+  }
+
+  // 5. Side Cooling Units (AC) Widget
+  const coolingStateChip = document.getElementById("cooling-state-chip");
+  if (coolingStateChip) {
+    coolingStateChip.className = STATE.coolingActive ? "m-chip chip-cooling-on" : "m-chip chip-cooling-off";
+    coolingStateChip.textContent = STATE.coolingActive ? "ON" : "OFF";
+  }
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById(`sim-ac-dot-${i}`);
+    const pill = document.getElementById(`sim-ac-pill-${i}`);
+    if (dot) {
+      dot.className = STATE.coolingActive ? "ac-mini-indicator running" : "ac-mini-indicator";
+    }
+    if (pill) {
+      pill.className = STATE.coolingActive ? "sim-ac-status running" : "sim-ac-status off";
+      pill.textContent = STATE.coolingActive ? "Active" : "Standby";
+    }
+  }
 }
 
 /**
@@ -1682,6 +1797,14 @@ function renderSparklines() {
     CONFIG.COLORS.blue,
     null,
     false
+  );
+
+  drawSparkline(
+    "power-chart-canvas",
+    STATE.powerHistory,
+    "#D97706",
+    90.0,
+    true
   );
 }
 
@@ -1759,15 +1882,15 @@ function logEvent(type, message, thumbUrl, isInitial) {
   const row = document.createElement("div");
   row.className = `log-entry alert-${type}`;
 
-  let iconText = "ℹ️";
-  if (type === "temp") iconText = "⚠️";
-  if (type === "cool-off") iconText = "✅";
-  if (type === "spoil") iconText = "🥬";
-  if (type === "spill") iconText = "💧";
+  let iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`;
+  if (type === "temp") iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`;
+  if (type === "cool-off") iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>`;
+  if (type === "spoil") iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#DC2626"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="#DC2626"/></svg>`;
+  if (type === "spill") iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#0284C7"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
 
   row.innerHTML = `
     <span class="log-time">${timeStr}</span>
-    <span class="log-badge-icon">${iconText}</span>
+    <span class="log-badge-icon" style="display:inline-flex;align-items:center;justify-content:center;">${iconSvg}</span>
     <span class="log-msg">${escapeHtml(message)}</span>
     ${thumbUrl ? `
       <div class="log-thumb-wrap" onclick="openImageModal('${thumbUrl}', 'CCTV Spill Snapshot')">
@@ -2246,7 +2369,6 @@ function initBaselineCartonMap() {
         id: cartonId,
         rack: rackId,
         vegetable: veg.name,
-        icon: veg.icon,
         state: "fresh"
       };
     }
@@ -2263,6 +2385,8 @@ function broadcastSimulationState() {
     coolingActive: STATE.coolingActive,
     coolingSeconds: STATE.coolingSecondsActive,
     coolingLimit: STATE.config.coolingLimit,
+    power: STATE.currentPower,
+    basePower: STATE.basePower,
     cartons: {},
     activeSpill: STATE.activeSpill ? {
       id: STATE.activeSpill.id,
@@ -2373,7 +2497,6 @@ function initIntegratedCartonGrid() {
         id: cartonId,
         rack: rack.id,
         vegetable: rack.hint.split(" ")[0],
-        icon: "📦",
         state: "fresh"
       };
 
@@ -2389,7 +2512,7 @@ function initIntegratedCartonGrid() {
           <span class="tile-id">${cartonId}</span>
           <span class="tile-status-pill ${isSpoiled ? "spoiled" : "fresh"}">${isSpoiled ? "Spoiled" : "Fresh"}</span>
         </div>
-        <div class="tile-veg-name">${c.icon || "📦"} ${c.vegetable}</div>
+        <div class="tile-veg-name" style="display:flex;align-items:center;gap:6px;">${getVegetableSvg(c.vegetable, 14)} <span>${c.vegetable}</span></div>
         
         <div class="carton-micro-meter">
           <div class="carton-micro-fill ${isSpoiled ? "spoiled" : "fresh"}" style="width: ${isSpoiled ? "18%" : "96%"};"></div>
@@ -2462,7 +2585,7 @@ function openIntegratedCartonDrawer(cartonId) {
   const checkedVal = document.getElementById("drawer-checked-val");
 
   if (idBadge) idBadge.textContent = c.id;
-  if (vegTitle) vegTitle.textContent = `${c.icon || "📦"} ${c.vegetable}`;
+  if (vegTitle) vegTitle.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;">${getVegetableSvg(c.vegetable, 18)} <span>${c.vegetable}</span></span>`;
   if (rackVal) rackVal.textContent = `Rack ${c.rack}`;
   
   const rackMeta = DASHBOARD_META.racks.find(r => r.id === c.rack);
@@ -2846,7 +2969,7 @@ function updateDashboardSvgArea(areaId, hasSpill) {
     if (badge) {
       badge.className.baseVal = "zone-status-badge badge-red";
       const txt = badge.querySelector("text");
-      if (txt) txt.textContent = "💧 Spill detected";
+      if (txt) txt.textContent = "Spill detected";
     }
   } else {
     mapZone.className.baseVal = "map-zone zone-clear";
@@ -2854,7 +2977,7 @@ function updateDashboardSvgArea(areaId, hasSpill) {
     if (badge) {
       badge.className.baseVal = "zone-status-badge badge-green";
       const txt = badge.querySelector("text");
-      if (txt) txt.textContent = "✓ No spill";
+      if (txt) txt.textContent = "No spill";
     }
   }
 }
@@ -2877,7 +3000,7 @@ function renderIntegratedAreasTable() {
       <td style="color:#64748B;">${a.cam}</td>
       <td>
         <span class="${isSpill ? "tbl-pill-red" : "tbl-pill-green"}">
-          ${isSpill ? "💧 Spill detected" : "✓ No spill"}
+          ${isSpill ? "Spill detected" : "No spill"}
         </span>
       </td>
       <td style="color:#64748B;">${isSpill ? (STATE.activeSpill.timestamp || "Just now") : a.lastChecked}</td>
@@ -2958,14 +3081,19 @@ function renderIntegratedActivityFeed() {
     const div = document.createElement("div");
     div.className = `activity-item type-${item.type} ${idx === 0 ? "unread" : ""}`;
 
-    let icon = "ℹ️";
-    if (item.type === "spill") icon = "💧";
-    else if (item.type === "spoil") icon = "🥬";
-    else if (item.type === "temp") icon = "⚠️";
-    else if (item.type === "cool-off") icon = "✅";
+    let iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`;
+    if (item.type === "spill") {
+      iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="#0284C7"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
+    } else if (item.type === "spoil") {
+      iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="#DC2626"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="#DC2626"/></svg>`;
+    } else if (item.type === "temp") {
+      iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`;
+    } else if (item.type === "cool-off") {
+      iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>`;
+    }
 
     div.innerHTML = `
-      <span class="act-icon">${icon}</span>
+      <span class="act-icon" style="display:inline-flex;align-items:center;justify-content:center;">${iconSvg}</span>
       <div class="act-content">
         <div class="act-msg">${escapeHtml(item.message)}</div>
         <div class="act-time">${item.time}</div>
@@ -2977,4 +3105,721 @@ function renderIntegratedActivityFeed() {
     list.appendChild(div);
   });
 }
+
+/* ============================================================================
+   SIMULATION HISTORICAL TELEMETRY (PREVIOUS YEAR - 2025) & MODAL SYSTEM
+   Interactive graph & numerical tabular view for Temperature, Humidity and Power
+   ============================================================================ */
+const SIM_HISTORICAL_DATA_2025 = {
+  temperature: [
+    { month: "Jan", fullName: "January", avg: 5.2, min: 3.8, max: 6.8, coolingDays: 0, compliance: 100, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Feb", fullName: "February", avg: 5.6, min: 4.1, max: 7.2, coolingDays: 0, compliance: 100, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Mar", fullName: "March", avg: 6.3, min: 4.7, max: 7.9, coolingDays: 2, compliance: 99.4, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Apr", fullName: "April", avg: 7.0, min: 5.2, max: 8.7, coolingDays: 5, compliance: 99.0, status: "Normal", badgeClass: "badge-blue" },
+    { month: "May", fullName: "May", avg: 7.8, min: 5.9, max: 9.6, coolingDays: 12, compliance: 98.5, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Jun", fullName: "June", avg: 8.8, min: 6.7, max: 10.9, coolingDays: 23, compliance: 97.8, status: "Cooling Active", badgeClass: "badge-amber" },
+    { month: "Jul", fullName: "July", avg: 9.5, min: 7.3, max: 11.5, coolingDays: 28, compliance: 97.2, status: "Peak Summer", badgeClass: "badge-red" },
+    { month: "Aug", fullName: "August", avg: 9.2, min: 7.1, max: 11.2, coolingDays: 26, compliance: 97.5, status: "Peak Summer", badgeClass: "badge-red" },
+    { month: "Sep", fullName: "September", avg: 8.1, min: 6.1, max: 9.9, coolingDays: 16, compliance: 98.2, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Oct", fullName: "October", avg: 6.9, min: 5.0, max: 8.5, coolingDays: 4, compliance: 99.1, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Nov", fullName: "November", avg: 6.0, min: 4.3, max: 7.4, coolingDays: 1, compliance: 99.6, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Dec", fullName: "December", avg: 5.3, min: 3.9, max: 6.7, coolingDays: 0, compliance: 100, status: "Optimal", badgeClass: "badge-green" }
+  ],
+  humidity: [
+    { month: "Jan", fullName: "January", avg: 84.8, min: 81.0, max: 88.5, dehumidDays: 0, compliance: 100, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Feb", fullName: "February", avg: 85.2, min: 81.5, max: 89.0, dehumidDays: 0, compliance: 100, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Mar", fullName: "March", avg: 85.9, min: 82.0, max: 90.2, dehumidDays: 1, compliance: 99.7, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Apr", fullName: "April", avg: 86.4, min: 82.4, max: 91.0, dehumidDays: 3, compliance: 99.2, status: "Normal", badgeClass: "badge-blue" },
+    { month: "May", fullName: "May", avg: 87.1, min: 83.0, max: 92.5, dehumidDays: 6, compliance: 98.8, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Jun", fullName: "June", avg: 89.5, min: 84.5, max: 94.8, dehumidDays: 14, compliance: 98.1, status: "High Humidity", badgeClass: "badge-amber" },
+    { month: "Jul", fullName: "July", avg: 91.2, min: 86.0, max: 96.2, dehumidDays: 22, compliance: 97.4, status: "Monsoon Surge", badgeClass: "badge-red" },
+    { month: "Aug", fullName: "August", avg: 90.8, min: 85.5, max: 95.8, dehumidDays: 19, compliance: 97.6, status: "Monsoon Surge", badgeClass: "badge-red" },
+    { month: "Sep", fullName: "September", avg: 88.6, min: 83.8, max: 93.4, dehumidDays: 11, compliance: 98.5, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Oct", fullName: "October", avg: 86.8, min: 82.2, max: 91.2, dehumidDays: 4, compliance: 99.3, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Nov", fullName: "November", avg: 85.5, min: 81.8, max: 89.4, dehumidDays: 1, compliance: 99.8, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Dec", fullName: "December", avg: 84.9, min: 81.2, max: 88.8, dehumidDays: 0, compliance: 100, status: "Optimal RH", badgeClass: "badge-green" }
+  ],
+  power: [
+    { month: "Jan", fullName: "January", totalKWh: 33400, baseKWh: 27400, hvacKWh: 6000, dailyKWh: 1077, peakKW: 52.4, hvacShare: 18, cost: 4008, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Feb", fullName: "February", totalKWh: 31800, baseKWh: 25800, hvacKWh: 6000, dailyKWh: 1135, peakKW: 51.8, hvacShare: 19, cost: 3816, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Mar", fullName: "March", totalKWh: 35200, baseKWh: 26800, hvacKWh: 8400, dailyKWh: 1135, peakKW: 56.2, hvacShare: 24, cost: 4224, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Apr", fullName: "April", totalKWh: 38900, baseKWh: 27600, hvacKWh: 11300, dailyKWh: 1296, peakKW: 62.0, hvacShare: 29, cost: 4668, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "May", fullName: "May", totalKWh: 44600, baseKWh: 27600, hvacKWh: 17000, dailyKWh: 1438, peakKW: 71.5, hvacShare: 38, cost: 5352, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "Jun", fullName: "June", totalKWh: 54100, baseKWh: 26500, hvacKWh: 27600, dailyKWh: 1803, peakKW: 83.2, hvacShare: 51, cost: 6492, status: "Heavy HVAC Load", badgeClass: "badge-amber" },
+    { month: "Jul", fullName: "July", totalKWh: 58200, baseKWh: 25600, hvacKWh: 32600, dailyKWh: 1877, peakKW: 88.6, hvacShare: 56, cost: 6984, status: "Peak Summer Load", badgeClass: "badge-red" },
+    { month: "Aug", fullName: "August", totalKWh: 56800, baseKWh: 26100, hvacKWh: 30700, dailyKWh: 1832, peakKW: 86.4, hvacShare: 54, cost: 6816, status: "Heavy HVAC Load", badgeClass: "badge-amber" },
+    { month: "Sep", fullName: "September", totalKWh: 45900, baseKWh: 27100, hvacKWh: 18800, dailyKWh: 1530, peakKW: 74.8, hvacShare: 41, cost: 5508, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "Oct", fullName: "October", totalKWh: 37800, baseKWh: 27200, hvacKWh: 10600, dailyKWh: 1219, peakKW: 60.1, hvacShare: 28, cost: 4536, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "Nov", fullName: "November", totalKWh: 34500, baseKWh: 27300, hvacKWh: 7200, dailyKWh: 1150, peakKW: 54.0, hvacShare: 21, cost: 4140, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Dec", fullName: "December", totalKWh: 33200, baseKWh: 27200, hvacKWh: 6000, dailyKWh: 1070, peakKW: 52.0, hvacShare: 18, cost: 3984, status: "High Efficiency", badgeClass: "badge-green" }
+  ]
+};
+
+function openSimHistoryModal(type = "temp") {
+  STATE.historyTab = type;
+  const modal = document.getElementById("sim-history-modal");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  switchSimHistoryTab(type);
+}
+
+function closeSimHistoryModal() {
+  const modal = document.getElementById("sim-history-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function handleSimModalBackdropClick(e) {
+  if (e.target.id === "sim-history-modal") {
+    closeSimHistoryModal();
+  }
+}
+
+function switchSimHistoryTab(type) {
+  STATE.historyTab = type;
+
+  const btnTemp = document.getElementById("sim-hist-tab-temp");
+  const btnHum = document.getElementById("sim-hist-tab-humidity");
+  const btnPower = document.getElementById("sim-hist-tab-power");
+
+  if (btnTemp) btnTemp.classList.toggle("active", type === "temp");
+  if (btnHum) btnHum.classList.toggle("active", type === "humidity");
+  if (btnPower) btnPower.classList.toggle("active", type === "power");
+
+  updateSimHistoryModalContent();
+}
+
+function updateSimHistoryModalContent() {
+  const isTemp = STATE.historyTab === "temp";
+  const isHum = STATE.historyTab === "humidity";
+  const isPower = STATE.historyTab === "power";
+
+  const titleEl = document.getElementById("sim-history-modal-title");
+  const graphTitle = document.getElementById("sim-history-graph-title");
+  const graphCaption = document.getElementById("sim-history-graph-caption");
+  const tableTitle = document.getElementById("sim-history-table-title");
+  const tableCaption = document.getElementById("sim-history-table-caption");
+
+  if (isTemp) {
+    if (titleEl) titleEl.textContent = "Annual Temperature Records (Previous Year - 2025)";
+    if (graphTitle) graphTitle.textContent = "12-Month Temperature Trend & Target Band (°C)";
+    if (graphCaption) graphCaption.textContent = "Safe produce storage range (4.0°C – 8.0°C) with 10.0°C cooling trigger line";
+    if (tableTitle) tableTitle.textContent = "Monthly Temperature Telemetry Table (2025)";
+    if (tableCaption) tableCaption.textContent = "Historical monthly average, minimum, maximum, cooling runtime days and cold-chain compliance";
+
+    renderSimTempKPIs();
+    renderSimTempGraph();
+    renderSimTempTable();
+  } else if (isHum) {
+    if (titleEl) titleEl.textContent = "Annual Relative Humidity Records (Previous Year - 2025)";
+    if (graphTitle) graphTitle.textContent = "12-Month Relative Humidity Trend & Target Band (% RH)";
+    if (graphCaption) graphCaption.textContent = "Safe produce humidity range (80.0% – 92.0% RH) with 95.0% condensation risk threshold";
+    if (tableTitle) tableTitle.textContent = "Monthly Relative Humidity Telemetry Table (2025)";
+    if (tableCaption) tableCaption.textContent = "Historical monthly average, minimum, maximum, dehumidifier run days and humidity compliance";
+
+    renderSimHumidityKPIs();
+    renderSimHumidityGraph();
+    renderSimHumidityTable();
+  } else {
+    if (titleEl) titleEl.textContent = "Annual Power Consumption Records (Previous Year - 2025)";
+    if (graphTitle) graphTitle.textContent = "12-Month Facility Power Consumption Breakdown (kWh)";
+    if (graphCaption) graphCaption.textContent = "Base facility grid load (cyan) vs seasonal HVAC AC cooling surge (amber) with 90 kW peak limit";
+    if (tableTitle) tableTitle.textContent = "Monthly Energy & Power Consumption Table (2025)";
+    if (tableCaption) tableCaption.textContent = "Total monthly kWh, daily averages, peak demand kW, HVAC percentage and estimated cost";
+
+    renderSimPowerKPIs();
+    renderSimPowerGraph();
+    renderSimPowerTable();
+  }
+}
+
+function renderSimTempKPIs() {
+  const kpiRow = document.getElementById("sim-history-kpi-row");
+  if (!kpiRow) return;
+
+  kpiRow.innerHTML = `
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Annual Average</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">6.9</span>
+        <span class="hist-kpi-unit">°C</span>
+      </div>
+      <span class="hist-kpi-hint">Optimal Cold-Chain Mean</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Summer Peak Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">9.5</span>
+        <span class="hist-kpi-unit">°C</span>
+      </div>
+      <span class="hist-kpi-hint alert">July (28 Cooling Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Winter Low Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">5.2</span>
+        <span class="hist-kpi-unit">°C</span>
+      </div>
+      <span class="hist-kpi-hint">January (0 Cooling Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Storage Compliance</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">99.2</span>
+        <span class="hist-kpi-unit">%</span>
+      </div>
+      <span class="hist-kpi-hint">Within 4.0 – 8.0°C Range</span>
+    </div>
+  `;
+}
+
+function renderSimHumidityKPIs() {
+  const kpiRow = document.getElementById("sim-history-kpi-row");
+  if (!kpiRow) return;
+
+  kpiRow.innerHTML = `
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Annual Average</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">87.2</span>
+        <span class="hist-kpi-unit">% RH</span>
+      </div>
+      <span class="hist-kpi-hint">Optimal Vegetable Retention</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Monsoon Peak Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">91.2</span>
+        <span class="hist-kpi-unit">% RH</span>
+      </div>
+      <span class="hist-kpi-hint alert">July (22 Dehumidifier Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Winter Low Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">84.8</span>
+        <span class="hist-kpi-unit">% RH</span>
+      </div>
+      <span class="hist-kpi-hint">January (0 Dehumidifier Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Moisture Compliance</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">98.9</span>
+        <span class="hist-kpi-unit">%</span>
+      </div>
+      <span class="hist-kpi-hint">Within 80.0 – 92.0% Safe Band</span>
+    </div>
+  `;
+}
+
+function renderSimPowerKPIs() {
+  const kpiRow = document.getElementById("sim-history-kpi-row");
+  if (!kpiRow) return;
+
+  kpiRow.innerHTML = `
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Total Annual Energy</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">508.6</span>
+        <span class="hist-kpi-unit">MWh</span>
+      </div>
+      <span class="hist-kpi-hint">508,600 kWh across 2025</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Monthly Average</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">42,383</span>
+        <span class="hist-kpi-unit">kWh</span>
+      </div>
+      <span class="hist-kpi-hint">1,393 kWh Daily Average</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Peak Summer Load</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">88.6</span>
+        <span class="hist-kpi-unit">kW</span>
+      </div>
+      <span class="hist-kpi-hint alert">July (56% HVAC Share)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Annual Energy Cost</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">$61,032</span>
+      </div>
+      <span class="hist-kpi-hint">Est. @ $0.12 / kWh blend</span>
+    </div>
+  `;
+}
+
+function renderSimTempGraph() {
+  const legend = document.getElementById("sim-history-graph-legend");
+  if (legend) {
+    legend.innerHTML = `
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #10B981; opacity: 0.35;"></span>
+        <span>Target Band (4.0–8.0°C)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #F57C00;"></span>
+        <span>Monthly Avg (°C)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #DC2626; border-top: 2px dashed #DC2626; height: 0;"></span>
+        <span>Cooling Limit (10.0°C)</span>
+      </div>
+    `;
+  }
+
+  const svg = document.getElementById("sim-history-svg-chart");
+  if (!svg) return;
+
+  const data = SIM_HISTORICAL_DATA_2025.temperature;
+  const width = 960;
+  const height = 250;
+  const padLeft = 45;
+  const padRight = 20;
+  const padTop = 30;
+  const padBottom = 35;
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+
+  const minTemp = 2.0;
+  const maxTemp = 13.0;
+  const scaleY = (v) => padTop + chartH - ((v - minTemp) / (maxTemp - minTemp)) * chartH;
+  const scaleX = (i) => padLeft + (i / (data.length - 1)) * chartW;
+
+  const safeBandTop = scaleY(8.0);
+  const safeBandBottom = scaleY(4.0);
+  const safeBandH = safeBandBottom - safeBandTop;
+  const coolingLimitY = scaleY(10.0);
+
+  let gridLines = "";
+  for (let temp = 3.0; temp <= 12.0; temp += 2.0) {
+    const y = scaleY(temp);
+    gridLines += `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="${padLeft - 8}" y="${y + 4}" fill="#64748B" font-size="10.5" font-weight="600" text-anchor="end">${temp.toFixed(0)}°</text>
+    `;
+  }
+
+  let monthLabels = "";
+  data.forEach((d, i) => {
+    const x = scaleX(i);
+    monthLabels += `
+      <text x="${x}" y="${height - 12}" fill="#475569" font-size="11" font-weight="600" text-anchor="middle">${d.month}</text>
+      <line x1="${x}" y1="${padTop + chartH}" x2="${x}" y2="${padTop + chartH + 5}" stroke="#94A3B8" stroke-width="1.5"/>
+    `;
+  });
+
+  let linePoints = [];
+  let areaPoints = [`${scaleX(0)},${padTop + chartH}`];
+
+  data.forEach((d, i) => {
+    const x = scaleX(i);
+    const y = scaleY(d.avg);
+    linePoints.push(`${x},${y}`);
+    areaPoints.push(`${x},${y}`);
+  });
+  areaPoints.push(`${scaleX(data.length - 1)},${padTop + chartH}`);
+
+  let pointsMarkup = "";
+  data.forEach((d, i) => {
+    const x = scaleX(i);
+    const y = scaleY(d.avg);
+    pointsMarkup += `
+      <g class="chart-datapoint" style="cursor: pointer;">
+        <circle cx="${x}" cy="${y}" r="6" fill="#FFFFFF" stroke="#F57C00" stroke-width="2.5" />
+        <circle cx="${x}" cy="${y}" r="3" fill="#F57C00" />
+        <rect x="${x - 22}" y="${y - 28}" width="44" height="20" rx="4" fill="#0F172A" opacity="0.9" />
+        <text x="${x}" y="${y - 14}" fill="#FFFFFF" font-size="10" font-weight="700" text-anchor="middle">${d.avg.toFixed(1)}°</text>
+      </g>
+    `;
+  });
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="simTempGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#F57C00" stop-opacity="0.32"/>
+        <stop offset="100%" stop-color="#F57C00" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+
+    ${gridLines}
+
+    <rect x="${padLeft}" y="${safeBandTop}" width="${chartW}" height="${safeBandH}" fill="#10B981" opacity="0.10" rx="3" />
+    <line x1="${padLeft}" y1="${safeBandTop}" x2="${width - padRight}" y2="${safeBandTop}" stroke="#10B981" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>
+    <line x1="${padLeft}" y1="${safeBandBottom}" x2="${width - padRight}" y2="${safeBandBottom}" stroke="#10B981" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>
+    <text x="${width - padRight - 6}" y="${safeBandTop + 14}" fill="#059669" font-size="9.5" font-weight="700" text-anchor="end">Safe Target (4–8°C)</text>
+
+    <line x1="${padLeft}" y1="${coolingLimitY}" x2="${width - padRight}" y2="${coolingLimitY}" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="6 3"/>
+    <text x="${width - padRight - 6}" y="${coolingLimitY - 6}" fill="#DC2626" font-size="10" font-weight="800" text-anchor="end">Cooling Trigger Limit: 10.0°C</text>
+
+    <polygon points="${areaPoints.join(" ")}" fill="url(#simTempGradient)" />
+    <polyline points="${linePoints.join(" ")}" fill="none" stroke="#F57C00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+    ${pointsMarkup}
+    ${monthLabels}
+  `;
+}
+
+function renderSimHumidityGraph() {
+  const legend = document.getElementById("sim-history-graph-legend");
+  if (legend) {
+    legend.innerHTML = `
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #0284C7; opacity: 0.28;"></span>
+        <span>Safe Target Band (80–92% RH)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #0284C7;"></span>
+        <span>Monthly Avg RH (%)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #DC2626; border-top: 2px dashed #DC2626; height: 0;"></span>
+        <span>Condensation/Mold Risk (95% RH)</span>
+      </div>
+    `;
+  }
+
+  const svg = document.getElementById("sim-history-svg-chart");
+  if (!svg) return;
+
+  const data = SIM_HISTORICAL_DATA_2025.humidity;
+  const width = 960;
+  const height = 250;
+  const padLeft = 45;
+  const padRight = 20;
+  const padTop = 30;
+  const padBottom = 35;
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+
+  const yMin = 60;
+  const yMax = 100;
+  const scaleY = (v) => padTop + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+
+  const yTargetMin = scaleY(92.0);
+  const yTargetMax = scaleY(80.0);
+  const targetH = yTargetMax - yTargetMin;
+  const yLimit = scaleY(95.0);
+
+  let gridLines = `
+    <rect x="${padLeft}" y="${yTargetMin}" width="${chartW}" height="${targetH}" fill="#0284C7" fill-opacity="0.10" rx="4"/>
+    <line x1="${padLeft}" y1="${scaleY(80.0)}" x2="${width - padRight}" y2="${scaleY(80.0)}" stroke="#0284C7" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="${padLeft}" y1="${scaleY(92.0)}" x2="${width - padRight}" y2="${scaleY(92.0)}" stroke="#0284C7" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="${width - padRight - 6}" y="${yTargetMin + 14}" fill="#0284C7" font-size="9.5" font-weight="700" text-anchor="end">Safe Target (80–92% RH)</text>
+
+    <line x1="${padLeft}" y1="${yLimit}" x2="${width - padRight}" y2="${yLimit}" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="6 3"/>
+    <text x="${width - padRight - 6}" y="${yLimit - 6}" fill="#DC2626" font-size="10" font-weight="800" text-anchor="end">Risk Limit: 95.0% RH</text>
+  `;
+
+  [60, 70, 80, 90, 95, 100].forEach(v => {
+    const y = scaleY(v);
+    gridLines += `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="${padLeft - 8}" y="${y + 3}" font-size="10" font-weight="600" fill="#64748B" text-anchor="end">${v}%</text>
+    `;
+  });
+
+  const colStep = chartW / 12;
+  const barW = Math.min(36, colStep * 0.55);
+
+  let barsSvg = "";
+  const points = [];
+
+  data.forEach((item, idx) => {
+    const cx = padLeft + idx * colStep + colStep / 2;
+    const yAvg = scaleY(item.avg);
+    const yMinPt = scaleY(item.min);
+    const yMaxPt = scaleY(item.max);
+    points.push(`${cx},${yAvg}`);
+
+    const barH = (padTop + chartH) - yAvg;
+    const barX = cx - barW / 2;
+    const isHigh = item.avg > 90.0;
+    const fillColor = isHigh ? "url(#simHumGradHigh)" : "url(#simHumGradNorm)";
+
+    barsSvg += `
+      <line x1="${cx}" y1="${yMinPt}" x2="${cx}" y2="${yMaxPt}" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="${cx - 4}" y1="${yMinPt}" x2="${cx + 4}" y2="${yMinPt}" stroke="#94A3B8" stroke-width="1.5"/>
+      <line x1="${cx - 4}" y1="${yMaxPt}" x2="${cx + 4}" y2="${yMaxPt}" stroke="#94A3B8" stroke-width="1.5"/>
+
+      <rect x="${barX}" y="${yAvg}" width="${barW}" height="${barH}" fill="${fillColor}" rx="4">
+        <title>${item.fullName}: Avg ${item.avg}% RH (Min ${item.min}%, Max ${item.max}%) • ${item.dehumidDays} dehumidifier days</title>
+      </rect>
+
+      <text x="${cx}" y="${yAvg - 8}" font-size="11" font-weight="700" fill="${isHigh ? '#D97706' : '#0284C7'}" text-anchor="middle">${item.avg.toFixed(1)}%</text>
+      <text x="${cx}" y="${height - 10}" font-size="11" font-weight="600" fill="#475569" text-anchor="middle">${item.month}</text>
+    `;
+  });
+
+  const polylineSvg = `
+    <polyline points="${points.join(' ')}" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  `;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="simHumGradNorm" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#0284C7" stop-opacity="0.35"/>
+      </linearGradient>
+      <linearGradient id="simHumGradHigh" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FB923C" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#EA580C" stop-opacity="0.4"/>
+      </linearGradient>
+    </defs>
+    ${gridLines}
+    ${barsSvg}
+    ${polylineSvg}
+  `;
+}
+
+function renderSimPowerGraph() {
+  const legend = document.getElementById("sim-history-graph-legend");
+  if (legend) {
+    legend.innerHTML = `
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #0284C7;"></span>
+        <span>Base Grid Load (kWh)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #F59E0B;"></span>
+        <span>HVAC AC Cooling Surge (kWh)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #EF4444; border-top: 2px dashed #EF4444; height: 0;"></span>
+        <span>Peak Demand (kW Line)</span>
+      </div>
+    `;
+  }
+
+  const svg = document.getElementById("sim-history-svg-chart");
+  if (!svg) return;
+
+  const data = SIM_HISTORICAL_DATA_2025.power;
+  const width = 960;
+  const height = 250;
+  const padLeft = 52;
+  const padRight = 50;
+  const padTop = 30;
+  const padBottom = 35;
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+
+  const maxKWh = 65000;
+  const scaleY = (v) => padTop + chartH - (v / maxKWh) * chartH;
+  const maxKW = 100;
+  const scaleYkw = (v) => padTop + chartH - (v / maxKW) * chartH;
+
+  const colWidth = chartW / data.length;
+  const barWidth = colWidth * 0.58;
+
+  let grid = "";
+  for (let k = 10000; k <= 60000; k += 10000) {
+    const y = scaleY(k);
+    grid += `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="${padLeft - 8}" y="${y + 4}" fill="#64748B" font-size="10" font-weight="600" text-anchor="end">${k / 1000}k</text>
+    `;
+  }
+
+  for (let kw = 20; kw <= 80; kw += 20) {
+    const y = scaleYkw(kw);
+    grid += `
+      <text x="${width - padRight + 8}" y="${y + 4}" fill="#D97706" font-size="10" font-weight="700" text-anchor="start">${kw} kW</text>
+    `;
+  }
+
+  let barsMarkup = "";
+  let kwLinePoints = [];
+
+  data.forEach((d, i) => {
+    const centerX = padLeft + (i + 0.5) * colWidth;
+    const barX = centerX - barWidth / 2;
+
+    const baseH = (d.baseKWh / maxKWh) * chartH;
+    const baseY = padTop + chartH - baseH;
+
+    const hvacH = (d.hvacKWh / maxKWh) * chartH;
+    const hvacY = baseY - hvacH;
+
+    const kwY = scaleYkw(d.peakKW);
+    kwLinePoints.push(`${centerX},${kwY}`);
+
+    barsMarkup += `
+      <g class="power-bar-group" style="cursor: pointer;">
+        <rect x="${barX}" y="${baseY}" width="${barWidth}" height="${baseH}" fill="#0284C7" rx="2" opacity="0.9" />
+        <rect x="${barX}" y="${hvacY}" width="${barWidth}" height="${hvacH}" fill="#F59E0B" rx="3" opacity="0.95" />
+        <text x="${centerX}" y="${hvacY - 6}" fill="#0F172A" font-size="9" font-weight="700" text-anchor="middle">${Math.round(d.totalKWh / 1000)}k</text>
+        <text x="${centerX}" y="${height - 12}" fill="#475569" font-size="11" font-weight="600" text-anchor="middle">${d.month}</text>
+      </g>
+    `;
+  });
+
+  let peakPointsMarkup = "";
+  data.forEach((d, i) => {
+    const centerX = padLeft + (i + 0.5) * colWidth;
+    const kwY = scaleYkw(d.peakKW);
+    peakPointsMarkup += `
+      <circle cx="${centerX}" cy="${kwY}" r="4.5" fill="#FFFFFF" stroke="#D97706" stroke-width="2.5" />
+      <circle cx="${centerX}" cy="${kwY}" r="2" fill="#D97706" />
+    `;
+  });
+
+  svg.innerHTML = `
+    ${grid}
+    <text x="${width - padRight + 12}" y="${padTop - 12}" fill="#D97706" font-size="10" font-weight="800" text-anchor="start">Peak kW</text>
+    <text x="${padLeft - 6}" y="${padTop - 12}" fill="#64748B" font-size="10" font-weight="700" text-anchor="end">kWh Load</text>
+
+    ${barsMarkup}
+    <polyline points="${kwLinePoints.join(" ")}" fill="none" stroke="#D97706" stroke-width="2.5" stroke-dasharray="4 2"/>
+    ${peakPointsMarkup}
+  `;
+}
+
+function renderSimTempTable() {
+  const thead = document.getElementById("sim-history-table-head");
+  const tbody = document.getElementById("sim-history-table-body");
+  const tfoot = document.getElementById("sim-history-table-foot");
+
+  if (thead) {
+    thead.innerHTML = `
+      <tr>
+        <th>Month</th>
+        <th>Average Temp</th>
+        <th>Min Recorded</th>
+        <th>Max Recorded</th>
+        <th>Cooling Run Days</th>
+        <th>Thermal Compliance</th>
+        <th>Quality Rating</th>
+      </tr>
+    `;
+  }
+
+  if (tbody) {
+    tbody.innerHTML = SIM_HISTORICAL_DATA_2025.temperature.map(row => `
+      <tr>
+        <td><strong>${row.fullName} (2025)</strong></td>
+        <td><span style="font-weight:700; color:#0F172A;">${row.avg.toFixed(1)} °C</span></td>
+        <td style="color:#0284C7;">${row.min.toFixed(1)} °C</td>
+        <td style="color:#D97706;">${row.max.toFixed(1)} °C</td>
+        <td>${row.coolingDays > 0 ? `<strong>${row.coolingDays} days</strong>` : `<span style="color:#64748B;">0 (Idle)</span>`}</td>
+        <td><span style="font-weight:600; color:#059669;">${row.compliance.toFixed(1)}%</span></td>
+        <td><span class="tbl-badge ${row.badgeClass}">${row.status}</span></td>
+      </tr>
+    `).join("");
+  }
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td>Annual Mean / Summary</td>
+        <td>6.9 °C</td>
+        <td style="color:#0284C7;">3.8 °C (Low)</td>
+        <td style="color:#D97706;">11.5 °C (High)</td>
+        <td>117 Days Total</td>
+        <td>99.2% Compliant</td>
+        <td><span class="tbl-badge badge-green">Verified A+</span></td>
+      </tr>
+    `;
+  }
+}
+
+function renderSimHumidityTable() {
+  const thead = document.getElementById("sim-history-table-head");
+  const tbody = document.getElementById("sim-history-table-body");
+  const tfoot = document.getElementById("sim-history-table-foot");
+
+  if (thead) {
+    thead.innerHTML = `
+      <tr>
+        <th>Month</th>
+        <th>Avg Humidity (RH)</th>
+        <th>Min Recorded</th>
+        <th>Max Recorded</th>
+        <th>Dehumidifier Days</th>
+        <th>RH Compliance</th>
+        <th>Quality Rating</th>
+      </tr>
+    `;
+  }
+
+  if (tbody) {
+    tbody.innerHTML = SIM_HISTORICAL_DATA_2025.humidity.map(row => `
+      <tr>
+        <td><strong>${row.fullName} (2025)</strong></td>
+        <td><span style="font-weight:700; color:#0F172A;">${row.avg.toFixed(1)}% RH</span></td>
+        <td style="color:#0284C7;">${row.min.toFixed(1)}%</td>
+        <td style="color:#D97706;">${row.max.toFixed(1)}%</td>
+        <td>${row.dehumidDays > 0 ? `<strong>${row.dehumidDays} days</strong>` : `<span style="color:#64748B;">0 (Idle)</span>`}</td>
+        <td><span style="font-weight:600; color:#059669;">${row.compliance.toFixed(1)}%</span></td>
+        <td><span class="tbl-badge ${row.badgeClass}">${row.status}</span></td>
+      </tr>
+    `).join("");
+  }
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td>Annual Mean / Summary</td>
+        <td>87.2% RH</td>
+        <td style="color:#0284C7;">81.0% (Low)</td>
+        <td style="color:#D97706;">96.2% (High)</td>
+        <td>64 Days Total</td>
+        <td>98.9% Compliant</td>
+        <td><span class="tbl-badge badge-green">Verified A+</span></td>
+      </tr>
+    `;
+  }
+}
+
+function renderSimPowerTable() {
+  const thead = document.getElementById("sim-history-table-head");
+  const tbody = document.getElementById("sim-history-table-body");
+  const tfoot = document.getElementById("sim-history-table-foot");
+
+  if (thead) {
+    thead.innerHTML = `
+      <tr>
+        <th>Month</th>
+        <th>Total Energy (kWh)</th>
+        <th>Daily Avg (kWh)</th>
+        <th>Peak Demand (kW)</th>
+        <th>HVAC AC Share</th>
+        <th>Est. Cost ($)</th>
+        <th>Grid Efficiency</th>
+      </tr>
+    `;
+  }
+
+  if (tbody) {
+    tbody.innerHTML = SIM_HISTORICAL_DATA_2025.power.map(row => `
+      <tr>
+        <td><strong>${row.fullName} (2025)</strong></td>
+        <td><span style="font-weight:700; color:#0F172A;">${row.totalKWh.toLocaleString()} kWh</span></td>
+        <td>${row.dailyKWh.toLocaleString()} kWh</td>
+        <td><span style="font-weight:600; color:#D97706;">${row.peakKW.toFixed(1)} kW</span></td>
+        <td><strong>${row.hvacShare}%</strong> (${row.hvacKWh.toLocaleString()} kWh)</td>
+        <td>$${row.cost.toLocaleString()}</td>
+        <td><span class="tbl-badge ${row.badgeClass}">${row.status}</span></td>
+      </tr>
+    `).join("");
+  }
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td>Annual Total / Summary</td>
+        <td>508,600 kWh</td>
+        <td>1,393 kWh/day</td>
+        <td style="color:#D97706;">88.6 kW (Jul Peak)</td>
+        <td>36.4% HVAC Avg</td>
+        <td>$61,032 Total</td>
+        <td><span class="tbl-badge badge-green">High Efficiency</span></td>
+      </tr>
+    `;
+  }
+}
+
 

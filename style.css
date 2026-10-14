@@ -463,37 +463,38 @@ html, body {
    SIMULATION WORKSPACE LAYOUT (LEFT 72% / RIGHT 28%)
    ========================================================================== */
 .simulation-body {
-  flex: 1;
   display: flex;
-  height: calc(100vh - 52px);
-  overflow: hidden;
-  padding: 8px 12px 10px 12px;
-  gap: 12px;
+  min-height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 18px 24px 48px 24px;
+  gap: 20px;
+  max-width: 1760px;
+  margin: 0 auto;
+  align-items: flex-start;
 }
 
 .left-section {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 20px;
   min-width: 0;
-  height: 100%;
 }
 
 .right-section {
-  width: 340px;
+  width: 330px;
   flex-shrink: 0;
-  height: 100%;
+  position: sticky;
+  top: 18px;
+  align-self: flex-start;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 /* ==========================================================================
    LEFT SECTION: TOP WAREHOUSE FLOOR VIEW
    ========================================================================== */
 .floor-panel {
-  flex: 1.45;
   background: var(--bg-card);
   border: 1px solid var(--bg-border);
   border-radius: var(--radius-lg);
@@ -502,7 +503,7 @@ html, body {
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  min-height: 290px;
+  min-height: 420px;
 }
 
 .floor-panel-header {
@@ -583,17 +584,20 @@ html, body {
   flex: 1;
   position: relative;
   width: 100%;
-  height: 100%;
+  min-height: 400px;
   background: #F8FAFC;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 14px 18px;
   overflow: hidden;
 }
 
 #warehouse-svg {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 480px;
+  display: block;
   cursor: default;
 }
 
@@ -891,13 +895,13 @@ html, body {
 }
 
 /* ==========================================================================
-   LEFT SECTION: CONTROLS & DASHBOARD ROW
+   LEFT SECTION: PRIMARY TELEMETRY & EQUIPMENT (4 Dedicated Cards Grid)
    ========================================================================== */
-.controls-dashboard-row {
-  flex: 0.95;
-  display: flex;
-  gap: 8px;
-  min-height: 175px;
+.sim-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
 }
 
 .panel-card {
@@ -905,7 +909,7 @@ html, body {
   border: 1px solid var(--bg-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 8px 12px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
 }
@@ -914,217 +918,45 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1px;
-  margin-bottom: 4px;
+  gap: 2px;
+  margin-bottom: 8px;
   flex-shrink: 0;
 }
 
 .card-head h4 {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14.5px;
+  font-weight: 800;
   color: var(--text-main);
   line-height: 1.2;
 }
 
 .help-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-muted);
   line-height: 1.2;
 }
 
-/* Controls Card */
-.controls-card {
-  width: 295px;
-  flex-shrink: 0;
-}
-
-.controls-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  justify-content: space-around;
-}
-
-.control-box {
-  background: #F8FAFC;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid #E2E8F0;
-}
-
-.control-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.control-label-row label {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-.badge-tag {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--brand-orange);
-  background: var(--brand-orange-light);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-.slider-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.slider-side-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-input[type="range"]#heat-slider {
-  flex: 1;
-  accent-color: var(--brand-orange);
-  height: 5px;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.controls-row-2 {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.limit-adjust-box {
-  flex: 1;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: var(--radius-sm);
-  padding: 4px 8px;
-  display: flex;
-  flex-direction: column;
-}
-
-.limit-caption {
-  font-size: 9.5px;
-  color: var(--text-muted);
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.limit-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 2px;
-}
-
-.btn-step {
-  width: 22px;
-  height: 22px;
-  background: white;
-  border: 1px solid var(--bg-border);
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-step:hover {
-  background: #F1F5F9;
-  border-color: var(--text-muted);
-}
-
-.limit-val {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.action-btn-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.btn-action {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 9px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.btn-spoil-veg {
-  background: #FFF1F2;
-  color: #E11D48;
-  border-color: #FECDD3;
-}
-
-.btn-spoil-veg:hover, .btn-spoil-veg.active {
-  background: #FFE4E6;
-  border-color: #FDA4AF;
-}
-
-.btn-spill {
-  background: #F0F9FF;
-  color: #0284C7;
-  border-color: #BAE6FD;
-}
-
-.btn-spill:hover, .btn-spill.active {
-  background: #E0F2FE;
-  border-color: #7DD3FC;
-}
-
-.btn-cleanup {
-  background: #F0FDF4;
-  color: #16A34A;
-  border-color: #BBF7D0;
-}
-
-.btn-cleanup:hover {
-  background: #DCFCE7;
-}
-
-/* Metrics Grid */
-.metrics-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  min-width: 0;
-}
-
+/* Metric Cards in Telemetry Grid */
 .metric-card {
   background: var(--bg-card);
   border: 1px solid #E2E8F0;
   border-radius: var(--radius-lg);
-  padding: 10px 10px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: transform 0.2s, box-shadow 0.2s;
-  min-width: 0;
+  min-height: 250px;
 }
 
 .metric-card:hover {
-  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.08);
+  border-color: #CBD5E1;
+}
+
+.clickable-metric-card {
+  cursor: pointer;
 }
 
 .card-top-row {
@@ -1141,8 +973,8 @@ input[type="range"]#heat-slider {
 }
 
 .card-icon-pill {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -1162,6 +994,12 @@ input[type="range"]#heat-slider {
   border: 1px solid #99F6E4;
 }
 
+.icon-pill-amber {
+  background: #FEF3C7;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
 .icon-pill-blue {
   background: #EFF6FF;
   color: #2563EB;
@@ -1175,47 +1013,20 @@ input[type="range"]#heat-slider {
 }
 
 .card-eyebrow {
-  font-size: 10.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   color: var(--text-muted);
   letter-spacing: 0.6px;
   text-transform: uppercase;
 }
 
-.metric-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
-}
-
-.m-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.m-chip {
-  font-size: 9.5px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-.chip-normal { background: #E8F5E9; color: var(--status-green); }
-.chip-alert { background: #FFEBEE; color: var(--status-red); }
-.chip-info { background: #E0F2FE; color: var(--status-blue); }
-.chip-gray { background: #F1F5F9; color: var(--text-muted); }
-.chip-cooling-on { background: #DBEAFE; color: #1D4ED8; animation: pulseSoft 1.5s infinite; }
-.chip-cooling-off { background: #F1F5F9; color: #64748B; }
-
 .cooling-inline-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 12px;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
 }
 
@@ -1227,18 +1038,19 @@ input[type="range"]#heat-slider {
 .cooling-inline-chip.chip-on {
   background: #DBEAFE;
   color: #1D4ED8;
+  animation: pulseSoft 1.5s infinite;
 }
 
 .big-metric-display {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 3px;
-  margin: 2px 0 4px 0;
+  gap: 4px;
+  margin: 6px 0 6px 0;
 }
 
 .metric-number {
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.6px;
@@ -1247,8 +1059,8 @@ input[type="range"]#heat-slider {
 }
 
 .metric-unit {
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
@@ -1256,17 +1068,17 @@ input[type="range"]#heat-slider {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 1px 0 4px 0;
+  margin: 2px 0 6px 0;
 }
 
 .status-pill-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 1.5px 7px;
+  gap: 5px;
+  padding: 3px 9px;
   border-radius: 9999px;
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 0.1px;
   line-height: 1.2;
   white-space: nowrap;
@@ -1295,29 +1107,32 @@ input[type="range"]#heat-slider {
 .pill-status-icon {
   font-size: 11px;
   line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 /* Horizontal Range Gauge Bar */
 .temp-gauge-wrapper {
-  margin: 2px 0 4px 0;
+  margin: 6px 0 8px 0;
 }
 
 .gauge-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-light);
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .limit-marker-text {
   color: var(--status-red);
+  font-weight: 700;
 }
 
 .gauge-track.industrial-track {
   width: 100%;
-  height: 5px;
+  height: 7px;
   border-radius: 9999px;
   position: relative;
   overflow: visible;
@@ -1331,15 +1146,19 @@ input[type="range"]#heat-slider {
   background: linear-gradient(90deg, #38BDF8 0%, #34D399 35%, #60A5FA 70%, #3B82F6 100%);
 }
 
+.industrial-track.power-track {
+  background: linear-gradient(90deg, #38BDF8 0%, #34D399 40%, #FBBF24 75%, #EF4444 100%);
+}
+
 .gauge-slider-thumb {
   position: absolute;
-  top: -4px;
-  width: 5px;
-  height: 13px;
+  top: -5px;
+  width: 6px;
+  height: 17px;
   background: #FFFFFF;
-  border: 1.5px solid #0F172A;
-  border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+  border: 2px solid #0F172A;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
   transform: translateX(-50%);
   transition: left 0.3s ease;
   z-index: 5;
@@ -1348,51 +1167,27 @@ input[type="range"]#heat-slider {
 
 .gauge-limit-pin {
   position: absolute;
-  top: -3px;
+  top: -4px;
   left: 71.4%;
   width: 2px;
-  height: 11px;
+  height: 15px;
   background-color: var(--status-red);
   border-radius: 1px;
   z-index: 6;
 }
 
-.metric-val-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 3px;
-  margin: 2px 0;
-}
-
-.m-val {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.m-val-sm {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-main);
-  text-align: center;
-}
-
-.m-unit {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
+.power-limit-pin {
+  left: 65%;
+  background-color: #D97706;
 }
 
 .chart-box {
   width: 100%;
-  height: 26px;
+  height: 44px;
   background: #F8FAFC;
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
-  margin: 2px 0;
+  margin: 6px 0;
   border: 1px solid #EDF2F7;
 }
 
@@ -1403,86 +1198,362 @@ input[type="range"]#heat-slider {
 }
 
 .m-footer {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text-muted);
-  text-align: center;
-  line-height: 1.15;
-  white-space: normal;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 1.2;
+  margin-top: 4px;
 }
 
-.m-footer-help {
-  font-size: 9px;
+.click-history-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0284C7;
+  background: #E0F2FE;
+  border: 1px solid #BAE6FD;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.click-history-badge:hover {
+  background: #0284C7;
+  color: #FFFFFF;
+}
+
+/* Cooling Side Widget as Metric Card */
+.sim-cooling-side-card {
+  background: var(--bg-card);
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 250px;
+}
+
+.chip-cooling-off {
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.sim-ac-units-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 8px 0;
+}
+
+.sim-ac-unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.ac-dot-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-mini-indicator {
+  font-size: 10px;
+  color: #94A3B8;
+}
+
+.ac-mini-indicator.running {
+  color: #0284C7;
+  animation: acPulseDot 1.5s infinite;
+}
+
+.sim-ac-name {
+  font-weight: 700;
+  color: #1E293B;
+  font-size: 12px;
+}
+
+.sim-ac-status {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.sim-ac-status.off {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.sim-ac-status.running {
+  background: #E0F2FE;
+  color: #0284C7;
+}
+
+.cooling-timer-box-mini {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748B;
+  padding-top: 6px;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.cooling-timer-box-mini .timer-val {
+  font-family: monospace;
+  font-weight: 800;
+  color: #0F172A;
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   LEFT SECTION: OPERATIONAL CONSOLE (Controls + Inventory Health Row)
+   ========================================================================== */
+.sim-console-row {
+  display: flex;
+  gap: 18px;
+  width: 100%;
+  align-items: stretch;
+}
+
+/* Controls Panel */
+.controls-card {
+  flex: 1.15;
+  min-width: 0;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.controls-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.control-box {
+  background: #F8FAFC;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #E2E8F0;
+}
+
+.control-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.control-label-row label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.badge-tag {
+  font-size: 11px;
+  font-weight: 700;
   color: var(--brand-orange);
+  background: var(--brand-orange-light);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-side-label {
+  font-size: 11px;
+  color: var(--text-muted);
   font-weight: 600;
-  text-align: center;
-  line-height: 1.15;
-  white-space: normal;
+  white-space: nowrap;
+}
+
+input[type="range"]#heat-slider,
+input[type="range"]#power-slider {
+  flex: 1;
+  accent-color: var(--brand-orange);
+  height: 6px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.controls-row-2 {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.limit-adjust-box {
+  flex: 0.95;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.limit-caption {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.limit-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-step {
+  width: 28px;
+  height: 28px;
+  background: white;
+  border: 1px solid var(--bg-border);
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-step:hover {
+  background: #F1F5F9;
+  border-color: var(--text-muted);
+}
+
+.limit-val {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.action-btn-group {
+  flex: 1.05;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+/* Inventory Health Panel */
+.inventory-health-card {
+  flex: 0.85;
+  min-width: 0;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.inventory-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .health-comfort-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-around;
   background: #F8FAFC;
-  border: 1px solid #F1F5F9;
-  border-radius: 8px;
-  padding: 4px 10px;
-  margin: 2px 0 4px 0;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 14px;
 }
 
 .comfort-gauge-box {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  min-width: 60px;
-}
-
-.comfort-arc-svg {
-  overflow: visible;
-}
-
-#sim-comfort-arc-fill {
-  transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 10px;
 }
 
 .comfort-score-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-top: -6px;
 }
 
 .comfort-score-val {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 800;
-  color: #0F172A;
-  line-height: 1.1;
+  color: #059669;
+  line-height: 1;
+}
+
+.comfort-score-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
 }
 
 .cartons-stat-row {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
+  gap: 10px;
 }
 
 .stat-pill {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 6px;
-  padding: 2px 8px;
+  border-radius: 8px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .stat-pill .dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
@@ -1490,40 +1561,69 @@ input[type="range"]#heat-slider {
 .stat-pill .dot.red { background-color: var(--status-red); }
 
 .stat-num {
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--text-main);
 }
 
 .stat-lbl {
-  font-size: 9.5px;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
-.cooling-timer-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: #F8FAFC;
-  padding: 3px 8px;
-  border-radius: 6px;
-  margin: 2px auto 4px auto;
-  border: 1px solid #EDF2F7;
-  max-width: 140px;
+.sim-produce-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
 }
 
-.timer-lbl { font-size: 9.5px; color: var(--text-muted); }
-.timer-val { font-size: 11px; font-weight: 700; color: var(--text-main); }
+.sim-produce-badge {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.sp-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.sp-count {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.inventory-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid #F1F5F9;
+  gap: 8px;
+}
+
+.inv-action-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+}
 
 /* ==========================================================================
    LEFT SECTION: EVENT LOG (BOTTOM STRIP)
    ========================================================================== */
 .event-log-card {
-  flex: 0.45;
-  min-height: 75px;
-  max-height: 90px;
-  padding: 4px 12px;
+  padding: 16px 20px;
+  min-height: 120px;
+  width: 100%;
 }
 
 .log-head {
@@ -1721,14 +1821,15 @@ input[type="range"]#heat-slider {
 .phone-view {
   flex: 1;
   width: 100%;
-  display: none;
+  height: 100%;
+  display: none !important;
   flex-direction: column;
   position: relative;
   overflow: hidden;
 }
 
 .phone-view.active {
-  display: flex;
+  display: flex !important;
 }
 
 /* VIEW A: LOCK SCREEN */
@@ -1736,7 +1837,6 @@ input[type="range"]#heat-slider {
   background: radial-gradient(circle at 50% 15%, #1E293B 0%, #0B0F19 80%);
   color: white;
   padding: 20px 14px 16px 14px;
-  display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
@@ -2382,169 +2482,576 @@ input[type="range"]#heat-slider {
 /* ==========================================================================
    LAPTOP & COMPACT SCREEN RESPONSIVENESS (<= 1440px / 1366x768)
    ========================================================================== */
-@media (max-width: 1440px) {
+@media (max-width: 1400px) {
+  .sim-telemetry-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .sim-console-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .controls-card,
+  .inventory-health-card {
+    width: 100%;
+    flex: none;
+  }
+}
+
+@media (max-width: 1140px) {
   .simulation-body {
-    padding: 6px 10px 8px 10px;
-    gap: 8px;
-  }
-
-  .controls-dashboard-row {
-    min-height: 165px;
-    gap: 6px;
-  }
-
-  .controls-card {
-    width: 250px;
-    padding: 6px 10px;
+    flex-direction: column;
+    padding: 16px;
   }
 
   .right-section {
-    width: 300px;
+    width: 100%;
+    position: static;
+    margin-top: 14px;
   }
 
-  .metrics-grid {
-    gap: 6px;
-  }
-
-  .metric-card {
-    padding: 6px 8px;
-  }
-
-  .metric-number {
-    font-size: 24px;
-    letter-spacing: -0.5px;
-  }
-
-  .metric-unit {
-    font-size: 12px;
-  }
-
-  .card-icon-pill {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-  }
-
-  .card-icon-pill svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .card-eyebrow {
-    font-size: 9px;
-    letter-spacing: 0.3px;
-  }
-
-  .cooling-inline-chip {
-    font-size: 8.5px;
-    padding: 1px 4px;
-  }
-
-  .status-pill-badge {
-    font-size: 9.5px;
-    padding: 1px 6px;
-  }
-
-  .health-comfort-row {
-    padding: 2px 5px;
-    gap: 6px;
-  }
-
-  .comfort-gauge-box {
-    min-width: 44px;
-  }
-
-  .comfort-arc-svg {
-    width: 46px;
-    height: 30px;
-  }
-
-  .comfort-score-val {
-    font-size: 11px;
-  }
-
-  .stat-pill {
-    padding: 1px 5px;
-    gap: 3px;
-  }
-
-  .stat-num {
-    font-size: 11px;
-  }
-
-  .stat-lbl {
-    font-size: 8px;
-  }
-
-  .m-val-sm {
-    font-size: 13px;
-  }
-
-  .cooling-timer-box {
-    padding: 2px 6px;
-    margin: 1px auto 2px auto;
-  }
-
-  .timer-lbl {
-    font-size: 8.5px;
-  }
-
-  .timer-val {
-    font-size: 10px;
-  }
-
-  .control-box {
-    padding: 4px 6px;
-  }
-
-  .control-label-row label {
-    font-size: 10.5px;
-  }
-
-  .badge-tag {
-    font-size: 9px;
-    padding: 1px 4px;
-  }
-
-  .limit-val {
-    font-size: 11.5px;
-  }
-
-  .btn-action {
-    font-size: 10px;
-    padding: 3px 6px;
-  }
-
-  .m-footer, .m-footer-help {
-    font-size: 8.5px;
+  .phone-frame {
+    margin: 0 auto;
   }
 }
 
-@media (max-width: 1280px) {
-  .controls-card {
-    width: 230px;
+@media (max-width: 720px) {
+  .sim-telemetry-grid {
+    grid-template-columns: 1fr;
   }
 
-  .right-section {
-    width: 280px;
+  .sim-produce-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .metric-number {
-    font-size: 21px;
-  }
-
-  .metric-unit {
-    font-size: 11px;
-  }
-
-  .m-val-sm {
-    font-size: 12px;
-  }
-
-  .status-pill-badge {
-    font-size: 9px;
-    padding: 1px 5px;
+  .controls-row-2 {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
+
+
+/* ==========================================================================
+   POWER CONSUMPTION, CLICKABLE METRICS, PRODUCE STRIP & COOLING SIDE CARD
+   ========================================================================== */
+.clickable-metric-card {
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  position: relative;
+}
+
+.clickable-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -3px rgba(15, 23, 42, 0.12);
+  border-color: #CBD5E1;
+}
+
+.clickable-metric-card:active {
+  transform: translateY(0);
+}
+
+.click-history-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #2563EB;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  padding: 1px 5px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.clickable-metric-card:hover .click-history-badge {
+  background: #2563EB;
+  color: #FFFFFF;
+  border-color: #1D4ED8;
+}
+
+.icon-pill-amber {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.chip-amber {
+  background: #FEF3C7;
+  color: #B45309;
+  font-weight: 700;
+}
+
+/* Power Gauge Track */
+.power-track {
+  background: linear-gradient(90deg, #10B981 0%, #F59E0B 65%, #EF4444 100%);
+}
+
+.power-thumb {
+  background: #D97706;
+  border-color: #FFFFFF;
+}
+
+.power-limit-pin {
+  left: 70%;
+  background: #EF4444;
+}
+
+/* Produce strip to fill whitespace in inventory card */
+.sim-produce-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #F8FAFC;
+  border: 1px dashed #E2E8F0;
+  border-radius: 6px;
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.sim-produce-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #059669;
+  margin-left: auto;
+}
+
+/* Side Cooling Units (AC) Widget */
+.sim-cooling-side-card {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #F8FAFC;
+  border: 1px solid var(--border-light, #E2E8F0);
+  border-radius: 10px;
+}
+
+.compact-ac-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.ac-head-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #0F172A;
+}
+
+.ac-icon-svg {
+  color: #0284C7;
+  flex-shrink: 0;
+}
+
+.ac-widget-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+.chip-cooling-off {
+  background: #F1F5F9;
+  color: #64748B;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.chip-cooling-on {
+  background: #E0F2FE;
+  color: #0284C7;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.sim-ac-units-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.sim-ac-unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+.ac-dot-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ac-mini-indicator {
+  font-size: 8px;
+  color: #94A3B8;
+}
+
+.ac-mini-indicator.running {
+  color: #0284C7;
+  animation: acPulseDot 1.5s infinite;
+}
+
+@keyframes acPulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.sim-ac-name {
+  font-weight: 600;
+  color: #1E293B;
+  font-size: 10.5px;
+}
+
+.sim-ac-status {
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.sim-ac-status.off {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.sim-ac-status.running {
+  background: #E0F2FE;
+  color: #0284C7;
+}
+
+.cooling-timer-box-mini {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: #64748B;
+  padding-top: 4px;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.cooling-timer-box-mini .timer-val {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* ==========================================================================
+   SIMULATION HISTORICAL TELEMETRY MODAL (Temperature & Power)
+   ========================================================================== */
+.history-modal-dialog {
+  width: 1140px;
+  max-width: 96vw;
+  max-height: 90vh;
+  padding: 22px 26px;
+  gap: 16px;
+  overflow-y: auto;
+  border-radius: 16px;
+}
+
+.history-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 14px;
+  gap: 12px;
+}
+
+.hist-badge-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #EA580C;
+  text-transform: uppercase;
+}
+
+.hist-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 2px 0 0 0;
+}
+
+.hist-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hist-metric-tabs {
+  display: flex;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: 8px;
+  gap: 3px;
+}
+
+.hist-tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748B;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.hist-tab-btn:hover {
+  color: #0F172A;
+}
+
+.hist-tab-btn.active {
+  background: #FFFFFF;
+  color: #0F172A;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.history-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.hist-kpi-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hist-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hist-kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.hist-kpi-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.hist-kpi-unit {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.hist-kpi-hint {
+  font-size: 10px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.hist-kpi-hint.alert {
+  color: #D97706;
+}
+
+.history-section-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.history-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.hist-section-heading {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.hist-section-caption {
+  font-size: 10.5px;
+  color: #64748B;
+}
+
+.graph-legend-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.legend-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-color-box {
+  width: 10px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.history-chart-viewport {
+  width: 100%;
+  height: 260px;
+  background: #F8FAFC;
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid #EDF2F7;
+  overflow: hidden;
+}
+
+.history-chart-viewport svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.history-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+}
+
+.history-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  text-align: left;
+}
+
+.history-data-table th {
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #F1F5F9;
+  border-bottom: 1px solid #CBD5E1;
+  white-space: nowrap;
+}
+
+.history-data-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #F1F5F9;
+  color: #1E293B;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.history-data-table tbody tr:nth-child(even) {
+  background: #FAFAFA;
+}
+
+.history-data-table tbody tr:hover {
+  background: #F0F9FF;
+}
+
+.history-data-table tfoot td {
+  padding: 8px 10px;
+  font-weight: 700;
+  background: #F8FAFC;
+  border-top: 2px solid #CBD5E1;
+  color: #0F172A;
+}
+
+.tbl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.tbl-badge.badge-green { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+.tbl-badge.badge-blue  { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+.tbl-badge.badge-amber { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+.tbl-badge.badge-red   { background: #FEF2F2; color: #DC2626; border: 1px solid #FECDD3; }
+
+.records-count-chip {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  background: #F1F5F9;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.history-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 12px;
+}
+
+.footer-source-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #64748B;
+}
+
+.btn-hist-secondary {
+  background: #F1F5F9;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-hist-secondary:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+@media (max-width: 860px) {
+  .history-kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 
 

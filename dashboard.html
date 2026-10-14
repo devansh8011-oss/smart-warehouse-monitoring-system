@@ -62,7 +62,7 @@
     <section class="readings-grid">
       
       <!-- 1. TEMPERATURE CARD -->
-      <div class="stat-card temp-card">
+      <div class="stat-card temp-card clickable-card" id="card-temp-dash" onclick="openHistoryModal('temp')" title="Click to view 12-Month Temperature Graph & Numerical Table">
         <div class="card-top-row">
           <div class="card-header-badge">
             <div class="card-icon-pill icon-pill-cyan">
@@ -89,10 +89,14 @@
           <span class="metric-unit">°C</span>
         </div>
 
-        <!-- Status Chip Below Number (Matching Reference) -->
+        <!-- Status Chip Below Number -->
         <div class="metric-status-badge-row">
           <span class="status-pill-badge pill-normal" id="temp-status-chip">
-            <span class="pill-status-icon">☺</span>
+            <span class="pill-status-icon">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
             <span class="pill-status-text">Normal</span>
           </span>
         </div>
@@ -119,12 +123,19 @@
         </div>
         <div class="card-footer-note">
           <span>Target range: 4.0 – 8.0 °C</span>
-          <span class="hysteresis-hint">Cooling stops below 8.0 °C</span>
+          <span class="click-history-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;vertical-align:-1px;">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            12-Mo Data
+          </span>
         </div>
       </div>
 
-      <!-- 2. HUMIDITY CARD -->
-      <div class="stat-card hum-card">
+      <!-- 2. HUMIDITY CARD (Clickable for 12-Month Telemetry) -->
+      <div class="stat-card hum-card clickable-card" id="card-humidity-dash" onclick="openHistoryModal('humidity')" title="Click to view 12-Month Humidity Graph & Numerical Table">
         <div class="card-top-row">
           <div class="card-header-badge">
             <div class="card-icon-pill icon-pill-teal">
@@ -141,15 +152,19 @@
           <span class="metric-unit">% RH</span>
         </div>
 
-        <!-- Status Chip Below Number (Matching Reference) -->
+        <!-- Status Chip Below Number -->
         <div class="metric-status-badge-row">
           <span class="status-pill-badge pill-normal" id="hum-status-chip">
-            <span class="pill-status-icon">☺</span>
+            <span class="pill-status-icon">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
             <span class="pill-status-text">Good for storage</span>
           </span>
         </div>
 
-        <!-- Industrial Gauge Slider Track with Thumb Marker (Matching Reference) -->
+        <!-- Industrial Gauge Slider Track with Thumb Marker -->
         <div class="temp-gauge-wrapper">
           <div class="gauge-labels">
             <span>70%</span>
@@ -169,110 +184,86 @@
           </svg>
         </div>
         <div class="card-footer-note">
-          <span>Optimal produce preservation moisture</span>
-          <span>Automatic range monitoring</span>
+          <span>Optimal moisture (80–92%)</span>
+          <span class="click-history-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;vertical-align:-1px;">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            12-Mo Data
+          </span>
         </div>
       </div>
 
-      <!-- 3. COOLING UNITS CARD -->
-      <div class="stat-card cooling-card">
+      <!-- 3. POWER CONSUMPTION CARD -->
+      <div class="stat-card power-card clickable-card" id="card-power-dash" onclick="openHistoryModal('power')" title="Click to view 12-Month Power Consumption Graph & Numerical Table">
         <div class="card-top-row">
           <div class="card-header-badge">
-            <div class="card-icon-pill icon-pill-blue">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/>
+            <div class="card-icon-pill icon-pill-amber">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
               </svg>
             </div>
             <div class="card-title-group">
-              <span class="card-eyebrow">COOLING UNITS</span>
-              <span class="cooling-summary-line" id="cooling-units-summary">All units off</span>
+              <span class="card-eyebrow">POWER CONSUMPTION</span>
+              <span class="cooling-summary-line" id="power-sub-summary">Baseline Load: 46.8 kW</span>
             </div>
           </div>
-          <span class="auto-mode-badge">Auto (Thermostat)</span>
+          <span class="auto-mode-badge" id="power-mode-badge">Grid Normal</span>
         </div>
 
-        <div class="cooling-units-list">
-          <!-- Unit 1 -->
-          <div class="unit-tile" id="unit-tile-1">
-            <div class="unit-tile-header">
-              <div class="unit-name-box">
-                <div class="unit-fan-icon" id="fan-icon-1">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
-                    <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
-                    <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
-                    <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
-                    <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="unit-title">Cooling Unit 1</h4>
-                  <span class="unit-location">North wall</span>
-                </div>
-              </div>
-              <span class="unit-pill pill-grey" id="unit-pill-1">Off</span>
-            </div>
-            <div class="unit-tile-body">
-              <span class="unit-time-text" id="unit-time-1">Standby • Ready</span>
-              <span class="unit-health green">● Working normally</span>
-            </div>
-          </div>
+        <div class="big-metric-display">
+          <span class="metric-number" id="power-big-val">46.8</span>
+          <span class="metric-unit">kW</span>
+        </div>
 
-          <!-- Unit 2 -->
-          <div class="unit-tile" id="unit-tile-2">
-            <div class="unit-tile-header">
-              <div class="unit-name-box">
-                <div class="unit-fan-icon" id="fan-icon-2">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
-                    <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
-                    <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
-                    <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
-                    <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="unit-title">Cooling Unit 2</h4>
-                  <span class="unit-location">East wall</span>
-                </div>
-              </div>
-              <span class="unit-pill pill-grey" id="unit-pill-2">Off</span>
-            </div>
-            <div class="unit-tile-body">
-              <span class="unit-time-text" id="unit-time-2">Standby • Ready</span>
-              <span class="unit-health green">● Working normally</span>
-            </div>
-          </div>
+        <!-- Status Chip Below Number -->
+        <div class="metric-status-badge-row">
+          <span class="status-pill-badge pill-normal" id="power-status-chip">
+            <span class="pill-status-icon">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </span>
+            <span class="pill-status-text">Baseline Facility Load</span>
+          </span>
+        </div>
 
-          <!-- Unit 3 -->
-          <div class="unit-tile" id="unit-tile-3">
-            <div class="unit-tile-header">
-              <div class="unit-name-box">
-                <div class="unit-fan-icon" id="fan-icon-3">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
-                    <path d="M12 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5v5z"/>
-                    <path d="M12 12c0 2.8-2.2 5-5 5s-5-2.2-5-5 2.2-5 5-5h5z"/>
-                    <path d="M12 12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5v-5z"/>
-                    <path d="M12 12c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5h-5z"/>
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="unit-title">Cooling Unit 3</h4>
-                  <span class="unit-location">West wall</span>
-                </div>
-              </div>
-              <span class="unit-pill pill-grey" id="unit-pill-3">Off</span>
-            </div>
-            <div class="unit-tile-body">
-              <span class="unit-time-text" id="unit-time-3">Standby • Ready</span>
-              <span class="unit-health green">● Working normally</span>
-            </div>
+        <!-- Industrial Gauge Slider Track with Thumb Marker -->
+        <div class="temp-gauge-wrapper">
+          <div class="gauge-labels">
+            <span>20 kW</span>
+            <span class="limit-marker-text">Peak Limit: 90 kW</span>
+            <span>120 kW</span>
           </div>
+          <div class="gauge-track industrial-track power-track">
+            <div class="gauge-fill power-fill" id="power-gauge-fill" style="width: 27%;"></div>
+            <div class="gauge-slider-thumb power-thumb" id="power-slider-thumb" style="left: 27%;"></div>
+            <div class="gauge-limit-pin power-limit-pin" title="Peak Demand Threshold: 90 kW"></div>
+          </div>
+        </div>
+
+        <!-- 30-Reading SVG Sparkline Chart -->
+        <div class="chart-container">
+          <svg id="power-chart-svg" viewBox="0 0 280 48" preserveAspectRatio="none">
+            <!-- Rendered in dashboard.js -->
+          </svg>
+        </div>
+        <div class="card-footer-note">
+          <span id="power-daily-est">Daily Est: ~1,124 kWh</span>
+          <span class="click-history-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;vertical-align:-1px;">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            12-Mo Data
+          </span>
         </div>
       </div>
 
-      <!-- 4. WAREHOUSE HEALTH SUMMARY CARD (Matching ALERTAS + CONFORTO reference) -->
+      <!-- 4. WAREHOUSE HEALTH SUMMARY CARD -->
       <div class="stat-card health-summary-card">
         <div class="card-top-row">
           <div class="card-header-badge">
@@ -285,7 +276,11 @@
             <span class="card-eyebrow">SYSTEM ALERTS & HEALTH</span>
           </div>
           <span class="status-pill-badge pill-normal" id="overall-health-pill">
-            <span class="pill-status-icon">✓</span>
+            <span class="pill-status-icon">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
             <span class="pill-status-text">All Clear</span>
           </span>
         </div>
@@ -304,7 +299,7 @@
                 </linearGradient>
               </defs>
               <circle cx="50" cy="48" r="9" fill="#ECFDF5"/>
-              <text x="50" y="52" text-anchor="middle" font-size="11">☺</text>
+              <path d="M46 48l3 3 5-5" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <div class="comfort-score-text">
               <span class="comfort-score-val" id="comfort-score-val">100%</span>
@@ -314,27 +309,102 @@
 
           <div class="health-counts-grid compact-health-grid">
             <div class="health-count-box box-fresh">
+              <div class="hc-icon-badge fresh-icon-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 17 4.5s-.5 1.5-1.6 7.2A7 7 0 0 1 11 20z"/>
+                  <path d="M2 21c0-4 3.5-7.5 8-8.5"/>
+                </svg>
+              </div>
               <div class="hc-number" id="hc-fresh-count">24</div>
               <div class="hc-label-row">
                 <span class="hc-dot dot-green"></span>
-                <span class="hc-label">Fresh</span>
+                <span class="hc-label">Fresh Stock</span>
               </div>
+              <span class="hc-micro-tag tag-green" id="hc-fresh-sub">100% Intact</span>
             </div>
 
             <div class="health-count-box box-spoiled">
+              <div class="hc-icon-badge spoiled-icon-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
               <div class="hc-number" id="hc-spoiled-count">0</div>
               <div class="hc-label-row">
                 <span class="hc-dot dot-red"></span>
                 <span class="hc-label">Spoiled</span>
               </div>
+              <span class="hc-micro-tag tag-neutral" id="hc-spoiled-sub">Zero Decay</span>
             </div>
 
             <div class="health-count-box box-spill">
+              <div class="hc-icon-badge spill-icon-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                </svg>
+              </div>
               <div class="hc-number" id="hc-spills-count">0</div>
               <div class="hc-label-row">
                 <span class="hc-dot dot-red"></span>
                 <span class="hc-label">Spills</span>
               </div>
+              <span class="hc-micro-tag tag-green" id="hc-spills-sub">6 Aisles Dry</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produce Category Status Grid with Vector Icons -->
+        <div class="health-produce-strip">
+          <div class="h-produce-item" title="Rack A: Tomatoes">
+            <span class="h-produce-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8"/>
+                <path d="M12 5v3M10 5c1 1 2 1 4 0"/>
+              </svg>
+            </span>
+            <div class="h-produce-meta">
+              <span class="h-produce-title">Tomatoes</span>
+              <span class="h-produce-count" id="h-count-tomatoes">6/6 Fresh</span>
+            </div>
+          </div>
+          <div class="h-produce-item" title="Rack B: Potatoes & Onions">
+            <span class="h-produce-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="12" rx="9" ry="7"/>
+                <circle cx="9" cy="11" r="1" fill="#D97706"/>
+                <circle cx="15" cy="13" r="1" fill="#D97706"/>
+              </svg>
+            </span>
+            <div class="h-produce-meta">
+              <span class="h-produce-title">Root Crops</span>
+              <span class="h-produce-count" id="h-count-roots">6/6 Fresh</span>
+            </div>
+          </div>
+          <div class="h-produce-item" title="Rack C: Spinach & Cabbage">
+            <span class="h-produce-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 17 4.5s-.5 1.5-1.6 7.2A7 7 0 0 1 11 20z"/>
+                <path d="M2 21c0-4 3.5-7.5 8-8.5"/>
+              </svg>
+            </span>
+            <div class="h-produce-meta">
+              <span class="h-produce-title">Leafy Greens</span>
+              <span class="h-produce-count" id="h-count-greens">6/6 Fresh</span>
+            </div>
+          </div>
+          <div class="h-produce-item" title="Rack D: Carrots">
+            <span class="h-produce-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8.5 14.5L4 20l5.5-4.5"/>
+                <path d="M17.5 6.5l-9 9 4 4 9-9-4-4z"/>
+                <path d="M18 6l2-3M19 8l3-1"/>
+              </svg>
+            </span>
+            <div class="h-produce-meta">
+              <span class="h-produce-title">Carrots</span>
+              <span class="h-produce-count" id="h-count-carrots">6/6 Fresh</span>
             </div>
           </div>
         </div>
@@ -342,12 +412,16 @@
         <!-- Fourth item: Cooling status bar -->
         <div class="summary-extra-bar">
           <div class="cooling-summary-chip">
-            <span class="mini-fan-icon">❄️</span>
+            <span class="mini-fan-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/>
+              </svg>
+            </span>
             <span id="summary-cooling-status">Cooling: Off</span>
           </div>
           <div class="all-units-ok-chip">
             <span class="service-dot green"></span>
-            <span>All 3 units operational</span>
+            <span id="summary-operational-status">3 AC units on standby</span>
           </div>
         </div>
       </div>
@@ -387,19 +461,135 @@
         </div>
       </div>
 
-      <!-- RECENT ACTIVITY FEED (Right Column) -->
-      <div class="main-card activity-card">
-        <div class="card-header-flex">
-          <div>
-            <h2 class="section-title">Recent Activity</h2>
-            <p class="section-subtitle">Live events & historical logs</p>
+      <!-- RIGHT COLUMN (Side Cooling AC Widget + Recent Activity) -->
+      <div class="dash-sidebar-col">
+        
+        <!-- SIDE COOLING UNITS (AC) WIDGET -->
+        <div class="main-card cooling-side-card">
+          <div class="card-header-flex compact-ac-header">
+            <div class="ac-header-left">
+              <div class="card-icon-pill icon-pill-blue ac-pill">
+                <!-- Dedicated AC Icon -->
+                <svg class="ac-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="11" rx="2" ry="2"/>
+                  <line x1="5" y1="8" x2="14" y2="8"/>
+                  <circle cx="18" cy="8" r="1" fill="currentColor"/>
+                  <path d="M4 15h16"/>
+                  <path d="M7 18c0 1.5-1 2-1 3" stroke-dasharray="2 1"/>
+                  <path d="M12 18c0 1.5 0 2 0 3"/>
+                  <path d="M17 18c0 1.5 1 2 1 3" stroke-dasharray="2 1"/>
+                </svg>
+              </div>
+              <div class="card-title-group">
+                <span class="card-eyebrow">COOLING UNITS (AC)</span>
+                <span class="cooling-summary-line" id="cooling-units-summary">All units off</span>
+              </div>
+            </div>
+            <span class="auto-mode-badge">Auto (Thermostat)</span>
           </div>
-          <span class="activity-live-badge">Auto-recording</span>
+
+          <div class="cooling-units-list compact-ac-list">
+            <!-- Unit 1 -->
+            <div class="unit-tile" id="unit-tile-1">
+              <div class="unit-tile-header">
+                <div class="unit-name-box">
+                  <div class="unit-fan-icon ac-unit-icon" id="fan-icon-1">
+                    <svg class="ac-symbol-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="11" rx="2"/>
+                      <line x1="5" y1="8" x2="13" y2="8"/>
+                      <circle cx="17" cy="8" r="1" fill="currentColor"/>
+                      <path d="M4 15h16"/>
+                      <path d="M8 18c0 1.5-.5 2-.5 3"/>
+                      <path d="M12 18c0 1.5 0 2 0 3"/>
+                      <path d="M16 18c0 1.5.5 2 .5 3"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="unit-title">AC Unit 1</h4>
+                    <span class="unit-location">North wall</span>
+                  </div>
+                </div>
+                <span class="unit-pill pill-grey" id="unit-pill-1">Off</span>
+              </div>
+              <div class="unit-tile-body">
+                <span class="unit-time-text" id="unit-time-1">Standby • Ready</span>
+                <span class="unit-health green">● Working normally</span>
+              </div>
+            </div>
+
+            <!-- Unit 2 -->
+            <div class="unit-tile" id="unit-tile-2">
+              <div class="unit-tile-header">
+                <div class="unit-name-box">
+                  <div class="unit-fan-icon ac-unit-icon" id="fan-icon-2">
+                    <svg class="ac-symbol-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="11" rx="2"/>
+                      <line x1="5" y1="8" x2="13" y2="8"/>
+                      <circle cx="17" cy="8" r="1" fill="currentColor"/>
+                      <path d="M4 15h16"/>
+                      <path d="M8 18c0 1.5-.5 2-.5 3"/>
+                      <path d="M12 18c0 1.5 0 2 0 3"/>
+                      <path d="M16 18c0 1.5.5 2 .5 3"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="unit-title">AC Unit 2</h4>
+                    <span class="unit-location">East wall</span>
+                  </div>
+                </div>
+                <span class="unit-pill pill-grey" id="unit-pill-2">Off</span>
+              </div>
+              <div class="unit-tile-body">
+                <span class="unit-time-text" id="unit-time-2">Standby • Ready</span>
+                <span class="unit-health green">● Working normally</span>
+              </div>
+            </div>
+
+            <!-- Unit 3 -->
+            <div class="unit-tile" id="unit-tile-3">
+              <div class="unit-tile-header">
+                <div class="unit-name-box">
+                  <div class="unit-fan-icon ac-unit-icon" id="fan-icon-3">
+                    <svg class="ac-symbol-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="11" rx="2"/>
+                      <line x1="5" y1="8" x2="13" y2="8"/>
+                      <circle cx="17" cy="8" r="1" fill="currentColor"/>
+                      <path d="M4 15h16"/>
+                      <path d="M8 18c0 1.5-.5 2-.5 3"/>
+                      <path d="M12 18c0 1.5 0 2 0 3"/>
+                      <path d="M16 18c0 1.5.5 2 .5 3"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="unit-title">AC Unit 3</h4>
+                    <span class="unit-location">West wall</span>
+                  </div>
+                </div>
+                <span class="unit-pill pill-grey" id="unit-pill-3">Off</span>
+              </div>
+              <div class="unit-tile-body">
+                <span class="unit-time-text" id="unit-time-3">Standby • Ready</span>
+                <span class="unit-health green">● Working normally</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="activity-feed-list" id="activity-feed-list">
-          <!-- Populated in dashboard.js -->
+        <!-- RECENT ACTIVITY FEED -->
+        <div class="main-card activity-card">
+          <div class="card-header-flex">
+            <div>
+              <h2 class="section-title">Recent Activity</h2>
+              <p class="section-subtitle">Live events & historical logs</p>
+            </div>
+            <span class="activity-live-badge">Auto-recording</span>
+          </div>
+
+          <div class="activity-feed-list" id="activity-feed-list">
+            <!-- Populated in dashboard.js -->
+          </div>
         </div>
+
       </div>
 
     </section>
@@ -469,7 +659,7 @@
                   </g>
                   <g class="zone-status-badge badge-green" transform="translate(14, 58)">
                     <rect width="84" height="24" rx="12"/>
-                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                    <text x="42" y="16" text-anchor="middle">No spill</text>
                   </g>
                   <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
@@ -489,7 +679,7 @@
                   </g>
                   <g class="zone-status-badge badge-green" transform="translate(14, 58)">
                     <rect width="84" height="24" rx="12"/>
-                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                    <text x="42" y="16" text-anchor="middle">No spill</text>
                   </g>
                   <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
@@ -509,7 +699,7 @@
                   </g>
                   <g class="zone-status-badge badge-green" transform="translate(14, 58)">
                     <rect width="84" height="24" rx="12"/>
-                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                    <text x="42" y="16" text-anchor="middle">No spill</text>
                   </g>
                   <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
@@ -529,7 +719,7 @@
                   </g>
                   <g class="zone-status-badge badge-green" transform="translate(14, 58)">
                     <rect width="84" height="24" rx="12"/>
-                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                    <text x="42" y="16" text-anchor="middle">No spill</text>
                   </g>
                   <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
@@ -549,7 +739,7 @@
                   </g>
                   <g class="zone-status-badge badge-green" transform="translate(14, 58)">
                     <rect width="84" height="24" rx="12"/>
-                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                    <text x="42" y="16" text-anchor="middle">No spill</text>
                   </g>
                   <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
@@ -569,7 +759,7 @@
                   </g>
                   <g class="zone-status-badge badge-green" transform="translate(14, 58)">
                     <rect width="84" height="24" rx="12"/>
-                    <text x="42" y="16" text-anchor="middle">✓ No spill</text>
+                    <text x="42" y="16" text-anchor="middle">No spill</text>
                   </g>
                   <text x="182" y="74" text-anchor="end" font-size="9" fill="#94A3B8" font-weight="600">Vision 100%</text>
                 </g>
@@ -589,7 +779,9 @@
 
           <!-- Banner shown when all areas are clear -->
           <div id="no-spills-banner" class="no-spills-banner" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:16px;text-align:center;color:#166534;margin-bottom:12px;">
-            <div style="font-size:20px;margin-bottom:4px;">✓</div>
+            <div style="display:flex;align-items:center;justify-content:center;margin-bottom:6px;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+            </div>
             <div style="font-weight:700;font-size:13px;">Facility Floors Clear</div>
             <div style="font-size:11px;color:#15803D;margin-top:2px;">All 6 camera vision zones reporting zero liquid hazards.</div>
           </div>
@@ -728,12 +920,18 @@
 
       <!-- Action / Recommendation block for spoiled cartons -->
       <div class="drawer-action-box" id="drawer-action-box">
-        <div class="drawer-warning-icon">⚠️</div>
+        <div class="drawer-warning-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
         <div style="flex:1;">
           <h4 class="drawer-warn-title">Recommended Action</h4>
           <p class="drawer-warn-desc" id="drawer-action-desc">Remove and replace this carton immediately to prevent ethylene gas from affecting adjacent cartons.</p>
           <button type="button" class="btn-clean-action" id="drawer-replace-btn" onclick="replaceCartonFromDashboard()" style="margin-top:10px;">
-            Replace with Fresh Stock ✓
+            Replace with Fresh Stock
           </button>
         </div>
       </div>
@@ -754,6 +952,119 @@
         <img id="modal-enlarged-img" src="" alt="Enlarged CCTV Snapshot">
         <div class="modal-footer-caption" id="modal-caption-text">
           Security vision system flagged liquid accumulation with 98% confidence.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ANNUAL TELEMETRY & HISTORICAL RECORDS (Temperature, Humidity & Power) -->
+  <div class="modal-backdrop hidden" id="history-modal" onclick="handleHistoryModalBackdrop(event)">
+    <div class="modal-dialog-box history-modal-box">
+      <!-- Modal Header -->
+      <div class="history-modal-header">
+        <div class="history-title-wrap">
+          <div class="history-icon-badge" id="history-modal-icon-badge">
+            <span id="history-header-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+              </svg>
+            </span>
+          </div>
+          <div>
+            <div class="history-meta-tags">
+              <span class="badge-tag-hist" id="history-type-tag">ANNUAL TELEMETRY AUDIT</span>
+              <span class="badge-tag-year">Previous Year: 2025</span>
+            </div>
+            <h2 class="history-main-title" id="history-modal-title">Annual Temperature History (2025)</h2>
+            <p class="history-sub-title" id="history-modal-subtitle">12-Month telemetry records rendered in interactive graphical & tabular numerical formats</p>
+          </div>
+        </div>
+
+        <div class="history-header-actions">
+          <!-- Tab Navigation (3 Tabs) -->
+          <div class="history-nav-tabs">
+            <button type="button" class="hist-tab-btn active" id="tab-btn-temp" onclick="switchHistoryTab('temp')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+              </svg>
+              <span>Temperature</span>
+            </button>
+            <button type="button" class="hist-tab-btn" id="tab-btn-humidity" onclick="switchHistoryTab('humidity')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+              </svg>
+              <span>Humidity</span>
+            </button>
+            <button type="button" class="hist-tab-btn" id="tab-btn-power" onclick="switchHistoryTab('power')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>Power</span>
+            </button>
+          </div>
+          <button type="button" class="btn-modal-close" onclick="closeHistoryModal()" title="Close (Esc)">×</button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="history-kpi-row" id="history-kpi-row">
+        <!-- Rendered in dashboard.js -->
+      </div>
+
+      <!-- VISUAL GRAPH SECTION -->
+      <div class="history-section-card graph-card">
+        <div class="history-section-head">
+          <div class="section-head-left">
+            <h3 class="hist-section-heading" id="history-graph-title">12-Month Temperature Trend & Target Band</h3>
+            <span class="hist-section-caption" id="history-graph-caption">Visual month-by-month cold chain distribution across 2025</span>
+          </div>
+          <div class="graph-legend-group" id="history-graph-legend">
+            <!-- Dynamic legend items -->
+          </div>
+        </div>
+        
+        <div class="history-chart-viewport" id="history-chart-viewport">
+          <svg id="history-svg-chart" viewBox="0 0 960 260" preserveAspectRatio="none">
+            <!-- Rendered in dashboard.js -->
+          </svg>
+        </div>
+      </div>
+
+      <!-- NUMERICAL TABLE SECTION -->
+      <div class="history-section-card table-card">
+        <div class="history-section-head">
+          <div class="section-head-left">
+            <h3 class="hist-section-heading" id="history-table-title">Monthly Numerical Telemetry Table</h3>
+            <span class="hist-section-caption" id="history-table-caption">Full audited monthly records with min/max intervals and compliance status</span>
+          </div>
+          <div class="table-actions-group">
+            <span class="records-count-chip">12 Months (Jan – Dec 2025)</span>
+          </div>
+        </div>
+
+        <div class="history-table-wrap">
+          <table class="history-data-table" id="history-data-table">
+            <thead id="history-table-head">
+              <!-- Rendered in dashboard.js -->
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Rendered in dashboard.js -->
+            </tbody>
+            <tfoot id="history-table-foot">
+              <!-- Rendered in dashboard.js -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="history-modal-footer">
+        <div class="footer-source-note">
+          <span class="dot-live-green">●</span>
+          <span>Verified cold-storage telemetry from Facility IoT Gateway & Submeter Network</span>
+        </div>
+        <div class="footer-btn-group">
+          <button type="button" class="btn-hist-secondary" onclick="closeHistoryModal()">Close</button>
         </div>
       </div>
     </div>

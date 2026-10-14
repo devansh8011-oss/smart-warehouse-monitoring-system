@@ -38,6 +38,24 @@ const CONFIG = {
   }
 };
 
+function getVegetableSvg(name, size = 16) {
+  switch (name) {
+    case "Tomatoes":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#EF4444" style="vertical-align:middle;flex-shrink:0;"><circle cx="12" cy="13" r="8"/><path d="M12 5v3M10 5c1 1 2 1 4 0" stroke="#15803D" stroke-width="2" fill="none"/></svg>`;
+    case "Potatoes":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#D97706" style="vertical-align:middle;flex-shrink:0;"><ellipse cx="12" cy="12" rx="9" ry="7"/><circle cx="9" cy="10" r="1" fill="#78350F"/><circle cx="14" cy="13" r="1" fill="#78350F"/></svg>`;
+    case "Onions":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#A855F7" style="vertical-align:middle;flex-shrink:0;"><path d="M12 3c-4 5-7 8-7 12a7 7 0 0 0 14 0c0-4-3-7-7-12z"/><path d="M12 3v4" stroke="#15803D" stroke-width="2"/></svg>`;
+    case "Spinach":
+    case "Cabbage":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#10B981" style="vertical-align:middle;flex-shrink:0;"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6" stroke="#047857" stroke-width="2" fill="none"/></svg>`;
+    case "Carrots":
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#F97316" style="vertical-align:middle;flex-shrink:0;"><polygon points="7,21 3,21 3,17 17,3 21,7"/><path d="M17 3l4-2M19 5l3 2" stroke="#15803D" stroke-width="1.8" fill="none"/></svg>`;
+    default:
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#64748B" style="vertical-align:middle;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>`;
+  }
+}
+
 const SAMPLE_DATA = {
   // Starting values
   initialTemp: 6.0,
@@ -57,28 +75,28 @@ const SAMPLE_DATA = {
       name: "Rack A",
       hint: "Tomatoes",
       category: "Vine Produce",
-      getVeg: (idx) => ({ name: "Tomatoes", icon: "🍅" })
+      getVeg: (idx) => ({ name: "Tomatoes" })
     },
     {
       id: "B",
       name: "Rack B",
       hint: "Potatoes & Onions",
       category: "Root Vegetables",
-      getVeg: (idx) => idx % 2 === 0 ? { name: "Potatoes", icon: "🥔" } : { name: "Onions", icon: "🧅" }
+      getVeg: (idx) => idx % 2 === 0 ? { name: "Potatoes" } : { name: "Onions" }
     },
     {
       id: "C",
       name: "Rack C",
       hint: "Spinach & Cabbage",
       category: "Leafy Greens",
-      getVeg: (idx) => idx % 2 === 0 ? { name: "Spinach", icon: "🥬" } : { name: "Cabbage", icon: "🥬" }
+      getVeg: (idx) => idx % 2 === 0 ? { name: "Spinach" } : { name: "Cabbage" }
     },
     {
       id: "D",
       name: "Rack D",
       hint: "Carrots",
       category: "Root Crops",
-      getVeg: (idx) => ({ name: "Carrots", icon: "🥕" })
+      getVeg: (idx) => ({ name: "Carrots" })
     }
   ],
 
@@ -122,6 +140,10 @@ const STATE = {
   humidity: SAMPLE_DATA.initialHumidity,
   displayedHumidity: SAMPLE_DATA.initialHumidity,
   
+  power: 46.8,
+  displayedPower: 46.8,
+  powerHistory: [],
+
   coolingOn: false,
   coolingRunningSeconds: 0,
   
@@ -135,7 +157,9 @@ const STATE = {
 
   lastUpdateTimestamp: Date.now(),
   isLiveLinked: false,
-  lastSimSyncTime: 0
+  lastSimSyncTime: 0,
+
+  historyTab: "temp" // "temp" | "power"
 };
 
 /* ============================================================================
@@ -266,7 +290,19 @@ function applySimulationSyncData(data) {
     if (STATE.humidityHistory.length > CONFIG.CHART_POINTS) STATE.humidityHistory.shift();
   }
 
-  // 3. Update Cartons States Dynamically
+  // 3. Live Power Consumption
+  if (typeof data.power === "number") {
+    STATE.power = Math.round(data.power * 10) / 10;
+  } else {
+    const baseTarget = STATE.coolingOn ? 82.5 : 46.5;
+    STATE.power = Math.round((baseTarget + (Math.random() - 0.5) * 0.6) * 10) / 10;
+  }
+  animateValue("power-big-val", STATE.displayedPower, STATE.power, 400, 1);
+  STATE.displayedPower = STATE.power;
+  STATE.powerHistory.push(STATE.power);
+  if (STATE.powerHistory.length > CONFIG.CHART_POINTS) STATE.powerHistory.shift();
+
+  // 4. Update Cartons States Dynamically
   if (data.cartons) {
     Object.keys(data.cartons).forEach(cid => {
       const simC = data.cartons[cid];
@@ -395,7 +431,7 @@ function updateSpillSvgArea(areaId, hasSpill) {
     if (badge) {
       badge.className.baseVal = "zone-status-badge badge-red";
       const txt = badge.querySelector("text");
-      if (txt) txt.textContent = "💧 Spill detected";
+      if (txt) txt.textContent = "Spill detected";
     }
   } else {
     mapZone.className.baseVal = "map-zone zone-clear";
@@ -403,7 +439,7 @@ function updateSpillSvgArea(areaId, hasSpill) {
     if (badge) {
       badge.className.baseVal = "zone-status-badge badge-green";
       const txt = badge.querySelector("text");
-      if (txt) txt.textContent = "✓ No spill";
+      if (txt) txt.textContent = "No spill";
     }
   }
 }
@@ -517,11 +553,20 @@ function liveTick() {
   STATE.humidityHistory.push(STATE.humidity);
   if (STATE.humidityHistory.length > CONFIG.CHART_POINTS) STATE.humidityHistory.shift();
 
+  // --- POWER RANDOM WALK ---
+  const powerTarget = STATE.coolingOn ? 82.5 : 46.5;
+  const powerDelta = (Math.random() - 0.5) * 0.8;
+  STATE.power = Math.round((powerTarget + powerDelta) * 10) / 10;
+  STATE.powerHistory.push(STATE.power);
+  if (STATE.powerHistory.length > CONFIG.CHART_POINTS) STATE.powerHistory.shift();
+
   // Smooth Count Number Animation
   animateValue("temp-big-val", STATE.displayedTemp, STATE.temp, 600, 1);
   animateValue("hum-big-val", STATE.displayedHumidity, STATE.humidity, 600, 0);
+  animateValue("power-big-val", STATE.displayedPower, STATE.power, 600, 1);
   STATE.displayedTemp = STATE.temp;
   STATE.displayedHumidity = STATE.humidity;
+  STATE.displayedPower = STATE.power;
 
   // Render Visuals
   renderMetrics();
@@ -568,13 +613,13 @@ function renderMetrics() {
   if (tempChip) {
     if (STATE.temp > CONFIG.COOLING_LIMIT) {
       tempChip.className = "status-pill-badge pill-red";
-      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Too warm</span>`;
+      tempChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Too warm</span>`;
     } else if (STATE.temp >= 9.0) {
       tempChip.className = "status-pill-badge pill-amber";
-      tempChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Near limit</span>`;
+      tempChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Near limit</span>`;
     } else {
       tempChip.className = "status-pill-badge pill-normal";
-      tempChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Normal</span>`;
+      tempChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span><span class="pill-status-text">Normal</span>`;
     }
   }
 
@@ -604,13 +649,13 @@ function renderMetrics() {
   if (humChip) {
     if (STATE.humidity > 92) {
       humChip.className = "status-pill-badge pill-amber";
-      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly high</span>`;
+      humChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Slightly high</span>`;
     } else if (STATE.humidity < 80) {
       humChip.className = "status-pill-badge pill-amber";
-      humChip.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Slightly low</span>`;
+      humChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Slightly low</span>`;
     } else {
       humChip.className = "status-pill-badge pill-normal";
-      humChip.innerHTML = `<span class="pill-status-icon">☺</span><span class="pill-status-text">Good for storage</span>`;
+      humChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span><span class="pill-status-text">Good for storage</span>`;
     }
   }
 
@@ -620,6 +665,47 @@ function renderMetrics() {
   if (humGaugeFill) humGaugeFill.style.width = `${humPct}%`;
   const humSliderThumb = document.getElementById("hum-slider-thumb");
   if (humSliderThumb) humSliderThumb.style.left = `${humPct}%`;
+
+  // 3. Power Consumption Card Status & Gauge
+  const powerChip = document.getElementById("power-status-chip");
+  const powerModeBadge = document.getElementById("power-mode-badge");
+  const powerSubSummary = document.getElementById("power-sub-summary");
+  const powerDailyEst = document.getElementById("power-daily-est");
+
+  if (STATE.power > 75.0) {
+    if (powerChip) {
+      powerChip.className = "status-pill-badge pill-amber";
+      powerChip.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span class="pill-status-text">HVAC Compressors Active</span>`;
+    }
+    if (powerModeBadge) {
+      powerModeBadge.textContent = "Peak HVAC Load";
+      powerModeBadge.style.color = "#D97706";
+      powerModeBadge.style.background = "#FEF3C7";
+    }
+    if (powerSubSummary) powerSubSummary.textContent = `Active Load: ${STATE.power.toFixed(1)} kW`;
+  } else {
+    if (powerChip) {
+      powerChip.className = "status-pill-badge pill-normal";
+      powerChip.innerHTML = `<span class="pill-status-icon">●</span><span class="pill-status-text">Baseline Facility Load</span>`;
+    }
+    if (powerModeBadge) {
+      powerModeBadge.textContent = "Grid Normal";
+      powerModeBadge.style.color = "#F57C00";
+      powerModeBadge.style.background = "rgba(245, 124, 0, 0.12)";
+    }
+    if (powerSubSummary) powerSubSummary.textContent = `Baseline Load: ${STATE.power.toFixed(1)} kW`;
+  }
+
+  // Daily estimate: power * 24h
+  const dailyKWh = Math.round(STATE.power * 24);
+  if (powerDailyEst) powerDailyEst.textContent = `Daily Est: ~${dailyKWh.toLocaleString()} kWh`;
+
+  // Power Gauge Fill & Slider Thumb (20 to 120 kW)
+  const powerPct = Math.max(0, Math.min(100, ((STATE.power - 20) / (120 - 20)) * 100));
+  const powerGaugeFill = document.getElementById("power-gauge-fill");
+  if (powerGaugeFill) powerGaugeFill.style.width = `${powerPct}%`;
+  const powerSliderThumb = document.getElementById("power-slider-thumb");
+  if (powerSliderThumb) powerSliderThumb.style.left = `${powerPct}%`;
 }
 
 /**
@@ -702,6 +788,63 @@ function updateHealthSummary() {
   if (spoiledEl) spoiledEl.textContent = spoiledCount;
   if (spillsEl) spillsEl.textContent = activeSpills;
 
+  // Micro status tags inside health boxes
+  const freshSubEl = document.getElementById("hc-fresh-sub");
+  const spoiledSubEl = document.getElementById("hc-spoiled-sub");
+  const spillsSubEl = document.getElementById("hc-spills-sub");
+
+  if (freshSubEl) freshSubEl.textContent = `${freshPct}% Intact`;
+  if (spoiledSubEl) {
+    spoiledSubEl.textContent = spoiledCount === 0 ? "Zero Decay" : `${spoiledCount} Decayed`;
+    spoiledSubEl.className = `hc-micro-tag ${spoiledCount === 0 ? 'tag-neutral' : 'tag-danger'}`;
+  }
+  if (spillsSubEl) {
+    spillsSubEl.textContent = activeSpills === 0 ? "6 Aisles Dry" : `${activeSpills} Wet`;
+    spillsSubEl.className = `hc-micro-tag ${activeSpills === 0 ? 'tag-green' : 'tag-danger'}`;
+  }
+
+  // Toggle alert border/background on boxes
+  const spoiledBox = document.querySelector(".health-count-box.box-spoiled");
+  const spillBox = document.querySelector(".health-count-box.box-spill");
+  if (spoiledBox) spoiledBox.classList.toggle("has-alert", spoiledCount > 0);
+  if (spillBox) spillBox.classList.toggle("has-alert", activeSpills > 0);
+
+  // Per-Rack Vegetable Health Breakdown (Fills the white space with existing icons)
+  const rackCounts = { A: { fresh: 0, spoiled: 0 }, B: { fresh: 0, spoiled: 0 }, C: { fresh: 0, spoiled: 0 }, D: { fresh: 0, spoiled: 0 } };
+  Object.values(STATE.cartons).forEach(c => {
+    if (rackCounts[c.rack]) {
+      if (c.status === "spoiled") rackCounts[c.rack].spoiled++;
+      else rackCounts[c.rack].fresh++;
+    }
+  });
+
+  const tomEl = document.getElementById("h-count-tomatoes");
+  const rootEl = document.getElementById("h-count-roots");
+  const grnEl = document.getElementById("h-count-greens");
+  const carEl = document.getElementById("h-count-carrots");
+
+  if (tomEl) {
+    tomEl.textContent = `${rackCounts.A.fresh}/6 Fresh`;
+    tomEl.classList.toggle("has-spoiled", rackCounts.A.spoiled > 0);
+  }
+  if (rootEl) {
+    rootEl.textContent = `${rackCounts.B.fresh}/6 Fresh`;
+    rootEl.classList.toggle("has-spoiled", rackCounts.B.spoiled > 0);
+  }
+  if (grnEl) {
+    grnEl.textContent = `${rackCounts.C.fresh}/6 Fresh`;
+    grnEl.classList.toggle("has-spoiled", rackCounts.C.spoiled > 0);
+  }
+  if (carEl) {
+    carEl.textContent = `${rackCounts.D.fresh}/6 Fresh`;
+    carEl.classList.toggle("has-spoiled", rackCounts.D.spoiled > 0);
+  }
+
+  const opStatusEl = document.getElementById("summary-operational-status");
+  if (opStatusEl) {
+    opStatusEl.textContent = STATE.coolingOn ? "3 AC units cooling active" : "3 AC units on standby";
+  }
+
   // Update filter buttons chip counts
   const filterFreshCount = document.querySelector("#filter-fresh .chip-count");
   const filterSpoiledCount = document.querySelector("#filter-spoiled .chip-count");
@@ -731,14 +874,14 @@ function updateHealthSummary() {
   if (overallHealthPill) {
     if (activeSpills === 0 && spoiledCount === 0 && STATE.temp <= CONFIG.COOLING_LIMIT) {
       overallHealthPill.className = "status-pill-badge pill-normal";
-      overallHealthPill.innerHTML = `<span class="pill-status-icon">✓</span><span class="pill-status-text">All Clear</span>`;
+      overallHealthPill.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span><span class="pill-status-text">All Clear</span>`;
     } else if (spoiledCount > 0 || activeSpills > 0) {
       const alertNum = spoiledCount + activeSpills;
       overallHealthPill.className = "status-pill-badge pill-red";
-      overallHealthPill.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">${alertNum} Alert${alertNum > 1 ? "s" : ""}</span>`;
+      overallHealthPill.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">${alertNum} Alert${alertNum > 1 ? "s" : ""}</span>`;
     } else {
       overallHealthPill.className = "status-pill-badge pill-amber";
-      overallHealthPill.innerHTML = `<span class="pill-status-icon">⚠</span><span class="pill-status-text">Near Limit</span>`;
+      overallHealthPill.innerHTML = `<span class="pill-status-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></span><span class="pill-status-text">Near Limit</span>`;
     }
   }
 
@@ -769,22 +912,29 @@ function updateHealthSummary() {
 function initHistories() {
   STATE.tempHistory = [];
   STATE.humidityHistory = [];
+  STATE.powerHistory = [];
 
   let t = 7.0;
   let h = 83.0;
+  let p = 46.5;
   for (let i = 0; i < CONFIG.CHART_POINTS; i++) {
     t += (Math.random() - 0.48) * 0.15;
     h += (Math.random() - 0.48) * 0.4;
+    p += (Math.random() - 0.48) * 0.5;
     STATE.tempHistory.push(Math.round(t * 10) / 10);
     STATE.humidityHistory.push(Math.round(h * 10) / 10);
+    STATE.powerHistory.push(Math.round(p * 10) / 10);
   }
   STATE.temp = STATE.tempHistory[STATE.tempHistory.length - 1];
   STATE.humidity = STATE.humidityHistory[STATE.humidityHistory.length - 1];
+  STATE.power = STATE.powerHistory[STATE.powerHistory.length - 1];
+  STATE.displayedPower = STATE.power;
 }
 
 function renderSparklines() {
   drawSvgSparkline("temp-chart-svg", STATE.tempHistory, CONFIG.COLORS.brandOrange, CONFIG.COOLING_LIMIT, true);
   drawSvgSparkline("hum-chart-svg", STATE.humidityHistory, CONFIG.COLORS.blue, null, false);
+  drawSvgSparkline("power-chart-svg", STATE.powerHistory, "#D97706", 90.0, true);
 }
 
 function drawSvgSparkline(svgId, data, color, thresholdVal, showThreshold) {
@@ -867,7 +1017,6 @@ function initCartonGrid() {
         rackId: rack.id,
         rackName: rack.name,
         vegetable: veg.name,
-        icon: veg.icon,
         category: rack.category,
         status: isSpoiled ? "spoiled" : "fresh",
         spoiledInfo: isSpoiled ? SAMPLE_DATA.spoiledCartons[cartonId] : null
@@ -883,7 +1032,7 @@ function initCartonGrid() {
           <span class="tile-id">${cartonId}</span>
           <span class="tile-status-pill ${isSpoiled ? "spoiled" : "fresh"}">${isSpoiled ? "Spoiled" : "Fresh"}</span>
         </div>
-        <div class="tile-veg-name">${veg.icon} ${veg.name}</div>
+        <div class="tile-veg-name" style="display:flex;align-items:center;gap:6px;">${getVegetableSvg(veg.name, 14)} <span>${veg.name}</span></div>
         
         <!-- Micro Freshness Visual Bar -->
         <div class="carton-micro-meter">
@@ -933,7 +1082,7 @@ function openCartonDrawer(cartonId) {
   if (!c) return;
 
   document.getElementById("drawer-carton-id").textContent = c.id;
-  document.getElementById("drawer-carton-veg").textContent = `${c.icon} ${c.vegetable}`;
+  document.getElementById("drawer-carton-veg").innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;">${getVegetableSvg(c.vegetable, 18)} <span>${c.vegetable}</span></span>`;
   document.getElementById("drawer-rack-val").textContent = c.rackName;
   document.getElementById("drawer-category-val").textContent = c.category;
 
@@ -1283,7 +1432,7 @@ function renderAreasTable() {
       <td style="color:#64748B;">${a.cam}</td>
       <td>
         <span class="${a.hasSpill ? "tbl-pill-red" : "tbl-pill-green"}">
-          ${a.hasSpill ? "💧 Spill detected" : "✓ No spill"}
+          ${a.hasSpill ? "Spill detected" : "No spill"}
         </span>
       </td>
       <td style="color:#64748B;">${a.lastChecked}</td>
@@ -1332,7 +1481,7 @@ function acknowledgeClean(areaId) {
     const badge = mapZone.querySelector(".zone-status-badge");
     if (badge) {
       badge.className.baseVal = "zone-status-badge badge-green";
-      badge.querySelector("text").textContent = "✓ No spill";
+      badge.querySelector("text").textContent = "No spill";
     }
     const puddleDot = mapZone.querySelector(".map-puddle-dot");
     if (puddleDot) puddleDot.remove();
@@ -1440,17 +1589,23 @@ function createActivityDomItem(item) {
   const div = document.createElement("div");
   div.className = `activity-item type-${item.type} ${item.unread ? "unread" : ""}`;
 
-  let icon = "ℹ️";
-  if (item.type === "spill") icon = "💧";
-  else if (item.type === "spoil") icon = "🥬";
-  else if (item.type === "cooling-on") icon = "❄️";
-  else if (item.type === "cooling-off") icon = "✅";
-  else if (item.type === "cleaned") icon = "🧹";
+  let iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`;
+  if (item.type === "spill") {
+    iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="#0284C7"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
+  } else if (item.type === "spoil") {
+    iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="#DC2626"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="#DC2626"/></svg>`;
+  } else if (item.type === "cooling-on") {
+    iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>`;
+  } else if (item.type === "cooling-off") {
+    iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>`;
+  } else if (item.type === "cleaned") {
+    iconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+  }
 
   const thumbUrl = item.hasPhoto ? STATE.spillImages[item.hasPhoto] : null;
 
   div.innerHTML = `
-    <span class="act-icon">${icon}</span>
+    <span class="act-icon" style="display:inline-flex;align-items:center;justify-content:center;">${iconSvg}</span>
     <div class="act-content">
       <div class="act-msg">${item.message}</div>
       <div class="act-time">${item.time}</div>
@@ -1483,3 +1638,772 @@ function formatClockTime(date, withSeconds = false) {
   }
   return `${hours.toString().padStart(2, "0")}:${mins} ${ampm}`;
 }
+
+/* ============================================================================
+   HISTORICAL TELEMETRY (PREVIOUS YEAR - 2025) & MODAL SYSTEM
+   Interactive graph & numerical tabular view for Temperature, Humidity and Power
+   ============================================================================ */
+const HISTORICAL_DATA_2025 = {
+  temperature: [
+    { month: "Jan", fullName: "January", avg: 5.2, min: 3.8, max: 6.8, coolingDays: 0, compliance: 100, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Feb", fullName: "February", avg: 5.6, min: 4.1, max: 7.2, coolingDays: 0, compliance: 100, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Mar", fullName: "March", avg: 6.3, min: 4.7, max: 7.9, coolingDays: 2, compliance: 99.4, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Apr", fullName: "April", avg: 7.0, min: 5.2, max: 8.7, coolingDays: 5, compliance: 99.0, status: "Normal", badgeClass: "badge-blue" },
+    { month: "May", fullName: "May", avg: 7.8, min: 5.9, max: 9.6, coolingDays: 12, compliance: 98.5, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Jun", fullName: "June", avg: 8.8, min: 6.7, max: 10.9, coolingDays: 23, compliance: 97.8, status: "Cooling Active", badgeClass: "badge-amber" },
+    { month: "Jul", fullName: "July", avg: 9.5, min: 7.3, max: 11.5, coolingDays: 28, compliance: 97.2, status: "Peak Summer", badgeClass: "badge-red" },
+    { month: "Aug", fullName: "August", avg: 9.2, min: 7.1, max: 11.2, coolingDays: 26, compliance: 97.5, status: "Peak Summer", badgeClass: "badge-red" },
+    { month: "Sep", fullName: "September", avg: 8.1, min: 6.1, max: 9.9, coolingDays: 16, compliance: 98.2, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Oct", fullName: "October", avg: 6.9, min: 5.0, max: 8.5, coolingDays: 4, compliance: 99.1, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Nov", fullName: "November", avg: 6.0, min: 4.3, max: 7.4, coolingDays: 1, compliance: 99.6, status: "Optimal", badgeClass: "badge-green" },
+    { month: "Dec", fullName: "December", avg: 5.3, min: 3.9, max: 6.7, coolingDays: 0, compliance: 100, status: "Optimal", badgeClass: "badge-green" }
+  ],
+  humidity: [
+    { month: "Jan", fullName: "January", avg: 84.8, min: 81.0, max: 88.5, dehumidDays: 0, compliance: 100, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Feb", fullName: "February", avg: 85.2, min: 81.5, max: 89.0, dehumidDays: 0, compliance: 100, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Mar", fullName: "March", avg: 85.9, min: 82.0, max: 90.2, dehumidDays: 1, compliance: 99.7, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Apr", fullName: "April", avg: 86.4, min: 82.4, max: 91.0, dehumidDays: 3, compliance: 99.2, status: "Normal", badgeClass: "badge-blue" },
+    { month: "May", fullName: "May", avg: 87.1, min: 83.0, max: 92.5, dehumidDays: 6, compliance: 98.8, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Jun", fullName: "June", avg: 89.5, min: 84.5, max: 94.8, dehumidDays: 14, compliance: 98.1, status: "High Humidity", badgeClass: "badge-amber" },
+    { month: "Jul", fullName: "July", avg: 91.2, min: 86.0, max: 96.2, dehumidDays: 22, compliance: 97.4, status: "Monsoon Surge", badgeClass: "badge-red" },
+    { month: "Aug", fullName: "August", avg: 90.8, min: 85.5, max: 95.8, dehumidDays: 19, compliance: 97.6, status: "Monsoon Surge", badgeClass: "badge-red" },
+    { month: "Sep", fullName: "September", avg: 88.6, min: 83.8, max: 93.4, dehumidDays: 11, compliance: 98.5, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Oct", fullName: "October", avg: 86.8, min: 82.2, max: 91.2, dehumidDays: 4, compliance: 99.3, status: "Normal", badgeClass: "badge-blue" },
+    { month: "Nov", fullName: "November", avg: 85.5, min: 81.8, max: 89.4, dehumidDays: 1, compliance: 99.8, status: "Optimal RH", badgeClass: "badge-green" },
+    { month: "Dec", fullName: "December", avg: 84.9, min: 81.2, max: 88.8, dehumidDays: 0, compliance: 100, status: "Optimal RH", badgeClass: "badge-green" }
+  ],
+  power: [
+    { month: "Jan", fullName: "January", totalKWh: 33400, baseKWh: 27400, hvacKWh: 6000, dailyKWh: 1077, peakKW: 52.4, hvacShare: 18, cost: 4008, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Feb", fullName: "February", totalKWh: 31800, baseKWh: 25800, hvacKWh: 6000, dailyKWh: 1135, peakKW: 51.8, hvacShare: 19, cost: 3816, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Mar", fullName: "March", totalKWh: 35200, baseKWh: 26800, hvacKWh: 8400, dailyKWh: 1135, peakKW: 56.2, hvacShare: 24, cost: 4224, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Apr", fullName: "April", totalKWh: 38900, baseKWh: 27600, hvacKWh: 11300, dailyKWh: 1296, peakKW: 62.0, hvacShare: 29, cost: 4668, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "May", fullName: "May", totalKWh: 44600, baseKWh: 27600, hvacKWh: 17000, dailyKWh: 1438, peakKW: 71.5, hvacShare: 38, cost: 5352, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "Jun", fullName: "June", totalKWh: 54100, baseKWh: 26500, hvacKWh: 27600, dailyKWh: 1803, peakKW: 83.2, hvacShare: 51, cost: 6492, status: "Heavy HVAC Load", badgeClass: "badge-amber" },
+    { month: "Jul", fullName: "July", totalKWh: 58200, baseKWh: 25600, hvacKWh: 32600, dailyKWh: 1877, peakKW: 88.6, hvacShare: 56, cost: 6984, status: "Peak Summer Load", badgeClass: "badge-red" },
+    { month: "Aug", fullName: "August", totalKWh: 56800, baseKWh: 26100, hvacKWh: 30700, dailyKWh: 1832, peakKW: 86.4, hvacShare: 54, cost: 6816, status: "Heavy HVAC Load", badgeClass: "badge-amber" },
+    { month: "Sep", fullName: "September", totalKWh: 45900, baseKWh: 27100, hvacKWh: 18800, dailyKWh: 1530, peakKW: 74.8, hvacShare: 41, cost: 5508, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "Oct", fullName: "October", totalKWh: 37800, baseKWh: 27200, hvacKWh: 10600, dailyKWh: 1219, peakKW: 60.1, hvacShare: 28, cost: 4536, status: "Normal Load", badgeClass: "badge-blue" },
+    { month: "Nov", fullName: "November", totalKWh: 34500, baseKWh: 27300, hvacKWh: 7200, dailyKWh: 1150, peakKW: 54.0, hvacShare: 21, cost: 4140, status: "High Efficiency", badgeClass: "badge-green" },
+    { month: "Dec", fullName: "December", totalKWh: 33200, baseKWh: 27200, hvacKWh: 6000, dailyKWh: 1070, peakKW: 52.0, hvacShare: 18, cost: 3984, status: "High Efficiency", badgeClass: "badge-green" }
+  ]
+};
+
+function openHistoryModal(type = "temp") {
+  STATE.historyTab = type;
+  const modal = document.getElementById("history-modal");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  switchHistoryTab(type);
+}
+
+function closeHistoryModal() {
+  const modal = document.getElementById("history-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function handleHistoryModalBackdrop(e) {
+  if (e.target.id === "history-modal") {
+    closeHistoryModal();
+  }
+}
+
+// Global escape listener for modals
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeHistoryModal();
+    if (typeof closePhotoModal === "function") closePhotoModal();
+  }
+});
+
+function switchHistoryTab(type) {
+  STATE.historyTab = type;
+
+  const btnTemp = document.getElementById("tab-btn-temp");
+  const btnHum = document.getElementById("tab-btn-humidity");
+  const btnPower = document.getElementById("tab-btn-power");
+
+  if (btnTemp) btnTemp.classList.toggle("active", type === "temp");
+  if (btnHum) btnHum.classList.toggle("active", type === "humidity");
+  if (btnPower) btnPower.classList.toggle("active", type === "power");
+
+  updateHistoryModalContent();
+}
+
+function updateHistoryModalContent() {
+  const isTemp = STATE.historyTab === "temp";
+  const isHum = STATE.historyTab === "humidity";
+  const isPower = STATE.historyTab === "power";
+
+  const iconBadge = document.getElementById("history-modal-icon-badge");
+  const headerIcon = document.getElementById("history-header-icon");
+  const typeTag = document.getElementById("history-type-tag");
+  const titleEl = document.getElementById("history-modal-title");
+  const subtitleEl = document.getElementById("history-modal-subtitle");
+  const graphTitle = document.getElementById("history-graph-title");
+  const graphCaption = document.getElementById("history-graph-caption");
+  const tableTitle = document.getElementById("history-table-title");
+  const tableCaption = document.getElementById("history-table-caption");
+
+  if (isTemp) {
+    if (iconBadge) {
+      iconBadge.className = "history-icon-badge temp-theme";
+    }
+    if (headerIcon) {
+      headerIcon.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>`;
+    }
+    if (typeTag) typeTag.textContent = "COLD-CHAIN THERMAL AUDIT";
+    if (titleEl) titleEl.textContent = "Annual Temperature History (Previous Year - 2025)";
+    if (subtitleEl) subtitleEl.textContent = "Monthly temperature telemetry, min/max bounds & seasonal cooling thresholds";
+    if (graphTitle) graphTitle.textContent = "12-Month Temperature Trend & Target Band (°C)";
+    if (graphCaption) graphCaption.textContent = "Safe produce storage range (4.0°C – 8.0°C) with 10.0°C cooling trigger line";
+    if (tableTitle) tableTitle.textContent = "Monthly Temperature Telemetry Table (2025)";
+    if (tableCaption) tableCaption.textContent = "Historical monthly average, minimum, maximum, cooling runtime days and cold-chain compliance";
+
+    renderTempKPIs();
+    renderTempGraph();
+    renderTempTable();
+  } else if (isHum) {
+    if (iconBadge) {
+      iconBadge.className = "history-icon-badge humidity-theme";
+    }
+    if (headerIcon) {
+      headerIcon.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`;
+    }
+    if (typeTag) typeTag.textContent = "HUMIDITY & MOISTURE RETENTION AUDIT";
+    if (titleEl) titleEl.textContent = "Annual Relative Humidity History (Previous Year - 2025)";
+    if (subtitleEl) subtitleEl.textContent = "Monthly relative humidity (RH %) telemetry, safe vegetable moisture bands & condensation limits";
+    if (graphTitle) graphTitle.textContent = "12-Month Relative Humidity Trend & Target Band (% RH)";
+    if (graphCaption) graphCaption.textContent = "Target vegetable storage range (80.0% – 92.0% RH) with 95.0% condensation risk threshold";
+    if (tableTitle) tableTitle.textContent = "Monthly Humidity Telemetry Table (2025)";
+    if (tableCaption) tableCaption.textContent = "Audited monthly average, min/max bounds, dehumidifier operational days and moisture compliance";
+
+    renderHumidityKPIs();
+    renderHumidityGraph();
+    renderHumidityTable();
+  } else {
+    if (iconBadge) {
+      iconBadge.className = "history-icon-badge power-theme";
+    }
+    if (headerIcon) {
+      headerIcon.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+    }
+    if (typeTag) typeTag.textContent = "FACILITY ENERGY & GRID AUDIT";
+    if (titleEl) titleEl.textContent = "Annual Power Consumption Records (Previous Year - 2025)";
+    if (subtitleEl) subtitleEl.textContent = "Monthly energy consumption breakdown in kWh, peak load demand (kW), and seasonal HVAC share";
+    if (graphTitle) graphTitle.textContent = "12-Month Facility Power Consumption Breakdown (kWh)";
+    if (graphCaption) graphCaption.textContent = "Base facility grid load (cyan) vs seasonal HVAC AC cooling surge (amber) with 90 kW threshold";
+    if (tableTitle) tableTitle.textContent = "Monthly Energy & Power Consumption Table (2025)";
+    if (tableCaption) tableCaption.textContent = "Total monthly kWh, daily averages, peak demand kW, HVAC percentage and estimated cost";
+
+    renderPowerKPIs();
+    renderPowerGraph();
+    renderPowerTable();
+  }
+}
+
+function renderTempKPIs() {
+  const kpiRow = document.getElementById("history-kpi-row");
+  if (!kpiRow) return;
+
+  kpiRow.innerHTML = `
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Annual Average</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">6.9</span>
+        <span class="hist-kpi-unit">°C</span>
+      </div>
+      <span class="hist-kpi-hint">Optimal Cold-Chain Mean</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Summer Peak Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">9.5</span>
+        <span class="hist-kpi-unit">°C</span>
+      </div>
+      <span class="hist-kpi-hint alert">July (28 Cooling Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Winter Low Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">5.2</span>
+        <span class="hist-kpi-unit">°C</span>
+      </div>
+      <span class="hist-kpi-hint">January (0 Cooling Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Storage Compliance</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">99.2</span>
+        <span class="hist-kpi-unit">%</span>
+      </div>
+      <span class="hist-kpi-hint">Within 4.0 – 8.0°C Range</span>
+    </div>
+  `;
+}
+
+function renderHumidityKPIs() {
+  const kpiRow = document.getElementById("history-kpi-row");
+  if (!kpiRow) return;
+
+  kpiRow.innerHTML = `
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Annual Average</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">87.2</span>
+        <span class="hist-kpi-unit">% RH</span>
+      </div>
+      <span class="hist-kpi-hint">Optimal Vegetable Retention</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Monsoon Peak Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">91.2</span>
+        <span class="hist-kpi-unit">% RH</span>
+      </div>
+      <span class="hist-kpi-hint alert">July (22 Dehumidifier Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Winter Low Month</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">84.8</span>
+        <span class="hist-kpi-unit">% RH</span>
+      </div>
+      <span class="hist-kpi-hint">January (0 Dehumidifier Days)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Moisture Compliance</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">98.9</span>
+        <span class="hist-kpi-unit">%</span>
+      </div>
+      <span class="hist-kpi-hint">Within 80.0 – 92.0% Safe Band</span>
+    </div>
+  `;
+}
+
+function renderPowerKPIs() {
+  const kpiRow = document.getElementById("history-kpi-row");
+  if (!kpiRow) return;
+
+  kpiRow.innerHTML = `
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Total Annual Energy</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">508.6</span>
+        <span class="hist-kpi-unit">MWh</span>
+      </div>
+      <span class="hist-kpi-hint">508,600 kWh across 2025</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Monthly Average</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">42,383</span>
+        <span class="hist-kpi-unit">kWh</span>
+      </div>
+      <span class="hist-kpi-hint">1,393 kWh Daily Average</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Peak Summer Load</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">88.6</span>
+        <span class="hist-kpi-unit">kW</span>
+      </div>
+      <span class="hist-kpi-hint alert">July (56% HVAC Share)</span>
+    </div>
+    <div class="hist-kpi-card">
+      <span class="hist-kpi-label">Annual Energy Cost</span>
+      <div class="hist-kpi-value-row">
+        <span class="hist-kpi-num">$61,032</span>
+      </div>
+      <span class="hist-kpi-hint">Est. @ $0.12 / kWh blend</span>
+    </div>
+  `;
+}
+
+function renderTempGraph() {
+  const legend = document.getElementById("history-graph-legend");
+  if (legend) {
+    legend.innerHTML = `
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #10B981; opacity: 0.35;"></span>
+        <span>Target Band (4.0–8.0°C)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #F57C00;"></span>
+        <span>Monthly Avg (°C)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #DC2626; border-top: 2px dashed #DC2626; height: 0;"></span>
+        <span>Cooling Limit (10.0°C)</span>
+      </div>
+    `;
+  }
+
+  const svg = document.getElementById("history-svg-chart");
+  if (!svg) return;
+
+  const data = HISTORICAL_DATA_2025.temperature;
+  const width = 960;
+  const height = 250;
+  const padLeft = 45;
+  const padRight = 20;
+  const padTop = 30;
+  const padBottom = 35;
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+
+  // Temperature Y scale: 0°C to 12.0°C
+  const yMin = 0;
+  const yMax = 12.0;
+  const scaleY = (v) => padTop + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+
+  const yTargetMin = scaleY(8.0);
+  const yTargetMax = scaleY(4.0);
+  const targetH = yTargetMax - yTargetMin;
+  const yLimit = scaleY(10.0);
+
+  // Background Grid Lines
+  let gridSvg = `
+    <!-- Target Safe Zone (4.0 - 8.0°C) -->
+    <rect x="${padLeft}" y="${yTargetMin}" width="${chartW}" height="${targetH}" fill="#10B981" fill-opacity="0.12" rx="4"/>
+    <line x1="${padLeft}" y1="${scaleY(4.0)}" x2="${width - padRight}" y2="${scaleY(4.0)}" stroke="#10B981" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="${padLeft}" y1="${scaleY(8.0)}" x2="${width - padRight}" y2="${scaleY(8.0)}" stroke="#10B981" stroke-width="1" stroke-dasharray="3 3"/>
+    
+    <!-- 10.0°C Cooling Limit Line -->
+    <line x1="${padLeft}" y1="${yLimit}" x2="${width - padRight}" y2="${yLimit}" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="5 3"/>
+    <text x="${width - padRight - 6}" y="${yLimit - 6}" font-size="10" font-weight="700" fill="#DC2626" text-anchor="end">Limit 10.0°C</text>
+  `;
+
+  // Horizontal guide lines & Y labels
+  [0, 4, 8, 10, 12].forEach(v => {
+    const y = scaleY(v);
+    gridSvg += `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="${padLeft - 8}" y="${y + 3}" font-size="10" font-weight="600" fill="#64748B" text-anchor="end">${v}°C</text>
+    `;
+  });
+
+  // Bars & Points for 12 months
+  const colStep = chartW / 12;
+  const barW = Math.min(36, colStep * 0.55);
+
+  let barsSvg = "";
+  const points = [];
+
+  data.forEach((item, idx) => {
+    const cx = padLeft + idx * colStep + colStep / 2;
+    const yAvg = scaleY(item.avg);
+    const yMinPt = scaleY(item.min);
+    const yMaxPt = scaleY(item.max);
+    points.push(`${cx},${yAvg}`);
+
+    const barH = (padTop + chartH) - yAvg;
+    const barX = cx - barW / 2;
+    const isPeak = item.avg > 8.5;
+    const fillColor = isPeak ? "url(#grad-bar-warm)" : "url(#grad-bar-normal)";
+
+    barsSvg += `
+      <!-- Min-Max range whisker -->
+      <line x1="${cx}" y1="${yMinPt}" x2="${cx}" y2="${yMaxPt}" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="${cx - 4}" y1="${yMinPt}" x2="${cx + 4}" y2="${yMinPt}" stroke="#94A3B8" stroke-width="1.5"/>
+      <line x1="${cx - 4}" y1="${yMaxPt}" x2="${cx + 4}" y2="${yMaxPt}" stroke="#94A3B8" stroke-width="1.5"/>
+
+      <!-- Bar -->
+      <rect x="${barX}" y="${yAvg}" width="${barW}" height="${barH}" fill="${fillColor}" rx="4">
+        <title>${item.fullName}: Avg ${item.avg}°C (Min ${item.min}°C, Max ${item.max}°C) • ${item.coolingDays} cooling days</title>
+      </rect>
+
+      <!-- Value text on top -->
+      <text x="${cx}" y="${yAvg - 8}" font-size="11" font-weight="700" fill="${isPeak ? '#D97706' : '#1E293B'}" text-anchor="middle">${item.avg.toFixed(1)}°</text>
+
+      <!-- Month Label -->
+      <text x="${cx}" y="${height - 10}" font-size="11" font-weight="600" fill="#475569" text-anchor="middle">${item.month}</text>
+    `;
+  });
+
+  // Trendline connecting averages
+  const polylineSvg = `
+    <polyline points="${points.join(' ')}" fill="none" stroke="#F57C00" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  `;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="grad-bar-normal" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#0284C7" stop-opacity="0.4"/>
+      </linearGradient>
+      <linearGradient id="grad-bar-warm" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="#D97706" stop-opacity="0.45"/>
+      </linearGradient>
+    </defs>
+    ${gridSvg}
+    ${barsSvg}
+    ${polylineSvg}
+  `;
+}
+
+function renderHumidityGraph() {
+  const legend = document.getElementById("history-graph-legend");
+  if (legend) {
+    legend.innerHTML = `
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #0284C7; opacity: 0.28;"></span>
+        <span>Safe Target Band (80–92% RH)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #0284C7;"></span>
+        <span>Monthly Avg RH (%)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #DC2626; border-top: 2px dashed #DC2626; height: 0;"></span>
+        <span>Mold/Condensation Risk (95% RH)</span>
+      </div>
+    `;
+  }
+
+  const svg = document.getElementById("history-svg-chart");
+  if (!svg) return;
+
+  const data = HISTORICAL_DATA_2025.humidity;
+  const width = 960;
+  const height = 250;
+  const padLeft = 45;
+  const padRight = 20;
+  const padTop = 30;
+  const padBottom = 35;
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+
+  // Humidity scale: 60% to 100% RH
+  const yMin = 60;
+  const yMax = 100;
+  const scaleY = (v) => padTop + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+
+  const yTargetMin = scaleY(92.0);
+  const yTargetMax = scaleY(80.0);
+  const targetH = yTargetMax - yTargetMin;
+  const yLimit = scaleY(95.0);
+
+  // Background Grid Lines
+  let gridSvg = `
+    <!-- Target Safe Zone (80 - 92% RH) -->
+    <rect x="${padLeft}" y="${yTargetMin}" width="${chartW}" height="${targetH}" fill="#0284C7" fill-opacity="0.10" rx="4"/>
+    <line x1="${padLeft}" y1="${scaleY(80.0)}" x2="${width - padRight}" y2="${scaleY(80.0)}" stroke="#0284C7" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="${padLeft}" y1="${scaleY(92.0)}" x2="${width - padRight}" y2="${scaleY(92.0)}" stroke="#0284C7" stroke-width="1" stroke-dasharray="3 3"/>
+    
+    <!-- 95.0% Mold Risk Line -->
+    <line x1="${padLeft}" y1="${yLimit}" x2="${width - padRight}" y2="${yLimit}" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="5 3"/>
+    <text x="${width - padRight - 6}" y="${yLimit - 6}" font-size="10" font-weight="700" fill="#DC2626" text-anchor="end">Risk Limit 95.0%</text>
+  `;
+
+  // Horizontal guide lines & Y labels
+  [60, 70, 80, 90, 95, 100].forEach(v => {
+    const y = scaleY(v);
+    gridSvg += `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="${padLeft - 8}" y="${y + 3}" font-size="10" font-weight="600" fill="#64748B" text-anchor="end">${v}%</text>
+    `;
+  });
+
+  // Bars & Points for 12 months
+  const colStep = chartW / 12;
+  const barW = Math.min(36, colStep * 0.55);
+
+  let barsSvg = "";
+  const points = [];
+
+  data.forEach((item, idx) => {
+    const cx = padLeft + idx * colStep + colStep / 2;
+    const yAvg = scaleY(item.avg);
+    const yMinPt = scaleY(item.min);
+    const yMaxPt = scaleY(item.max);
+    points.push(`${cx},${yAvg}`);
+
+    const barH = (padTop + chartH) - yAvg;
+    const barX = cx - barW / 2;
+    const isHigh = item.avg > 90.0;
+    const fillColor = isHigh ? "url(#grad-hum-high)" : "url(#grad-hum-normal)";
+
+    barsSvg += `
+      <!-- Min-Max range whisker -->
+      <line x1="${cx}" y1="${yMinPt}" x2="${cx}" y2="${yMaxPt}" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="${cx - 4}" y1="${yMinPt}" x2="${cx + 4}" y2="${yMinPt}" stroke="#94A3B8" stroke-width="1.5"/>
+      <line x1="${cx - 4}" y1="${yMaxPt}" x2="${cx + 4}" y2="${yMaxPt}" stroke="#94A3B8" stroke-width="1.5"/>
+
+      <!-- Bar -->
+      <rect x="${barX}" y="${yAvg}" width="${barW}" height="${barH}" fill="${fillColor}" rx="4">
+        <title>${item.fullName}: Avg ${item.avg}% RH (Min ${item.min}%, Max ${item.max}%) • ${item.dehumidDays} dehumidifier days</title>
+      </rect>
+
+      <!-- Value text on top -->
+      <text x="${cx}" y="${yAvg - 8}" font-size="11" font-weight="700" fill="${isHigh ? '#D97706' : '#0284C7'}" text-anchor="middle">${item.avg.toFixed(1)}%</text>
+
+      <!-- Month Label -->
+      <text x="${cx}" y="${height - 10}" font-size="11" font-weight="600" fill="#475569" text-anchor="middle">${item.month}</text>
+    `;
+  });
+
+  const polylineSvg = `
+    <polyline points="${points.join(' ')}" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  `;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="grad-hum-normal" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#0284C7" stop-opacity="0.35"/>
+      </linearGradient>
+      <linearGradient id="grad-hum-high" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FB923C" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#EA580C" stop-opacity="0.4"/>
+      </linearGradient>
+    </defs>
+    ${gridSvg}
+    ${barsSvg}
+    ${polylineSvg}
+  `;
+}
+
+function renderPowerGraph() {
+  const legend = document.getElementById("history-graph-legend");
+  if (legend) {
+    legend.innerHTML = `
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #38BDF8;"></span>
+        <span>Base Facility Load (kWh)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #F59E0B;"></span>
+        <span>HVAC Cooling AC Load (kWh)</span>
+      </div>
+      <div class="legend-pill">
+        <span class="legend-color-box" style="background: #DC2626; border-top: 2px dashed #DC2626; height: 0;"></span>
+        <span>Peak Limit (90 kW)</span>
+      </div>
+    `;
+  }
+
+  const svg = document.getElementById("history-svg-chart");
+  if (!svg) return;
+
+  const data = HISTORICAL_DATA_2025.power;
+  const width = 960;
+  const height = 250;
+  const padLeft = 55;
+  const padRight = 20;
+  const padTop = 30;
+  const padBottom = 35;
+  const chartW = width - padLeft - padRight;
+  const chartH = height - padTop - padBottom;
+
+  // Max scale: 0 to 70,000 kWh
+  const yMin = 0;
+  const yMax = 70000;
+  const scaleY = (v) => padTop + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+
+  // Background Grid Lines
+  let gridSvg = "";
+  [0, 20000, 40000, 60000].forEach(v => {
+    const y = scaleY(v);
+    gridSvg += `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="${padLeft - 8}" y="${y + 3}" font-size="10" font-weight="600" fill="#64748B" text-anchor="end">${v === 0 ? '0' : (v/1000) + 'k'}</text>
+    `;
+  });
+
+  // Stacked Bars for 12 months
+  const colStep = chartW / 12;
+  const barW = Math.min(38, colStep * 0.6);
+
+  let barsSvg = "";
+  const points = [];
+
+  data.forEach((item, idx) => {
+    const cx = padLeft + idx * colStep + colStep / 2;
+    const barX = cx - barW / 2;
+
+    const yBase = scaleY(item.baseKWh);
+    const baseH = (padTop + chartH) - yBase;
+
+    const yTotal = scaleY(item.totalKWh);
+    const hvacH = yBase - yTotal;
+
+    points.push(`${cx},${yTotal}`);
+
+    barsSvg += `
+      <!-- Base Load Segment -->
+      <rect x="${barX}" y="${yBase}" width="${barW}" height="${baseH}" fill="#38BDF8" rx="2">
+        <title>${item.fullName}: Base Load ${item.baseKWh.toLocaleString()} kWh</title>
+      </rect>
+
+      <!-- HVAC Cooling Segment (Stacked) -->
+      <rect x="${barX}" y="${yTotal}" width="${barW}" height="${hvacH}" fill="#F59E0B" rx="3">
+        <title>${item.fullName}: HVAC Cooling ${item.hvacKWh.toLocaleString()} kWh (${item.hvacShare}%) • Total: ${item.totalKWh.toLocaleString()} kWh</title>
+      </rect>
+
+      <!-- Value text on top -->
+      <text x="${cx}" y="${yTotal - 7}" font-size="10.5" font-weight="700" fill="#0F172A" text-anchor="middle">${(item.totalKWh / 1000).toFixed(1)}k</text>
+
+      <!-- Month Label -->
+      <text x="${cx}" y="${height - 10}" font-size="11" font-weight="600" fill="#475569" text-anchor="middle">${item.month}</text>
+    `;
+  });
+
+  // Trendline connecting monthly totals
+  const polylineSvg = `
+    <polyline points="${points.join(' ')}" fill="none" stroke="#D97706" stroke-width="2" stroke-dasharray="3 3"/>
+  `;
+
+  svg.innerHTML = `
+    ${gridSvg}
+    ${barsSvg}
+    ${polylineSvg}
+  `;
+}
+
+function renderTempTable() {
+  const thead = document.getElementById("history-table-head");
+  const tbody = document.getElementById("history-table-body");
+  const tfoot = document.getElementById("history-table-foot");
+
+  if (thead) {
+    thead.innerHTML = `
+      <tr>
+        <th>Month</th>
+        <th>Avg Temp (°C)</th>
+        <th>Min Recorded</th>
+        <th>Max Recorded</th>
+        <th>Cooling Run Days</th>
+        <th>Thermal Compliance</th>
+        <th>Quality Rating</th>
+      </tr>
+    `;
+  }
+
+  if (tbody) {
+    tbody.innerHTML = HISTORICAL_DATA_2025.temperature.map(row => `
+      <tr>
+        <td><strong>${row.fullName} (2025)</strong></td>
+        <td><span style="font-weight:700; color:#0F172A;">${row.avg.toFixed(1)} °C</span></td>
+        <td style="color:#0284C7;">${row.min.toFixed(1)} °C</td>
+        <td style="color:#D97706;">${row.max.toFixed(1)} °C</td>
+        <td>${row.coolingDays > 0 ? `<strong>${row.coolingDays} days</strong>` : `<span style="color:#64748B;">0 (Idle)</span>`}</td>
+        <td><span style="font-weight:600; color:#059669;">${row.compliance.toFixed(1)}%</span></td>
+        <td><span class="tbl-badge ${row.badgeClass}">${row.status}</span></td>
+      </tr>
+    `).join("");
+  }
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td>Annual Mean / Summary</td>
+        <td>6.9 °C</td>
+        <td style="color:#0284C7;">3.8 °C (Low)</td>
+        <td style="color:#D97706;">11.5 °C (High)</td>
+        <td>117 Days Total</td>
+        <td>99.2% Compliant</td>
+        <td><span class="tbl-badge badge-green">Verified A+</span></td>
+      </tr>
+    `;
+  }
+}
+
+function renderHumidityTable() {
+  const thead = document.getElementById("history-table-head");
+  const tbody = document.getElementById("history-table-body");
+  const tfoot = document.getElementById("history-table-foot");
+
+  if (thead) {
+    thead.innerHTML = `
+      <tr>
+        <th>Month</th>
+        <th>Avg Humidity (RH)</th>
+        <th>Min Recorded</th>
+        <th>Max Recorded</th>
+        <th>Dehumidifier Days</th>
+        <th>RH Compliance</th>
+        <th>Quality Rating</th>
+      </tr>
+    `;
+  }
+
+  if (tbody) {
+    tbody.innerHTML = HISTORICAL_DATA_2025.humidity.map(row => `
+      <tr>
+        <td><strong>${row.fullName} (2025)</strong></td>
+        <td><span style="font-weight:700; color:#0F172A;">${row.avg.toFixed(1)}% RH</span></td>
+        <td style="color:#0284C7;">${row.min.toFixed(1)}%</td>
+        <td style="color:#D97706;">${row.max.toFixed(1)}%</td>
+        <td>${row.dehumidDays > 0 ? `<strong>${row.dehumidDays} days</strong>` : `<span style="color:#64748B;">0 (Idle)</span>`}</td>
+        <td><span style="font-weight:600; color:#059669;">${row.compliance.toFixed(1)}%</span></td>
+        <td><span class="tbl-badge ${row.badgeClass}">${row.status}</span></td>
+      </tr>
+    `).join("");
+  }
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td>Annual Mean / Summary</td>
+        <td>87.2% RH</td>
+        <td style="color:#0284C7;">81.0% (Low)</td>
+        <td style="color:#D97706;">96.2% (High)</td>
+        <td>64 Days Total</td>
+        <td>98.9% Compliant</td>
+        <td><span class="tbl-badge badge-green">Verified A+</span></td>
+      </tr>
+    `;
+  }
+}
+
+function renderPowerTable() {
+  const thead = document.getElementById("history-table-head");
+  const tbody = document.getElementById("history-table-body");
+  const tfoot = document.getElementById("history-table-foot");
+
+  if (thead) {
+    thead.innerHTML = `
+      <tr>
+        <th>Month</th>
+        <th>Total Energy (kWh)</th>
+        <th>Daily Avg (kWh)</th>
+        <th>Peak Demand (kW)</th>
+        <th>HVAC AC Share</th>
+        <th>Est. Cost ($)</th>
+        <th>Grid Efficiency</th>
+      </tr>
+    `;
+  }
+
+  if (tbody) {
+    tbody.innerHTML = HISTORICAL_DATA_2025.power.map(row => `
+      <tr>
+        <td><strong>${row.fullName} (2025)</strong></td>
+        <td><span style="font-weight:700; color:#0F172A;">${row.totalKWh.toLocaleString()} kWh</span></td>
+        <td>${row.dailyKWh.toLocaleString()} kWh</td>
+        <td><span style="font-weight:600; color:#D97706;">${row.peakKW.toFixed(1)} kW</span></td>
+        <td><strong>${row.hvacShare}%</strong> (${row.hvacKWh.toLocaleString()} kWh)</td>
+        <td>$${row.cost.toLocaleString()}</td>
+        <td><span class="tbl-badge ${row.badgeClass}">${row.status}</span></td>
+      </tr>
+    `).join("");
+  }
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td>Annual Total / Summary</td>
+        <td>508,600 kWh</td>
+        <td>1,393 kWh/day</td>
+        <td style="color:#D97706;">88.6 kW (Jul Peak)</td>
+        <td>36.4% HVAC Avg</td>
+        <td>$61,032 Total</td>
+        <td><span class="tbl-badge badge-green">High Efficiency</span></td>
+      </tr>
+    `;
+  }
+}
+

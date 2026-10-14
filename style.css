@@ -482,7 +482,7 @@ html, body {
 }
 
 .right-section {
-  width: 330px;
+  width: 410px;
   flex-shrink: 0;
   position: sticky;
   top: 18px;
@@ -1723,7 +1723,7 @@ input[type="range"]#power-slider {
    RIGHT SECTION: REALISTIC SMARTPHONE MOCKUP (WhatsApp style)
    ========================================================================== */
 .phone-outer-wrapper {
-  width: 310px;
+  width: 390px;
   height: 98%;
   display: flex;
   align-items: center;
@@ -1731,13 +1731,13 @@ input[type="range"]#power-slider {
 }
 
 .phone-frame {
-  width: 100%;
-  height: 100%;
-  max-height: 640px;
+  width: 380px;
+  height: 750px;
+  max-height: 780px;
   background: #0B0F19;
-  border-radius: 38px;
-  padding: 8px;
-  box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 0 4px #1E293B;
+  border-radius: 42px;
+  padding: 10px;
+  box-shadow: 0 25px 45px -10px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 0 4px #1E293B;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1756,11 +1756,11 @@ input[type="range"]#power-slider {
 }
 
 .phone-notch {
-  width: 92px;
-  height: 18px;
+  width: 108px;
+  height: 20px;
   background: #000000;
   position: absolute;
-  top: 12px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 12px;
@@ -1768,12 +1768,12 @@ input[type="range"]#power-slider {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .camera-lens {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #0F172A;
   border: 1px solid #1E293B;
@@ -1781,8 +1781,8 @@ input[type="range"]#power-slider {
 }
 
 .earpiece-speaker {
-  width: 32px;
-  height: 3.5px;
+  width: 36px;
+  height: 4px;
   background: #1E293B;
   border-radius: 2px;
 }
@@ -1790,7 +1790,7 @@ input[type="range"]#power-slider {
 .phone-screen {
   flex: 1;
   background: #000;
-  border-radius: 30px;
+  border-radius: 34px;
   overflow: hidden;
   position: relative;
   display: flex;
@@ -1799,13 +1799,13 @@ input[type="range"]#power-slider {
 
 /* Status Bar */
 .phone-status-bar {
-  height: 26px;
-  padding: 4px 18px 0 18px;
+  height: 30px;
+  padding: 6px 20px 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: #FFFFFF;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   z-index: 40;
   position: relative;
@@ -1836,28 +1836,28 @@ input[type="range"]#power-slider {
 .lock-screen {
   background: radial-gradient(circle at 50% 15%, #1E293B 0%, #0B0F19 80%);
   color: white;
-  padding: 20px 14px 16px 14px;
+  padding: 24px 18px 20px 18px;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .lock-date {
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 500;
   color: #94A3B8;
   text-align: center;
-  margin-top: 14px;
-  letter-spacing: 0.3px;
+  margin-top: 18px;
+  letter-spacing: 0.4px;
 }
 
 .lock-clock {
-  font-size: 54px;
+  font-size: 66px;
   font-weight: 300;
   color: #FFFFFF;
   text-align: center;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
   line-height: 1.05;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .lock-notifications-container {
@@ -1878,8 +1878,8 @@ input[type="range"]#power-slider {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
   color: var(--text-main);
-  border-radius: var(--radius-md);
-  padding: 8px 10px;
+  border-radius: 12px;
+  padding: 10px 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   animation: slideDownNotification 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1909,8 +1909,8 @@ input[type="range"]#power-slider {
 }
 
 .wa-app-icon-mini {
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   background: #25D366;
   display: flex;
@@ -1919,29 +1919,29 @@ input[type="range"]#power-slider {
 }
 
 .wa-app-name {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #128C7E;
   text-transform: uppercase;
 }
 
 .notif-time {
-  font-size: 9.5px;
+  font-size: 10.5px;
   color: #94A3B8;
   margin-left: auto;
 }
 
 .notif-title {
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .notif-body {
-  font-size: 11px;
+  font-size: 12px;
   color: #475569;
-  line-height: 1.3;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1952,8 +1952,8 @@ input[type="range"]#power-slider {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .open-chat-btn {
@@ -1961,14 +1961,14 @@ input[type="range"]#power-slider {
   background: #25D366;
   color: white;
   border: none;
-  border-radius: 20px;
-  padding: 8px 14px;
-  font-size: 12px;
+  border-radius: 22px;
+  padding: 10px 16px;
+  font-size: 13px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
   transition: all 0.2s;
@@ -1979,7 +1979,7 @@ input[type="range"]#power-slider {
 }
 
 .swipe-hint {
-  font-size: 10px;
+  font-size: 11px;
   color: #94A3B8;
 }
 
@@ -1991,13 +1991,13 @@ input[type="range"]#power-slider {
 }
 
 .wa-chat-header {
-  height: 48px;
+  height: 56px;
   background: #075E54; /* WhatsApp deep green */
   color: white;
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  gap: 6px;
+  padding: 0 12px;
+  gap: 8px;
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
@@ -2013,8 +2013,8 @@ input[type="range"]#power-slider {
 }
 
 .wa-avatar {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: #25D366;
   display: flex;
@@ -2029,23 +2029,23 @@ input[type="range"]#power-slider {
 }
 
 .wa-contact-name {
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.1;
 }
 
 .wa-contact-sub {
-  font-size: 10px;
+  font-size: 11px;
   color: #A7F3D0;
 }
 
 .wa-messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 10px 10px;
+  padding: 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .wa-messages-container::-webkit-scrollbar {
@@ -2059,30 +2059,30 @@ input[type="range"]#power-slider {
   align-self: center;
   background: #D4EAF4;
   color: #4A6572;
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
   box-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
 .wa-system-msg {
   background: #FFF8E1 !important;
   color: #795548 !important;
-  font-size: 9.5px !important;
+  font-size: 10.5px !important;
   text-align: center;
   align-self: center;
   max-width: 90% !important;
-  padding: 4px 8px !important;
-  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  border-radius: 8px !important;
   box-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
 .wa-bubble {
-  max-width: 86%;
+  max-width: 88%;
   background: #FFFFFF;
-  padding: 6px 9px 4px 9px;
-  border-radius: 0 8px 8px 8px;
+  padding: 8px 12px 6px 12px;
+  border-radius: 0 10px 10px 10px;
   position: relative;
   align-self: flex-start;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -2090,9 +2090,9 @@ input[type="range"]#power-slider {
 }
 
 .wa-bubble-content {
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: #111827;
-  line-height: 1.35;
+  line-height: 1.4;
   margin-bottom: 2px;
 }
 
@@ -2104,7 +2104,7 @@ input[type="range"]#power-slider {
 }
 
 .wa-time {
-  font-size: 9px;
+  font-size: 10px;
   color: #6B7280;
 }
 
@@ -2115,42 +2115,42 @@ input[type="range"]#power-slider {
 
 /* WhatsApp Image Bubble for Spills */
 .wa-bubble.image-bubble {
-  padding: 3px 3px 4px 3px;
+  padding: 4px 4px 5px 4px;
 }
 
 .wa-img-preview {
   width: 100%;
-  max-height: 130px;
+  max-height: 170px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
   display: block;
   cursor: pointer;
 }
 
 .wa-img-caption {
-  font-size: 11px;
+  font-size: 12px;
   color: #111827;
-  padding: 4px 4px 2px 4px;
-  line-height: 1.3;
+  padding: 6px 6px 3px 6px;
+  line-height: 1.35;
 }
 
 /* WhatsApp Typing Indicator */
 .wa-typing-indicator {
-  padding: 4px 10px;
+  padding: 5px 12px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: rgba(255, 255, 255, 0.85);
   border-radius: 12px;
   align-self: flex-start;
-  margin: 0 10px 4px 10px;
-  font-size: 10px;
+  margin: 0 12px 6px 12px;
+  font-size: 11px;
   color: #4B5563;
 }
 
 .typing-dot {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   background: #9CA3AF;
   border-radius: 50%;
   animation: typingBounce 1s infinite;
@@ -2165,11 +2165,11 @@ input[type="range"]#power-slider {
 }
 
 .wa-input-footer {
-  height: 44px;
-  padding: 4px 8px;
+  height: 52px;
+  padding: 6px 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   background: #F0F2F5;
   flex-shrink: 0;
 }
@@ -2177,18 +2177,18 @@ input[type="range"]#power-slider {
 .wa-input-fake {
   flex: 1;
   background: white;
-  height: 32px;
-  border-radius: 16px;
-  padding: 0 12px;
+  height: 38px;
+  border-radius: 19px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
   color: #9CA3AF;
-  font-size: 11px;
+  font-size: 12.5px;
 }
 
 .wa-mic-btn {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: #00A884;
   display: flex;

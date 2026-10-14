@@ -284,6 +284,8 @@ html, body {
    ========================================================================== */
 #sim-screen {
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Top Navigation Bar */
@@ -464,13 +466,16 @@ html, body {
    ========================================================================== */
 .simulation-body {
   display: flex;
-  min-height: calc(100vh - 56px);
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 52px);
   overflow-y: auto;
-  padding: 18px 24px 48px 24px;
+  padding: 14px 22px 36px 22px;
   gap: 20px;
   max-width: 1760px;
   margin: 0 auto;
   align-items: flex-start;
+  width: 100%;
 }
 
 .left-section {
@@ -482,13 +487,16 @@ html, body {
 }
 
 .right-section {
-  width: 410px;
+  width: clamp(300px, 24vw, 370px);
   flex-shrink: 0;
   position: sticky;
-  top: 18px;
+  top: 12px;
   align-self: flex-start;
   display: flex;
   justify-content: center;
+  height: calc(100vh - 78px);
+  max-height: 720px;
+  min-height: 470px;
 }
 
 /* ==========================================================================
@@ -1723,21 +1731,22 @@ input[type="range"]#power-slider {
    RIGHT SECTION: REALISTIC SMARTPHONE MOCKUP (WhatsApp style)
    ========================================================================== */
 .phone-outer-wrapper {
-  width: 390px;
-  height: 98%;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .phone-frame {
-  width: 380px;
-  height: 750px;
-  max-height: 780px;
+  width: 100%;
+  max-width: 360px;
+  height: 100%;
+  max-height: 100%;
   background: #0B0F19;
-  border-radius: 42px;
-  padding: 10px;
-  box-shadow: 0 25px 45px -10px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 0 4px #1E293B;
+  border-radius: clamp(30px, 4vh, 42px);
+  padding: clamp(6px, 1vh, 10px);
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 0 4px #1E293B;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1756,11 +1765,11 @@ input[type="range"]#power-slider {
 }
 
 .phone-notch {
-  width: 108px;
-  height: 20px;
+  width: clamp(84px, 12vw, 106px);
+  height: clamp(16px, 2.2vh, 20px);
   background: #000000;
   position: absolute;
-  top: 14px;
+  top: clamp(10px, 1.4vh, 14px);
   left: 50%;
   transform: translateX(-50%);
   border-radius: 12px;
@@ -1768,12 +1777,12 @@ input[type="range"]#power-slider {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .camera-lens {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #0F172A;
   border: 1px solid #1E293B;
@@ -1781,16 +1790,17 @@ input[type="range"]#power-slider {
 }
 
 .earpiece-speaker {
-  width: 36px;
-  height: 4px;
+  width: clamp(28px, 4vw, 36px);
+  height: 3.5px;
   background: #1E293B;
   border-radius: 2px;
 }
 
 .phone-screen {
   flex: 1;
+  min-height: 0;
   background: #000;
-  border-radius: 34px;
+  border-radius: clamp(24px, 3.4vh, 32px);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -1799,16 +1809,17 @@ input[type="range"]#power-slider {
 
 /* Status Bar */
 .phone-status-bar {
-  height: 30px;
-  padding: 6px 20px 0 20px;
+  height: clamp(24px, 3.2vh, 28px);
+  padding: 4px clamp(12px, 2vw, 18px) 0 clamp(12px, 2vw, 18px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: #FFFFFF;
-  font-size: 12px;
+  font-size: clamp(10.5px, 1.4vh, 11.5px);
   font-weight: 600;
   z-index: 40;
   position: relative;
+  flex-shrink: 0;
 }
 
 .status-icons {
@@ -1820,6 +1831,7 @@ input[type="range"]#power-slider {
 /* Phone View Containers */
 .phone-view {
   flex: 1;
+  min-height: 0;
   width: 100%;
   height: 100%;
   display: none !important;
@@ -1836,37 +1848,41 @@ input[type="range"]#power-slider {
 .lock-screen {
   background: radial-gradient(circle at 50% 15%, #1E293B 0%, #0B0F19 80%);
   color: white;
-  padding: 24px 18px 20px 18px;
+  padding: clamp(12px, 2vh, 20px) clamp(12px, 1.6vh, 16px) clamp(10px, 1.6vh, 16px) clamp(12px, 1.6vh, 16px);
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden;
 }
 
 .lock-date {
-  font-size: 13px;
+  font-size: clamp(10.5px, 1.4vh, 12.5px);
   font-weight: 500;
   color: #94A3B8;
   text-align: center;
-  margin-top: 18px;
-  letter-spacing: 0.4px;
+  margin-top: clamp(6px, 1.2vh, 14px);
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .lock-clock {
-  font-size: 66px;
+  font-size: clamp(36px, 5.5vh, 56px);
   font-weight: 300;
   color: #FFFFFF;
   text-align: center;
-  letter-spacing: -2px;
+  letter-spacing: -1.5px;
   line-height: 1.05;
-  margin-bottom: 16px;
+  margin-bottom: clamp(6px, 1.2vh, 12px);
+  flex-shrink: 0;
 }
 
 .lock-notifications-container {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 0.9vh, 8px);
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .lock-notifications-container::-webkit-scrollbar {
@@ -1878,12 +1894,13 @@ input[type="range"]#power-slider {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
   color: var(--text-main);
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: clamp(6px, 0.9vh, 9px) clamp(8px, 1.2vh, 11px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   animation: slideDownNotification 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   transition: transform 0.15s;
+  flex-shrink: 0;
 }
 
 .notif-card:hover {
@@ -1904,44 +1921,45 @@ input[type="range"]#power-slider {
 .notif-top {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 3px;
+  gap: 5px;
+  margin-bottom: 2px;
 }
 
 .wa-app-icon-mini {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background: #25D366;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .wa-app-name {
-  font-size: 11px;
+  font-size: clamp(9.5px, 1.2vh, 10.5px);
   font-weight: 700;
   color: #128C7E;
   text-transform: uppercase;
 }
 
 .notif-time {
-  font-size: 10.5px;
+  font-size: clamp(9px, 1.1vh, 10px);
   color: #94A3B8;
   margin-left: auto;
 }
 
 .notif-title {
-  font-size: 12.5px;
+  font-size: clamp(11px, 1.4vh, 12px);
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 
 .notif-body {
-  font-size: 12px;
+  font-size: clamp(10px, 1.3vh, 11.5px);
   color: #475569;
-  line-height: 1.35;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1952,8 +1970,9 @@ input[type="range"]#power-slider {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-top: 12px;
+  gap: clamp(4px, 0.8vh, 6px);
+  margin-top: clamp(6px, 1vh, 10px);
+  flex-shrink: 0;
 }
 
 .open-chat-btn {
@@ -1961,14 +1980,14 @@ input[type="range"]#power-slider {
   background: #25D366;
   color: white;
   border: none;
-  border-radius: 22px;
-  padding: 10px 16px;
-  font-size: 13px;
+  border-radius: 20px;
+  padding: clamp(6px, 1vh, 9px) clamp(10px, 1.5vh, 14px);
+  font-size: clamp(11px, 1.4vh, 12.5px);
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
   transition: all 0.2s;
@@ -1979,7 +1998,7 @@ input[type="range"]#power-slider {
 }
 
 .swipe-hint {
-  font-size: 11px;
+  font-size: clamp(9px, 1.1vh, 10.5px);
   color: #94A3B8;
 }
 
@@ -1991,13 +2010,13 @@ input[type="range"]#power-slider {
 }
 
 .wa-chat-header {
-  height: 56px;
+  height: clamp(44px, 5.8vh, 52px);
   background: #075E54; /* WhatsApp deep green */
   color: white;
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  gap: 8px;
+  padding: 0 clamp(6px, 1vh, 10px);
+  gap: clamp(6px, 1vh, 8px);
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
@@ -2013,8 +2032,8 @@ input[type="range"]#power-slider {
 }
 
 .wa-avatar {
-  width: 38px;
-  height: 38px;
+  width: clamp(28px, 3.8vh, 34px);
+  height: clamp(28px, 3.8vh, 34px);
   border-radius: 50%;
   background: #25D366;
   display: flex;
@@ -2029,23 +2048,24 @@ input[type="range"]#power-slider {
 }
 
 .wa-contact-name {
-  font-size: 14px;
+  font-size: clamp(11.5px, 1.5vh, 13px);
   font-weight: 700;
   line-height: 1.1;
 }
 
 .wa-contact-sub {
-  font-size: 11px;
+  font-size: clamp(9px, 1.2vh, 10.5px);
   color: #A7F3D0;
 }
 
 .wa-messages-container {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 12px 12px;
+  padding: clamp(8px, 1.2vh, 10px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(6px, 1vh, 8px);
 }
 
 .wa-messages-container::-webkit-scrollbar {
@@ -2059,30 +2079,30 @@ input[type="range"]#power-slider {
   align-self: center;
   background: #D4EAF4;
   color: #4A6572;
-  font-size: 10.5px;
+  font-size: clamp(9px, 1.1vh, 10px);
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
   box-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
 .wa-system-msg {
   background: #FFF8E1 !important;
   color: #795548 !important;
-  font-size: 10.5px !important;
+  font-size: clamp(9px, 1.1vh, 10px) !important;
   text-align: center;
   align-self: center;
   max-width: 90% !important;
-  padding: 5px 10px !important;
-  border-radius: 8px !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
   box-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
 .wa-bubble {
   max-width: 88%;
   background: #FFFFFF;
-  padding: 8px 12px 6px 12px;
-  border-radius: 0 10px 10px 10px;
+  padding: clamp(5px, 0.8vh, 7px) clamp(8px, 1.1vh, 10px) 4px clamp(8px, 1.1vh, 10px);
+  border-radius: 0 8px 8px 8px;
   position: relative;
   align-self: flex-start;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -2090,9 +2110,9 @@ input[type="range"]#power-slider {
 }
 
 .wa-bubble-content {
-  font-size: 12.5px;
+  font-size: clamp(10.5px, 1.35vh, 12px);
   color: #111827;
-  line-height: 1.4;
+  line-height: 1.35;
   margin-bottom: 2px;
 }
 
@@ -2104,7 +2124,7 @@ input[type="range"]#power-slider {
 }
 
 .wa-time {
-  font-size: 10px;
+  font-size: clamp(8.5px, 1.1vh, 9.5px);
   color: #6B7280;
 }
 
@@ -2115,42 +2135,42 @@ input[type="range"]#power-slider {
 
 /* WhatsApp Image Bubble for Spills */
 .wa-bubble.image-bubble {
-  padding: 4px 4px 5px 4px;
+  padding: 3px 3px 4px 3px;
 }
 
 .wa-img-preview {
   width: 100%;
-  max-height: 170px;
+  max-height: clamp(90px, 15vh, 140px);
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 6px;
   display: block;
   cursor: pointer;
 }
 
 .wa-img-caption {
-  font-size: 12px;
+  font-size: clamp(10px, 1.25vh, 11.5px);
   color: #111827;
-  padding: 6px 6px 3px 6px;
-  line-height: 1.35;
+  padding: 3px 3px 2px 3px;
+  line-height: 1.3;
 }
 
 /* WhatsApp Typing Indicator */
 .wa-typing-indicator {
-  padding: 5px 12px;
+  padding: 3px 8px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background: rgba(255, 255, 255, 0.85);
   border-radius: 12px;
   align-self: flex-start;
-  margin: 0 12px 6px 12px;
-  font-size: 11px;
+  margin: 0 8px 4px 8px;
+  font-size: 10px;
   color: #4B5563;
 }
 
 .typing-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   background: #9CA3AF;
   border-radius: 50%;
   animation: typingBounce 1s infinite;
@@ -2165,11 +2185,11 @@ input[type="range"]#power-slider {
 }
 
 .wa-input-footer {
-  height: 52px;
-  padding: 6px 10px;
+  height: clamp(40px, 5.2vh, 48px);
+  padding: 3px clamp(6px, 1vh, 8px);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: #F0F2F5;
   flex-shrink: 0;
 }
@@ -2177,18 +2197,18 @@ input[type="range"]#power-slider {
 .wa-input-fake {
   flex: 1;
   background: white;
-  height: 38px;
-  border-radius: 19px;
-  padding: 0 14px;
+  height: clamp(28px, 3.8vh, 34px);
+  border-radius: 17px;
+  padding: 0 clamp(8px, 1.2vh, 12px);
   display: flex;
   align-items: center;
   color: #9CA3AF;
-  font-size: 12.5px;
+  font-size: clamp(10.5px, 1.3vh, 11.5px);
 }
 
 .wa-mic-btn {
-  width: 38px;
-  height: 38px;
+  width: clamp(28px, 3.8vh, 34px);
+  height: clamp(28px, 3.8vh, 34px);
   border-radius: 50%;
   background: #00A884;
   display: flex;
@@ -2504,12 +2524,15 @@ input[type="range"]#power-slider {
   .simulation-body {
     flex-direction: column;
     padding: 16px;
+    height: auto;
   }
 
   .right-section {
     width: 100%;
     position: static;
     margin-top: 14px;
+    height: 620px;
+    max-height: 85vh;
   }
 
   .phone-frame {
